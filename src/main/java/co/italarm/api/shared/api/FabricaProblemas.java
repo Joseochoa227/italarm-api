@@ -73,6 +73,12 @@ public class FabricaProblemas {
               TipoError.VALIDACION,
               CodigoError.METODO_NO_PERMITIDO,
               "La operación no está permitida sobre este recurso.");
+      case 413 ->
+          crear(
+              estado,
+              TipoError.VALIDACION,
+              CodigoError.ARCHIVO_DEMASIADO_GRANDE,
+              "El archivo supera el tamaño máximo permitido.");
       case 406, 415 ->
           crear(
               estado,

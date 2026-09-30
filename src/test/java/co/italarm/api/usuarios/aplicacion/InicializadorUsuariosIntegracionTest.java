@@ -18,6 +18,16 @@ class InicializadorUsuariosIntegracionTest extends PruebaIntegracion {
   @Autowired InicializadorUsuarios inicializador;
   @Autowired ServicioContrasenas contrasenas;
 
+  @Autowired PropiedadesItalarm propiedades;
+
+  private PropiedadesItalarm propiedadesConClave(String clave) {
+    return new PropiedadesItalarm(
+        propiedades.cors(),
+        new PropiedadesItalarm.Usuarios(clave),
+        propiedades.almacenamiento(),
+        propiedades.trm());
+  }
+
   private String hashDe(String correo) {
     return jdbc.queryForObject(
         "select contrasena_hash from usuario where correo = ?", String.class, correo);
@@ -58,10 +68,7 @@ class InicializadorUsuariosIntegracionTest extends PruebaIntegracion {
   void sinVariableDefinidaAvisaYNoAsigna(CapturedOutput salida) throws Exception {
     jdbc.update("update usuario set contrasena_hash = null where correo = ?", CORREO_VICTOR);
     InicializadorUsuarios sinClave =
-        new InicializadorUsuarios(
-            contrasenas,
-            new PropiedadesItalarm(
-                new PropiedadesItalarm.Cors(List.of()), new PropiedadesItalarm.Usuarios(" ")));
+        new InicializadorUsuarios(contrasenas, propiedadesConClave(" "));
 
     sinClave.run(null);
 
@@ -72,10 +79,7 @@ class InicializadorUsuariosIntegracionTest extends PruebaIntegracion {
   @Test
   void sinVariableYSinPendientesNoAvisa(CapturedOutput salida) throws Exception {
     InicializadorUsuarios sinClave =
-        new InicializadorUsuarios(
-            contrasenas,
-            new PropiedadesItalarm(
-                new PropiedadesItalarm.Cors(List.of()), new PropiedadesItalarm.Usuarios(null)));
+        new InicializadorUsuarios(contrasenas, propiedadesConClave(null));
 
     sinClave.run(null);
 

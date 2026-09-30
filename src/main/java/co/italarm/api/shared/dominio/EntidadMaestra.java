@@ -15,4 +15,14 @@ public abstract class EntidadMaestra extends EntidadAuditable {
   public long getVersion() {
     return version;
   }
+
+  /**
+   * Verifica que la versión que el usuario editó sea la actual; si no, otro usuario la modificó
+   * antes.
+   */
+  public void verificarVersion(long versionEditada) {
+    if (versionEditada != version) {
+      throw new VersionDesactualizadaException();
+    }
+  }
 }

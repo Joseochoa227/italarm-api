@@ -28,7 +28,20 @@
     <checkstyle.version>14.3.0</checkstyle.version>
     <jacoco.version>0.8.15</jacoco.version>
     <cobertura.minima>0.80</cobertura.minima>
+    <awssdk.version>2.55.7</awssdk.version>
   </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>software.amazon.awssdk</groupId>
+        <artifactId>bom</artifactId>
+        <version>${awssdk.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <dependency>
@@ -63,6 +76,17 @@
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
       <scope>runtime</scope>
+    </dependency>
+    <!-- Almacenamiento compatible con S3 (Cloudflare R2, AWS S3, DigitalOcean Spaces). -->
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>s3</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>software.amazon.awssdk</groupId>
+          <artifactId>netty-nio-client</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.springdoc</groupId>

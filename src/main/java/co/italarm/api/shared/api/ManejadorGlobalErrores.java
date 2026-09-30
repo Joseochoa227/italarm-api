@@ -4,9 +4,15 @@ import co.italarm.api.shared.dominio.CodigoError;
 import co.italarm.api.shared.dominio.NegocioException;
 import co.italarm.api.shared.dominio.TipoError;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -32,9 +38,15 @@ public class ManejadorGlobalErrores extends ResponseEntityExceptionHandler {
   private static final Logger LOG = LoggerFactory.getLogger(ManejadorGlobalErrores.class);
 
   private final FabricaProblemas fabrica;
+  private final Map<String, RestriccionConocida> restricciones = new HashMap<>();
 
-  public ManejadorGlobalErrores(FabricaProblemas fabrica) {
+  public ManejadorGlobalErrores(
+      FabricaProblemas fabrica, ObjectProvider<RestriccionesModulo> modulos) {
     this.fabrica = fabrica;
+    modulos
+        .orderedStream()
+        .forEach(
+            modulo -> modulo.restricciones().forEach(r -> restricciones.put(r.restriccion(), r)));
   }
 
   @ExceptionHandler(NegocioException.class)
@@ -51,6 +63,39 @@ public class ManejadorGlobalErrores extends ResponseEntityExceptionHandler {
             TipoError.CONFLICTO,
             CodigoError.MODIFICADO_POR_OTRO_USUARIO,
             "Otro usuario modificó este registro. Recarga la información e intenta de nuevo.");
+    return ResponseEntity.status(problema.getStatus()).body(problema);
+  }
+
+  /** Segunda línea de defensa: la base de datos rechazó un dato duplicado o en uso (BP-09). */
+  @ExceptionHandler(DataIntegrityViolationException.class)
+  public ResponseEntity<ProblemDetail> manejarIntegridad(DataIntegrityViolationException ex) {
+    String nombre =
+        ex.getCause() instanceof ConstraintViolationException violacion
+            ? violacion.getConstraintName()
+            : null;
+    RestriccionConocida conocida = nombre == null ? null : restricciones.get(nombre);
+    ProblemDetail problema;
+    if (conocida != null) {
+      problema = fabrica.crear(conocida.tipo(), conocida.codigo(), conocida.mensaje());
+    } else {
+      LOG.warn("Restricción de base de datos sin traducir: {}", nombre, ex);
+      problema =
+          fabrica.crear(
+              TipoError.CONFLICTO,
+              CodigoError.DATOS_EN_CONFLICTO,
+              "La información entra en conflicto con otro registro. Recarga e intenta de nuevo.");
+    }
+    return ResponseEntity.status(problema.getStatus()).body(problema);
+  }
+
+  /** Un parámetro {@code sort} con un campo que no existe. */
+  @ExceptionHandler(PropertyReferenceException.class)
+  public ResponseEntity<ProblemDetail> manejarOrdenInvalido(PropertyReferenceException ex) {
+    ProblemDetail problema =
+        fabrica.crear(
+            TipoError.VALIDACION,
+            CodigoError.VALIDACION,
+            "No se puede ordenar por el campo '" + ex.getPropertyName() + "'.");
     return ResponseEntity.status(problema.getStatus()).body(problema);
   }
 

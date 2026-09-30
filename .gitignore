@@ -22,3 +22,6 @@ Thumbs.db
 # Logs
 *.log
 logs/
+
+# Archivos del almacenamiento local (modo disco)
+almacenamiento/

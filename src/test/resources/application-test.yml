@@ -9,3 +9,11 @@ italarm:
   usuarios:
     # Valor ficticio solo para pruebas; no es la contraseña real.
     clave-inicial: PruebaInicial1
+  almacenamiento:
+    carpeta: target/almacenamiento-pruebas
+    clave-enlaces: clave-de-pruebas
+  trm:
+    # En las pruebas la TRM nunca se consulta en internet.
+    programada: false
+    al-arrancar: false
+    url: http://localhost:1/sin-conexion

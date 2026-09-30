@@ -32,10 +32,12 @@ public abstract class PruebaIntegracion {
   @Autowired protected ObjectMapper json;
   @Autowired protected JdbcTemplate jdbc;
   @Autowired protected PasswordEncoder codificador;
+  @Autowired protected RelojPrueba reloj;
 
   /** Cada prueba parte de los dos usuarios activos, con la contraseña inicial y sin sesiones. */
   @BeforeEach
   void restablecerUsuarios() {
+    reloj.restablecer();
     jdbc.update("delete from sesion");
     jdbc.update(
         "update usuario set contrasena_hash = ?, activo = true", codificador.encode(CLAVE_INICIAL));

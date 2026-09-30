@@ -46,6 +46,9 @@ public class ConfiguracionSeguridad {
                 reglas
                     .requestMatchers(HttpMethod.POST, "/api/v1/sesion")
                     .permitAll()
+                    // Descarga con enlace firmado (modo disco): la firma es el permiso.
+                    .requestMatchers(HttpMethod.GET, "/api/v1/archivos")
+                    .permitAll()
                     .requestMatchers(
                         "/actuator/health",
                         "/actuator/health/**",
