@@ -38,6 +38,7 @@ public abstract class PruebaIntegracion {
   @BeforeEach
   void restablecerUsuarios() {
     reloj.restablecer();
+    LimpiezaDatos.restablecer(jdbc);
     jdbc.update("delete from sesion");
     jdbc.update(
         "update usuario set contrasena_hash = ?, activo = true", codificador.encode(CLAVE_INICIAL));
