@@ -3,7 +3,8 @@
 API del sistema de inventario, ventas, cotizaciones e instalaciones de ITALARM.
 
 - Requerimientos: [`docs/requerimientos.md`](docs/requerimientos.md)
-- Plan de la fase actual: [`docs/plan-fase-0.md`](docs/plan-fase-0.md)
+- Planes por fase: [`docs/plan-fase-0.md`](docs/plan-fase-0.md), [`docs/plan-fase-1.md`](docs/plan-fase-1.md)
+- Contrato de la API: [`contrato/openapi.json`](contrato/openapi.json) y [`docs/guia-frontend.md`](docs/guia-frontend.md)
 - Preguntas y decisiones de ITALARM: [`docs/preguntas.md`](docs/preguntas.md)
 - Cambios por versión: [`CHANGELOG.md`](CHANGELOG.md)
 
@@ -28,6 +29,12 @@ No hace falta instalar Maven: se usa el wrapper `./mvnw` incluido en el reposito
    | `ITALARM_DB_URL`, `ITALARM_DB_USUARIO`, `ITALARM_DB_CLAVE` | Conexión de la API a PostgreSQL. |
    | `ITALARM_CLAVE_INICIAL` | Contraseña inicial de Jose y Victor. Solo se asigna a usuarios que aún no tienen contraseña. |
    | `ITALARM_CORS_ORIGENES` | Origen del frontend, por ejemplo `http://localhost:5173`. Si son varios, se separan con comas. |
+   | `ITALARM_ALMACENAMIENTO` | Dónde se guardan fotos y logo: `disco` (local, por defecto) o `s3` (hosting). |
+   | `ITALARM_ALMACENAMIENTO_CARPETA` | Carpeta de archivos en modo disco (por defecto `./almacenamiento`). |
+   | `ITALARM_URL_PUBLICA` | Dirección con la que el navegador llega a la API, para los enlaces de archivos (por defecto `http://localhost:8080`). |
+   | `ITALARM_ENLACES_CLAVE` | Clave para firmar los enlaces en modo disco. Si falta, se genera al arrancar. |
+   | `ITALARM_S3_ENDPOINT`, `ITALARM_S3_REGION`, `ITALARM_S3_BUCKET`, `ITALARM_S3_ACCESS_KEY`, `ITALARM_S3_SECRET_KEY` | Solo en modo `s3`. |
+   | `ITALARM_TRM_URL` | Fuente de la TRM. Por defecto, la oficial de datos.gov.co. |
 
 2. Levanta PostgreSQL:
 
@@ -46,7 +53,7 @@ No hace falta instalar Maven: se usa el wrapper `./mvnw` incluido en el reposito
    - Contrato OpenAPI: http://localhost:8080/v3/api-docs
    - Salud: http://localhost:8080/actuator/health
 
-Las migraciones de Flyway se aplican solas al arrancar.
+Las migraciones de Flyway se aplican solas al arrancar. La TRM del día se consulta al arrancar y cada mañana; si no hay internet, queda el aviso en `GET /api/v1/tasas/vigentes`.
 
 ## Ingresar
 

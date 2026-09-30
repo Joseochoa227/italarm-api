@@ -1,0 +1,2663 @@
+{
+  "openapi" : "3.1.0",
+  "info" : {
+    "description" : "Inventario, ventas, cotizaciones e instalaciones de ITALARM. Los errores responden en Problem Details (RFC 9457) con la propiedad `codigo`. El dinero viaja como texto decimal junto con su moneda.",
+    "title" : "API ITALARM",
+    "version" : "v1"
+  },
+  "servers" : [ {
+    "url" : "/"
+  } ],
+  "security" : [ {
+    "bearerAuth" : [ ]
+  } ],
+  "tags" : [ {
+    "description" : "Solo en desarrollo local: en el hosting los sirve S3",
+    "name" : "Archivos"
+  }, {
+    "description" : "Categorías de productos (RF-15)",
+    "name" : "Categorías"
+  }, {
+    "description" : "Instaladores y clientes finales (sección 3.10)",
+    "name" : "Clientes"
+  }, {
+    "description" : "Datos de la empresa y valores por defecto (3.17)",
+    "name" : "Configuración"
+  }, {
+    "description" : "Catálogo de productos (sección 3.3)",
+    "name" : "Productos"
+  }, {
+    "description" : "TRM automática y tasa del bolívar manual (3.5)",
+    "name" : "Tasas de cambio"
+  }, {
+    "description" : "Unidad, Metro, Par… (RF-148, P-09)",
+    "name" : "Unidades de medida"
+  }, {
+    "description" : "Proveedores y su moneda habitual (sección 3.6)",
+    "name" : "Proveedores"
+  }, {
+    "description" : "Cambio de contraseña y gestión de usuarios (RF-148)",
+    "name" : "Usuarios"
+  }, {
+    "description" : "Ingreso, usuario actual y cierre de sesión",
+    "name" : "Sesión"
+  } ],
+  "paths" : {
+    "/api/v1/archivos" : {
+      "get" : {
+        "operationId" : "descargar",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "clave",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "expira",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "in" : "query",
+          "name" : "firma",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ ],
+        "summary" : "Descargar un archivo con un enlace firmado",
+        "tags" : [ "Archivos" ]
+      }
+    },
+    "/api/v1/categorias" : {
+      "get" : {
+        "operationId" : "listar_2",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/CategoriaVista"
+                  }
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Todas las categorías, con su cantidad de productos",
+        "tags" : [ "Categorías" ]
+      },
+      "post" : {
+        "description" : "Error: CATEGORIA_DUPLICADA (409).",
+        "operationId" : "crear_5",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudCategoria"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CategoriaVista"
+                }
+              }
+            },
+            "description" : "Created"
+          }
+        },
+        "summary" : "Crear una categoría",
+        "tags" : [ "Categorías" ]
+      }
+    },
+    "/api/v1/categorias/{id}" : {
+      "delete" : {
+        "description" : "Error: CATEGORIA_CON_PRODUCTOS (422).",
+        "operationId" : "eliminar_2",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "summary" : "Eliminar una categoría sin productos",
+        "tags" : [ "Categorías" ]
+      },
+      "put" : {
+        "description" : "Errores: CATEGORIA_DUPLICADA, MODIFICADO_POR_OTRO_USUARIO (409).",
+        "operationId" : "actualizar_5",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudCategoria"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CategoriaVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Editar una categoría",
+        "tags" : [ "Categorías" ]
+      }
+    },
+    "/api/v1/clientes" : {
+      "get" : {
+        "description" : "Busca por nombre, documento, teléfono o ciudad. Orden por defecto: nombre.",
+        "operationId" : "buscar_2",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "tipo",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "INSTALADOR", "CLIENTE_FINAL" ]
+          }
+        }, {
+          "in" : "query",
+          "name" : "buscar",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Zero-based page index (0..N)",
+          "in" : "query",
+          "name" : "page",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "default" : 0,
+            "minimum" : 0
+          }
+        }, {
+          "description" : "The size of the page to be returned",
+          "in" : "query",
+          "name" : "size",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "default" : 10,
+            "minimum" : 1
+          }
+        }, {
+          "description" : "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+          "in" : "query",
+          "name" : "sort",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "default" : [ "nombre,ASC" ],
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaginaClienteVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Listado paginado de clientes",
+        "tags" : [ "Clientes" ]
+      },
+      "post" : {
+        "description" : "Errores: TELEFONO_INVALIDO, DOCUMENTO_INCOMPLETO (400); CLIENTE_DOCUMENTO_DUPLICADO (409).",
+        "operationId" : "crear_4",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudCliente"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ClienteVista"
+                }
+              }
+            },
+            "description" : "Created"
+          }
+        },
+        "summary" : "Crear un cliente",
+        "tags" : [ "Clientes" ]
+      }
+    },
+    "/api/v1/clientes/{id}" : {
+      "get" : {
+        "operationId" : "detalle_2",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ClienteVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Detalle de un cliente",
+        "tags" : [ "Clientes" ]
+      },
+      "put" : {
+        "description" : "Además: MODIFICADO_POR_OTRO_USUARIO (409).",
+        "operationId" : "actualizar_4",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudCliente"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ClienteVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Editar un cliente",
+        "tags" : [ "Clientes" ]
+      }
+    },
+    "/api/v1/configuracion" : {
+      "get" : {
+        "operationId" : "obtener",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConfiguracionVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Configuración actual",
+        "tags" : [ "Configuración" ]
+      },
+      "put" : {
+        "description" : "Errores: CONFIGURACION_INVALIDA (400), MODIFICADO_POR_OTRO_USUARIO (409). Validez: 8, 15 o 30 días; garantías: 1 a 3 meses; límite de variación: más de 0 % y hasta 100 %.",
+        "operationId" : "actualizar_3",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudConfiguracion"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConfiguracionVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Editar la configuración",
+        "tags" : [ "Configuración" ]
+      }
+    },
+    "/api/v1/configuracion/logo" : {
+      "delete" : {
+        "operationId" : "quitarLogo",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConfiguracionVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Quitar el logo",
+        "tags" : [ "Configuración" ]
+      },
+      "put" : {
+        "description" : "Errores: ARCHIVO_TIPO_NO_PERMITIDO, ARCHIVO_DEMASIADO_GRANDE (400).",
+        "operationId" : "cambiarLogo",
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "archivo" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                },
+                "required" : [ "archivo" ]
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConfiguracionVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Subir o reemplazar el logo (JPEG, PNG o WebP; máximo 5 MB)",
+        "tags" : [ "Configuración" ]
+      }
+    },
+    "/api/v1/productos" : {
+      "get" : {
+        "description" : "Busca por nombre, código o marca. Orden por defecto: nombre.",
+        "operationId" : "buscar_1",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "categoriaId",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "true: solo activos; false: solo inactivos; vacío: todos",
+          "in" : "query",
+          "name" : "activo",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "in" : "query",
+          "name" : "buscar",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Zero-based page index (0..N)",
+          "in" : "query",
+          "name" : "page",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "default" : 0,
+            "minimum" : 0
+          }
+        }, {
+          "description" : "The size of the page to be returned",
+          "in" : "query",
+          "name" : "size",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "default" : 10,
+            "minimum" : 1
+          }
+        }, {
+          "description" : "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+          "in" : "query",
+          "name" : "sort",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "default" : [ "nombre,ASC" ],
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaginaProductoVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Listado paginado de productos",
+        "tags" : [ "Productos" ]
+      },
+      "post" : {
+        "description" : "Errores: PRODUCTO_CODIGO_DUPLICADO (409), CATEGORIA_NO_EXISTE, UNIDAD_NO_EXISTE, CANTIDAD_INVALIDA (400).",
+        "operationId" : "crear_3",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudProducto"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProductoVista"
+                }
+              }
+            },
+            "description" : "Created"
+          }
+        },
+        "summary" : "Crear un producto (queda con stock 0 y sin costo)",
+        "tags" : [ "Productos" ]
+      }
+    },
+    "/api/v1/productos/{id}" : {
+      "delete" : {
+        "description" : "Error: PRODUCTO_CON_MOVIMIENTOS (422).",
+        "operationId" : "eliminar_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "summary" : "Eliminar un producto sin movimientos",
+        "tags" : [ "Productos" ]
+      },
+      "get" : {
+        "operationId" : "detalle_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProductoVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Detalle de un producto",
+        "tags" : [ "Productos" ]
+      },
+      "put" : {
+        "description" : "Errores: PRODUCTO_CODIGO_DUPLICADO, MODIFICADO_POR_OTRO_USUARIO (409); PRODUCTO_CAMBIO_NO_PERMITIDO (422).",
+        "operationId" : "actualizar_2",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudProducto"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProductoVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Editar un producto",
+        "tags" : [ "Productos" ]
+      }
+    },
+    "/api/v1/productos/{id}/activar" : {
+      "post" : {
+        "operationId" : "activar_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProductoVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Activar un producto desactivado",
+        "tags" : [ "Productos" ]
+      }
+    },
+    "/api/v1/productos/{id}/desactivar" : {
+      "post" : {
+        "operationId" : "desactivar_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProductoVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Desactivar: deja de aparecer para vender, conserva su historial",
+        "tags" : [ "Productos" ]
+      }
+    },
+    "/api/v1/productos/{id}/foto" : {
+      "delete" : {
+        "operationId" : "quitarFoto",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProductoVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Quitar la foto",
+        "tags" : [ "Productos" ]
+      },
+      "put" : {
+        "description" : "Errores: ARCHIVO_TIPO_NO_PERMITIDO, ARCHIVO_DEMASIADO_GRANDE (400).",
+        "operationId" : "cambiarFoto",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "archivo" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                },
+                "required" : [ "archivo" ]
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProductoVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Subir o reemplazar la foto (JPEG, PNG o WebP; máximo 5 MB)",
+        "tags" : [ "Productos" ]
+      }
+    },
+    "/api/v1/proveedores" : {
+      "get" : {
+        "description" : "Busca por nombre, NIT o ciudad. Orden por defecto: nombre.",
+        "operationId" : "buscar",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "buscar",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Zero-based page index (0..N)",
+          "in" : "query",
+          "name" : "page",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "default" : 0,
+            "minimum" : 0
+          }
+        }, {
+          "description" : "The size of the page to be returned",
+          "in" : "query",
+          "name" : "size",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "default" : 10,
+            "minimum" : 1
+          }
+        }, {
+          "description" : "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+          "in" : "query",
+          "name" : "sort",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "default" : [ "nombre,ASC" ],
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaginaProveedorVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Listado paginado de proveedores",
+        "tags" : [ "Proveedores" ]
+      },
+      "post" : {
+        "description" : "Error: TELEFONO_INVALIDO (400).",
+        "operationId" : "crear_2",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudProveedor"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProveedorVista"
+                }
+              }
+            },
+            "description" : "Created"
+          }
+        },
+        "summary" : "Crear un proveedor",
+        "tags" : [ "Proveedores" ]
+      }
+    },
+    "/api/v1/proveedores/{id}" : {
+      "get" : {
+        "operationId" : "detalle",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProveedorVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Detalle de un proveedor",
+        "tags" : [ "Proveedores" ]
+      },
+      "put" : {
+        "description" : "Además: MODIFICADO_POR_OTRO_USUARIO (409).",
+        "operationId" : "actualizar_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudProveedor"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProveedorVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Editar un proveedor",
+        "tags" : [ "Proveedores" ]
+      }
+    },
+    "/api/v1/sesion" : {
+      "delete" : {
+        "operationId" : "cerrar",
+        "responses" : {
+          "204" : {
+            "description" : "Sesión cerrada"
+          }
+        },
+        "summary" : "Cerrar la sesión actual",
+        "tags" : [ "Sesión" ]
+      },
+      "get" : {
+        "operationId" : "actual",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UsuarioActual"
+                }
+              }
+            },
+            "description" : "Sesión activa"
+          },
+          "401" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "NO_AUTENTICADO"
+          }
+        },
+        "summary" : "Usuario de la sesión actual",
+        "tags" : [ "Sesión" ]
+      },
+      "post" : {
+        "operationId" : "iniciar",
+        "parameters" : [ {
+          "in" : "header",
+          "name" : "User-Agent",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudIngreso"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespuestaIngreso"
+                }
+              }
+            },
+            "description" : "Sesión iniciada"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "VALIDACION"
+          },
+          "401" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "CREDENCIALES_INVALIDAS"
+          }
+        },
+        "security" : [ ],
+        "summary" : "Iniciar sesión con correo y contraseña",
+        "tags" : [ "Sesión" ]
+      }
+    },
+    "/api/v1/tasas" : {
+      "get" : {
+        "operationId" : "historial",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "par",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "USD_COP", "USD_VES" ]
+          }
+        }, {
+          "in" : "query",
+          "name" : "desde",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "in" : "query",
+          "name" : "hasta",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "description" : "Zero-based page index (0..N)",
+          "in" : "query",
+          "name" : "page",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "default" : 0,
+            "minimum" : 0
+          }
+        }, {
+          "description" : "The size of the page to be returned",
+          "in" : "query",
+          "name" : "size",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "default" : 10,
+            "minimum" : 1
+          }
+        }, {
+          "description" : "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+          "in" : "query",
+          "name" : "sort",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "default" : [ "fecha,DESC" ],
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaginaTasaVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Historial de tasas por par y rango de fechas (RF-34)",
+        "tags" : [ "Tasas de cambio" ]
+      }
+    },
+    "/api/v1/tasas/trm" : {
+      "post" : {
+        "description" : "Errores: los mismos del bolívar y TRM_AUTOMATICA_DISPONIBLE (409) si ya está la oficial. Si más tarde llega la oficial, reemplaza a la manual (P-13).",
+        "operationId" : "registrarTrm",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudTasaManual"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TasaVista"
+                }
+              }
+            },
+            "description" : "Created"
+          }
+        },
+        "summary" : "Registrar la TRM de hoy a mano cuando falla la consulta automática (RF-33)",
+        "tags" : [ "Tasas de cambio" ]
+      }
+    },
+    "/api/v1/tasas/trm/consultar" : {
+      "post" : {
+        "description" : "Resultado: EXITO, FALLO u OMITIDA (ya estaba guardada).",
+        "operationId" : "consultarTrm",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ResultadoTrm"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Consultar ahora la TRM oficial de hoy",
+        "tags" : [ "Tasas de cambio" ]
+      }
+    },
+    "/api/v1/tasas/ves" : {
+      "post" : {
+        "description" : "Errores: TASA_NO_CONFIRMADA, TASA_INVALIDA (400); TASA_YA_REGISTRADA (409); TASA_VARIACION_NO_ACEPTADA (422).",
+        "operationId" : "registrarBolivar",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudTasaManual"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TasaVista"
+                }
+              }
+            },
+            "description" : "Created"
+          }
+        },
+        "summary" : "Registrar la tasa del bolívar de hoy (RF-29, RF-35)",
+        "tags" : [ "Tasas de cambio" ]
+      }
+    },
+    "/api/v1/tasas/vigentes" : {
+      "get" : {
+        "description" : "Si falta la tasa de hoy devuelve la última con esDeHoy=false y un aviso (RF-33).",
+        "operationId" : "vigentes",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TasasVigentesVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Tasas del día para el menú y la barra superior (RF-30)",
+        "tags" : [ "Tasas de cambio" ]
+      }
+    },
+    "/api/v1/tasas/vista-previa" : {
+      "post" : {
+        "operationId" : "vistaPrevia",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudVistaPrevia"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/VariacionVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Tasa anterior, nueva y variación antes de guardar (RF-35b); no guarda nada",
+        "tags" : [ "Tasas de cambio" ]
+      }
+    },
+    "/api/v1/tasas/{id}" : {
+      "get" : {
+        "operationId" : "detalle_3",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TasaVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Detalle de una tasa con sus correcciones",
+        "tags" : [ "Tasas de cambio" ]
+      }
+    },
+    "/api/v1/tasas/{id}/corregir" : {
+      "post" : {
+        "description" : "Queda registro del valor anterior, el nuevo y el usuario. Errores: TASA_NO_CONFIRMADA, TASA_SIN_CAMBIO (400); TASA_VARIACION_NO_ACEPTADA (422).",
+        "operationId" : "corregir",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudCorreccionTasa"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TasaVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Corregir una tasa (RF-36)",
+        "tags" : [ "Tasas de cambio" ]
+      }
+    },
+    "/api/v1/unidades-medida" : {
+      "get" : {
+        "operationId" : "listar_1",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/UnidadMedidaVista"
+                  }
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Todas las unidades de medida",
+        "tags" : [ "Unidades de medida" ]
+      },
+      "post" : {
+        "description" : "Error: UNIDAD_DUPLICADA (409).",
+        "operationId" : "crear_1",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudUnidadMedida"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UnidadMedidaVista"
+                }
+              }
+            },
+            "description" : "Created"
+          }
+        },
+        "summary" : "Crear una unidad de medida",
+        "tags" : [ "Unidades de medida" ]
+      }
+    },
+    "/api/v1/unidades-medida/{id}" : {
+      "delete" : {
+        "description" : "Error: UNIDAD_EN_USO (422).",
+        "operationId" : "eliminar",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "summary" : "Eliminar una unidad que no usa ningún producto",
+        "tags" : [ "Unidades de medida" ]
+      },
+      "put" : {
+        "description" : "Errores: UNIDAD_DUPLICADA, MODIFICADO_POR_OTRO_USUARIO (409); UNIDAD_EN_USO (422) si se cambia admiteDecimales y la usan productos.",
+        "operationId" : "actualizar",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudUnidadMedida"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UnidadMedidaVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Editar una unidad de medida",
+        "tags" : [ "Unidades de medida" ]
+      }
+    },
+    "/api/v1/usuarios" : {
+      "get" : {
+        "operationId" : "listar",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/UsuarioVista"
+                  }
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Todos los usuarios",
+        "tags" : [ "Usuarios" ]
+      },
+      "post" : {
+        "description" : "Errores: CONTRASENA_NO_COINCIDE, CONTRASENA_DEBIL (400); USUARIO_CORREO_DUPLICADO (409).",
+        "operationId" : "crear",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudNuevoUsuario"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UsuarioVista"
+                }
+              }
+            },
+            "description" : "Created"
+          }
+        },
+        "summary" : "Crear un usuario con su contraseña inicial",
+        "tags" : [ "Usuarios" ]
+      }
+    },
+    "/api/v1/usuarios/actual/contrasena" : {
+      "put" : {
+        "description" : "Conserva la sesión actual y cierra las demás sesiones del usuario. La nueva contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un signo.",
+        "operationId" : "cambiarContrasena",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudCambioContrasena"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "Contraseña cambiada"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "VALIDACION, CONTRASENA_NO_COINCIDE o CONTRASENA_DEBIL"
+          },
+          "409" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "CONTRASENA_ACTUAL_INCORRECTA"
+          }
+        },
+        "summary" : "Cambiar la contraseña del usuario actual",
+        "tags" : [ "Usuarios" ]
+      }
+    },
+    "/api/v1/usuarios/{id}/activar" : {
+      "post" : {
+        "operationId" : "activar",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UsuarioVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Activar un usuario",
+        "tags" : [ "Usuarios" ]
+      }
+    },
+    "/api/v1/usuarios/{id}/desactivar" : {
+      "post" : {
+        "description" : "Error: NO_PUEDE_DESACTIVARSE_A_SI_MISMO (422).",
+        "operationId" : "desactivar",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UsuarioVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Desactivar un usuario y cerrar sus sesiones",
+        "tags" : [ "Usuarios" ]
+      }
+    },
+    "/api/v1/usuarios/{id}/restablecer-contrasena" : {
+      "post" : {
+        "description" : "Errores: CONTRASENA_NO_COINCIDE, CONTRASENA_DEBIL (400); USAR_CAMBIO_DE_CONTRASENA (422) si es el propio usuario.",
+        "operationId" : "restablecerContrasena",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudRestablecerContrasena"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UsuarioVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Asignar una nueva contraseña a otro usuario y cerrar sus sesiones",
+        "tags" : [ "Usuarios" ]
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "CategoriaVista" : {
+        "type" : "object",
+        "properties" : {
+          "cantidadProductos" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "nombre" : {
+            "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "ClienteVista" : {
+        "type" : "object",
+        "properties" : {
+          "cantidadMovimientos" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "ciudad" : {
+            "type" : "string"
+          },
+          "correo" : {
+            "type" : "string"
+          },
+          "direccion" : {
+            "type" : "string"
+          },
+          "fechaUltimoMovimiento" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "nombre" : {
+            "type" : "string"
+          },
+          "numeroDocumento" : {
+            "type" : "string"
+          },
+          "precioAplicado" : {
+            "type" : "string",
+            "enum" : [ "INSTALADOR", "CLIENTE_FINAL" ]
+          },
+          "precioAplicadoDescripcion" : {
+            "type" : "string"
+          },
+          "telefono" : {
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string",
+            "enum" : [ "INSTALADOR", "CLIENTE_FINAL" ]
+          },
+          "tipoDocumento" : {
+            "type" : "string",
+            "enum" : [ "CC", "NIT" ]
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "ConfiguracionVista" : {
+        "type" : "object",
+        "properties" : {
+          "condicionesGarantia" : {
+            "type" : "string"
+          },
+          "empresaCiudad" : {
+            "type" : "string"
+          },
+          "empresaCorreo" : {
+            "type" : "string"
+          },
+          "empresaLema" : {
+            "type" : "string"
+          },
+          "empresaNit" : {
+            "type" : "string"
+          },
+          "empresaNombre" : {
+            "type" : "string"
+          },
+          "empresaTelefono" : {
+            "type" : "string"
+          },
+          "garantiaEquiposMeses" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "garantiaManoObraMeses" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "limiteVariacionTasa" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "logoUrl" : {
+            "type" : "string"
+          },
+          "piePdf" : {
+            "type" : "string"
+          },
+          "validezCotizacionDias" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "CorreccionVista" : {
+        "type" : "object",
+        "properties" : {
+          "automatica" : {
+            "type" : "boolean"
+          },
+          "corregidaEn" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "corregidaPor" : {
+            "type" : "string"
+          },
+          "motivo" : {
+            "type" : "string"
+          },
+          "valorAnterior" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "valorNuevo" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          }
+        }
+      },
+      "Dinero" : {
+        "type" : "object",
+        "properties" : {
+          "moneda" : {
+            "type" : "string",
+            "enum" : [ "USD", "COP", "VES" ]
+          },
+          "monto" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          }
+        }
+      },
+      "PaginaClienteVista" : {
+        "type" : "object",
+        "properties" : {
+          "contenido" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ClienteVista"
+            }
+          },
+          "pagina" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "tamano" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElementos" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPaginas" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "PaginaProductoVista" : {
+        "type" : "object",
+        "properties" : {
+          "contenido" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ProductoVista"
+            }
+          },
+          "pagina" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "tamano" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElementos" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPaginas" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "PaginaProveedorVista" : {
+        "type" : "object",
+        "properties" : {
+          "contenido" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ProveedorVista"
+            }
+          },
+          "pagina" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "tamano" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElementos" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPaginas" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "PaginaTasaVista" : {
+        "type" : "object",
+        "properties" : {
+          "contenido" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TasaVista"
+            }
+          },
+          "pagina" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "tamano" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElementos" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPaginas" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "ProblemDetail" : {
+        "type" : "object",
+        "properties" : {
+          "detail" : {
+            "type" : [ "string", "null" ]
+          },
+          "instance" : {
+            "type" : [ "string", "null" ],
+            "format" : "uri"
+          },
+          "properties" : {
+            "type" : [ "object", "null" ],
+            "additionalProperties" : { }
+          },
+          "status" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "title" : {
+            "type" : [ "string", "null" ]
+          },
+          "type" : {
+            "type" : "string",
+            "format" : "uri"
+          }
+        }
+      },
+      "ProductoVista" : {
+        "type" : "object",
+        "properties" : {
+          "activo" : {
+            "type" : "boolean"
+          },
+          "bajoMinimo" : {
+            "type" : "boolean"
+          },
+          "categoria" : {
+            "$ref" : "#/components/schemas/Referencia"
+          },
+          "codigo" : {
+            "type" : "string"
+          },
+          "controlaSerial" : {
+            "type" : "boolean"
+          },
+          "costoActual" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "descripcion" : {
+            "type" : "string"
+          },
+          "fotoUrl" : {
+            "type" : "string"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "marca" : {
+            "type" : "string"
+          },
+          "modelo" : {
+            "type" : "string"
+          },
+          "nombre" : {
+            "type" : "string"
+          },
+          "precioClienteFinal" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "precioInstalador" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "stock" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "stockMinimo" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "unidadMedida" : {
+            "$ref" : "#/components/schemas/UnidadMedidaVista"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "ProveedorVista" : {
+        "type" : "object",
+        "properties" : {
+          "ciudad" : {
+            "type" : "string"
+          },
+          "correo" : {
+            "type" : "string"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "monedaHabitual" : {
+            "type" : "string",
+            "enum" : [ "USD", "COP", "VES" ]
+          },
+          "nit" : {
+            "type" : "string"
+          },
+          "nombre" : {
+            "type" : "string"
+          },
+          "telefono" : {
+            "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "Referencia" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "nombre" : {
+            "type" : "string"
+          }
+        }
+      },
+      "RespuestaIngreso" : {
+        "type" : "object",
+        "properties" : {
+          "token" : {
+            "type" : "string",
+            "description" : "Token de sesión. Se entrega una sola vez."
+          },
+          "usuario" : {
+            "$ref" : "#/components/schemas/UsuarioActual"
+          }
+        }
+      },
+      "ResultadoTrm" : {
+        "type" : "object",
+        "properties" : {
+          "detalle" : {
+            "type" : "string"
+          },
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "resultado" : {
+            "type" : "string",
+            "enum" : [ "EXITO", "FALLO", "OMITIDA" ]
+          },
+          "valor" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          }
+        }
+      },
+      "SolicitudCambioContrasena" : {
+        "type" : "object",
+        "properties" : {
+          "confirmacion" : {
+            "type" : "string",
+            "maxLength" : 128,
+            "minLength" : 0
+          },
+          "contrasenaActual" : {
+            "type" : "string",
+            "maxLength" : 128,
+            "minLength" : 0
+          },
+          "contrasenaNueva" : {
+            "type" : "string",
+            "maxLength" : 128,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "confirmacion", "contrasenaActual", "contrasenaNueva" ]
+      },
+      "SolicitudCategoria" : {
+        "type" : "object",
+        "properties" : {
+          "nombre" : {
+            "type" : "string",
+            "maxLength" : 80,
+            "minLength" : 0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "nombre", "version" ]
+      },
+      "SolicitudCliente" : {
+        "type" : "object",
+        "properties" : {
+          "ciudad" : {
+            "type" : "string",
+            "maxLength" : 80,
+            "minLength" : 0
+          },
+          "correo" : {
+            "type" : "string",
+            "format" : "email",
+            "maxLength" : 254,
+            "minLength" : 0
+          },
+          "direccion" : {
+            "type" : "string",
+            "maxLength" : 200,
+            "minLength" : 0
+          },
+          "nombre" : {
+            "type" : "string",
+            "maxLength" : 150,
+            "minLength" : 0
+          },
+          "numeroDocumento" : {
+            "type" : "string",
+            "maxLength" : 30,
+            "minLength" : 0,
+            "pattern" : "[0-9.\\s-]*"
+          },
+          "telefono" : {
+            "type" : "string",
+            "maxLength" : 25,
+            "minLength" : 0
+          },
+          "tipo" : {
+            "type" : "string",
+            "enum" : [ "INSTALADOR", "CLIENTE_FINAL" ]
+          },
+          "tipoDocumento" : {
+            "type" : "string",
+            "enum" : [ "CC", "NIT" ]
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "nombre", "telefono", "tipo", "version" ]
+      },
+      "SolicitudConfiguracion" : {
+        "type" : "object",
+        "properties" : {
+          "condicionesGarantia" : {
+            "type" : "string",
+            "maxLength" : 2000,
+            "minLength" : 0
+          },
+          "empresaCiudad" : {
+            "type" : "string",
+            "maxLength" : 80,
+            "minLength" : 0
+          },
+          "empresaCorreo" : {
+            "type" : "string",
+            "format" : "email",
+            "maxLength" : 254,
+            "minLength" : 0
+          },
+          "empresaLema" : {
+            "type" : "string",
+            "maxLength" : 150,
+            "minLength" : 0
+          },
+          "empresaNit" : {
+            "type" : "string",
+            "maxLength" : 30,
+            "minLength" : 0
+          },
+          "empresaNombre" : {
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "empresaTelefono" : {
+            "type" : "string",
+            "maxLength" : 30,
+            "minLength" : 0
+          },
+          "garantiaEquiposMeses" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "garantiaManoObraMeses" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "limiteVariacionTasa" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "piePdf" : {
+            "type" : "string",
+            "maxLength" : 2000,
+            "minLength" : 0
+          },
+          "validezCotizacionDias" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "condicionesGarantia", "empresaNombre", "garantiaEquiposMeses", "garantiaManoObraMeses", "limiteVariacionTasa", "piePdf", "validezCotizacionDias", "version" ]
+      },
+      "SolicitudCorreccionTasa" : {
+        "type" : "object",
+        "properties" : {
+          "aceptarVariacion" : {
+            "type" : "boolean"
+          },
+          "confirmacion" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "motivo" : {
+            "type" : "string",
+            "maxLength" : 300,
+            "minLength" : 0
+          },
+          "valor" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          }
+        },
+        "required" : [ "confirmacion", "valor" ]
+      },
+      "SolicitudIngreso" : {
+        "type" : "object",
+        "properties" : {
+          "contrasena" : {
+            "type" : "string",
+            "maxLength" : 128,
+            "minLength" : 0
+          },
+          "correo" : {
+            "type" : "string",
+            "format" : "email",
+            "maxLength" : 254,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "contrasena", "correo" ]
+      },
+      "SolicitudNuevoUsuario" : {
+        "type" : "object",
+        "properties" : {
+          "confirmacion" : {
+            "type" : "string",
+            "maxLength" : 128,
+            "minLength" : 0
+          },
+          "contrasena" : {
+            "type" : "string",
+            "maxLength" : 128,
+            "minLength" : 0
+          },
+          "correo" : {
+            "type" : "string",
+            "format" : "email",
+            "maxLength" : 254,
+            "minLength" : 0
+          },
+          "nombre" : {
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "confirmacion", "contrasena", "correo", "nombre" ]
+      },
+      "SolicitudProducto" : {
+        "type" : "object",
+        "properties" : {
+          "categoriaId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "codigo" : {
+            "type" : "string",
+            "maxLength" : 30,
+            "minLength" : 0,
+            "pattern" : "\\s*[A-Za-z0-9][A-Za-z0-9._/-]*\\s*"
+          },
+          "controlaSerial" : {
+            "type" : "boolean"
+          },
+          "descripcion" : {
+            "type" : "string",
+            "maxLength" : 2000,
+            "minLength" : 0
+          },
+          "marca" : {
+            "type" : "string",
+            "maxLength" : 80,
+            "minLength" : 0
+          },
+          "modelo" : {
+            "type" : "string",
+            "maxLength" : 80,
+            "minLength" : 0
+          },
+          "monedaPrecio" : {
+            "type" : "string",
+            "enum" : [ "USD", "COP", "VES" ]
+          },
+          "nombre" : {
+            "type" : "string",
+            "maxLength" : 150,
+            "minLength" : 0
+          },
+          "precioClienteFinal" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "precioInstalador" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "stockMinimo" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "unidadMedidaId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "categoriaId", "codigo", "controlaSerial", "nombre", "precioClienteFinal", "precioInstalador", "unidadMedidaId", "version" ]
+      },
+      "SolicitudProveedor" : {
+        "type" : "object",
+        "properties" : {
+          "ciudad" : {
+            "type" : "string",
+            "maxLength" : 80,
+            "minLength" : 0
+          },
+          "correo" : {
+            "type" : "string",
+            "format" : "email",
+            "maxLength" : 254,
+            "minLength" : 0
+          },
+          "monedaHabitual" : {
+            "type" : "string",
+            "enum" : [ "USD", "COP", "VES" ]
+          },
+          "nit" : {
+            "type" : "string",
+            "maxLength" : 30,
+            "minLength" : 0,
+            "pattern" : "[0-9.\\s-]*"
+          },
+          "nombre" : {
+            "type" : "string",
+            "maxLength" : 150,
+            "minLength" : 0
+          },
+          "telefono" : {
+            "type" : "string",
+            "maxLength" : 25,
+            "minLength" : 0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "monedaHabitual", "nombre", "version" ]
+      },
+      "SolicitudRestablecerContrasena" : {
+        "type" : "object",
+        "properties" : {
+          "confirmacion" : {
+            "type" : "string",
+            "maxLength" : 128,
+            "minLength" : 0
+          },
+          "contrasenaNueva" : {
+            "type" : "string",
+            "maxLength" : 128,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "confirmacion", "contrasenaNueva" ]
+      },
+      "SolicitudTasaManual" : {
+        "type" : "object",
+        "properties" : {
+          "aceptarVariacion" : {
+            "type" : "boolean"
+          },
+          "confirmacion" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "valor" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          }
+        },
+        "required" : [ "confirmacion", "valor" ]
+      },
+      "SolicitudUnidadMedida" : {
+        "type" : "object",
+        "properties" : {
+          "abreviatura" : {
+            "type" : "string",
+            "maxLength" : 10,
+            "minLength" : 0
+          },
+          "admiteDecimales" : {
+            "type" : "boolean"
+          },
+          "nombre" : {
+            "type" : "string",
+            "maxLength" : 40,
+            "minLength" : 0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "abreviatura", "admiteDecimales", "nombre", "version" ]
+      },
+      "SolicitudVistaPrevia" : {
+        "type" : "object",
+        "properties" : {
+          "par" : {
+            "type" : "string",
+            "enum" : [ "USD_COP", "USD_VES" ]
+          },
+          "tasaId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "valor" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          }
+        },
+        "required" : [ "par", "valor" ]
+      },
+      "TasaVigenteVista" : {
+        "type" : "object",
+        "properties" : {
+          "aviso" : {
+            "type" : "string"
+          },
+          "esDeHoy" : {
+            "type" : "boolean"
+          },
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "fuente" : {
+            "type" : "string",
+            "enum" : [ "SUPERFINANCIERA", "MANUAL" ]
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "par" : {
+            "type" : "string",
+            "enum" : [ "USD_COP", "USD_VES" ]
+          },
+          "registradaEn" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "registradaPor" : {
+            "type" : "string"
+          },
+          "valor" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          }
+        }
+      },
+      "TasaVista" : {
+        "type" : "object",
+        "properties" : {
+          "correcciones" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CorreccionVista"
+            }
+          },
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "fuente" : {
+            "type" : "string",
+            "enum" : [ "SUPERFINANCIERA", "MANUAL" ]
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "par" : {
+            "type" : "string",
+            "enum" : [ "USD_COP", "USD_VES" ]
+          },
+          "registradaEn" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "registradaPor" : {
+            "type" : "string"
+          },
+          "valor" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          }
+        }
+      },
+      "TasasVigentesVista" : {
+        "type" : "object",
+        "properties" : {
+          "bolivar" : {
+            "$ref" : "#/components/schemas/TasaVigenteVista"
+          },
+          "hoy" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "trm" : {
+            "$ref" : "#/components/schemas/TasaVigenteVista"
+          },
+          "trmAutomaticaFallo" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "UnidadMedidaVista" : {
+        "type" : "object",
+        "properties" : {
+          "abreviatura" : {
+            "type" : "string"
+          },
+          "admiteDecimales" : {
+            "type" : "boolean"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "nombre" : {
+            "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "UsuarioActual" : {
+        "type" : "object",
+        "properties" : {
+          "correo" : {
+            "type" : "string"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "nombre" : {
+            "type" : "string"
+          }
+        }
+      },
+      "UsuarioVista" : {
+        "type" : "object",
+        "properties" : {
+          "activo" : {
+            "type" : "boolean"
+          },
+          "correo" : {
+            "type" : "string"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "nombre" : {
+            "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "VariacionVista" : {
+        "type" : "object",
+        "properties" : {
+          "anterior" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "limite" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "nueva" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "porcentaje" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "superaLimite" : {
+            "type" : "boolean"
+          }
+        }
+      }
+    },
+    "securitySchemes" : {
+      "bearerAuth" : {
+        "description" : "Token recibido en POST /api/v1/sesion.",
+        "scheme" : "bearer",
+        "type" : "http"
+      }
+    }
+  }
+}

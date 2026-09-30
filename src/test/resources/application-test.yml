@@ -17,3 +17,7 @@ italarm:
     programada: false
     al-arrancar: false
     url: http://localhost:1/sin-conexion
+
+springdoc:
+  # El controlador de pruebas de errores no forma parte del contrato.
+  paths-to-exclude: /api/v1/_pruebas/**

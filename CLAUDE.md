@@ -35,8 +35,12 @@ shared/          dinero, moneda, fechas, errores, auditoría, seguridad, OpenAPI
   api/             ManejadorGlobalErrores, FabricaProblemas, FiltroCorrelacion, ConfiguracionJson
   seguridad/       ConfiguracionSeguridad, FiltroToken, ValidadorToken, UsuarioAutenticado
   infraestructura/ reloj, auditoría JPA, OpenAPI, PropiedadesItalarm
-usuarios/        sesión (token), usuarios, cambio de contraseña
-configuracion/   datos de la empresa y valores por defecto (edición en Fase 1)
+usuarios/        sesión (token), cambio de contraseña, gestión de usuarios
+configuracion/   datos de la empresa, logo y valores por defecto
+documentos/      almacenamiento de archivos (S3 o disco), validación de imágenes, enlaces firmados
+catalogo/        categorías, unidades de medida y productos
+terceros/        clientes y proveedores
+tasas/           TRM automática, tasa del bolívar manual, correcciones e historial
 ```
 
 Capas dentro de cada módulo:
@@ -86,6 +90,13 @@ Los módulos que falten se crean en la fase que los necesita.
   - Integración: heredan de `soporte.PruebaIntegracion` (aplicación completa + PostgreSQL real). Esa clase restablece usuarios y sesiones antes de cada prueba.
   - Los casos de aceptación se nombran `cpNN_...` (BP-26).
   - Cobertura mínima de 80 % por paquete en `dominio` y `aplicacion` (JaCoCo). Nunca desactivar pruebas (AG-08).
+- **Vistas**: los servicios de aplicación devuelven records `*Vista` (datos listos para el frontend, con enlaces firmados). Los controladores las exponen tal cual; las entidades nunca salen de la capa de aplicación.
+- **Solicitudes**: records `Solicitud*` en `api` con Bean Validation; el `PUT` valida además el grupo `Edicion` (exige `version`).
+- **Listados**: `Pagina<T>` con `@ParameterObject Pageable` y `@PageableDefault`. Filtros con `Specification` en `infraestructura`; los `%` y `_` que escribe el usuario se escapan.
+- **Restricciones de la base de datos**: cada módulo declara las suyas en un `RestriccionesModulo` (índice o constraint → código de negocio); el manejador global las traduce.
+- **Integraciones externas** (BP-14): interfaz en `aplicacion` (`AlmacenamientoArchivos`, `FuenteTrm`) e implementación en `infraestructura`. En las pruebas se usan `FuenteTrmSimulada`, el almacenamiento en disco y `RelojPrueba` (en `soporte/`).
+- **Contrato OpenAPI**: `contrato/openapi.json` está versionado y `ApiComunIntegracionTest` falla si no corresponde al código. Tras cambiar un endpoint: `./mvnw test -Dtest=ApiComunIntegracionTest -Dcontrato.actualizar=true`. Los `BigDecimal` se declaran como texto decimal.
+- **Limpieza en pruebas**: `soporte/LimpiezaDatos` deja la base como la dejan las migraciones antes de cada prueba de integración; al agregar tablas, agrégalas ahí.
 - **Secretos**: nunca en el repositorio ni en `application*.yml`, y tampoco las contraseñas de usuarios (AG-09). Todo va por variables de entorno. El `.env` local está en `.gitignore`.
 
 ## Decisiones técnicas
@@ -101,4 +112,13 @@ Los módulos que falten se crean en la fase que los necesita.
 | Checkstyle (no SpotBugs) con reglas propias en `config/checkstyle/checkstyle.xml`; el formato lo aplica Spotless (Google Java Format). | BP-22. |
 | ArchUnit para las reglas de arquitectura de la sección 10. | Verificación automática en cada compilación. |
 | `ultimo_uso` de la sesión se actualiza como máximo cada 5 minutos. | Evitar una escritura en cada petición. |
-| El contrato OpenAPI se exporta a `target/openapi.json` en las pruebas y la CI lo publica como artefacto. | RT-08: italarm-web genera su cliente desde ese archivo. |
+| El contrato OpenAPI está versionado en `contrato/openapi.json`, verificado por prueba, y la CI publica además `target/openapi.json`. | RT-08: italarm-web genera su cliente desde ese archivo (ver `docs/guia-frontend.md`). |
+| Almacenamiento `disco` en local (enlaces firmados HMAC servidos por `GET /api/v1/archivos`) y `s3` en el hosting (AWS SDK v2, checksums `WHEN_REQUIRED` por compatibilidad con R2). | Probar sin Docker ni cuenta S3; P-04 sin definir. |
+| Imágenes validadas por los primeros bytes (JPEG, PNG, WebP), máximo 5 MB; claves de archivo generadas por el sistema. | BP-20, P-16. |
+| Cantidades: Metro hasta 2 decimales, Unidad y Par enteros (`ReglaCantidad`). | P-09. |
+| Teléfonos con indicativo internacional, +57 si no se escribe (`Telefono`). Documento de cliente único por tipo y número. | P-10, P-12. |
+| Clientes y proveedores no se eliminan. | P-11. |
+| TRM desde datos.gov.co (conjunto `32sa-8pi3`), tarea a las 6:00 con reintentos cada 30 min hasta las 12:00 y al arrancar. La oficial reemplaza a la manual del día y queda como corrección automática. | RF-28, P-13, P-18. |
+| Cualquier tasa se puede corregir, con doble digitación y alerta de variación. | P-14. |
+| Gestión mínima de usuarios: crear, desactivar/activar (cierra sesiones), restablecer contraseña de otro. | P-15. |
+| `MovimientosProducto` responde siempre "sin movimientos" en la Fase 1; en la Fase 2 lo implementa el inventario. | P-17 aplica desde la Fase 2. |

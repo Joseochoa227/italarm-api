@@ -173,20 +173,36 @@ class ApiComunIntegracionTest extends PruebaIntegracion {
     mvc.perform(get("/swagger-ui/index.html")).andExpect(status().isOk());
   }
 
-  /** Deja el contrato en target/openapi.json para que la CI lo publique a italarm-web (RT-08). */
+  /**
+   * El contrato versionado en {@code contrato/openapi.json} debe coincidir con el código (RT-08).
+   * Si cambia un endpoint, se actualiza con {@code ./mvnw test -Dtest=ApiComunIntegracionTest
+   * -Dcontrato.actualizar=true} y el archivo se sube junto con el cambio. También queda una copia
+   * en target/openapi.json para la CI.
+   */
   @Test
-  void exportaElContratoOpenApi() throws Exception {
-    String contrato =
+  void elContratoVersionadoCorrespondeAlCodigo() throws Exception {
+    String generado =
         mvc.perform(get("/v3/api-docs"))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse()
             .getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
-    java.nio.file.Path destino = java.nio.file.Path.of("target", "openapi.json");
-    java.nio.file.Files.createDirectories(destino.getParent());
-    java.nio.file.Files.writeString(
-        destino, json.writerWithDefaultPrettyPrinter().writeValueAsString(json.readTree(contrato)));
+    String bonito =
+        json.writerWithDefaultPrettyPrinter().writeValueAsString(json.readTree(generado)) + "\n";
+    java.nio.file.Path copia = java.nio.file.Path.of("target", "openapi.json");
+    java.nio.file.Files.createDirectories(copia.getParent());
+    java.nio.file.Files.writeString(copia, bonito);
 
-    org.assertj.core.api.Assertions.assertThat(destino).exists();
+    java.nio.file.Path contrato = java.nio.file.Path.of("contrato", "openapi.json");
+    if (Boolean.getBoolean("contrato.actualizar") || !java.nio.file.Files.exists(contrato)) {
+      java.nio.file.Files.createDirectories(contrato.getParent());
+      java.nio.file.Files.writeString(contrato, bonito);
+    }
+    org.assertj.core.api.Assertions.assertThat(
+            json.readTree(java.nio.file.Files.readString(contrato)))
+        .withFailMessage(
+            "contrato/openapi.json no corresponde al código. Actualízalo con: ./mvnw test"
+                + " -Dtest=ApiComunIntegracionTest -Dcontrato.actualizar=true")
+        .isEqualTo(json.readTree(generado));
   }
 }

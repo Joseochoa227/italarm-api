@@ -2,6 +2,30 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado semántico.
 
+## [Sin publicar] — Fase 1: Catálogo, terceros, tasas y configuración
+
+### Agregado
+- Catálogo (migración V4):
+  - categorías y unidades de medida con sus valores iniciales;
+  - productos con código único, precios en USD u otra moneda, stock mínimo según la unidad, foto, activar/desactivar y búsqueda paginada.
+- Clientes y proveedores (migración V5):
+  - teléfono con indicativo internacional;
+  - documento único;
+  - precio aplicado según el tipo de cliente.
+- Tasas de cambio (migración V6):
+  - TRM automática diaria desde datos.gov.co, con reintentos e idempotencia;
+  - tasa del bolívar manual con doble digitación y alerta de variación;
+  - TRM manual si falla la automática;
+  - correcciones con historial, tasas vigentes con avisos e historial por fechas;
+  - casos CP-10, CP-11 y CP-12.
+- Configuración: edición de los datos de la empresa, el logo y los valores por defecto.
+- Gestión de usuarios: crear, desactivar/activar y restablecer contraseña.
+- Almacenamiento de archivos:
+  - S3 (Cloudflare R2, AWS S3, DigitalOcean Spaces) o disco local, con enlaces firmados de 15 minutos;
+  - validación de imágenes por contenido.
+- Listados paginados, control de versión en las ediciones y traducción de restricciones de la base de datos a códigos de negocio.
+- Contrato `contrato/openapi.json` versionado y `docs/guia-frontend.md` para italarm-web.
+
 ## [Sin publicar] — Fase 0: Fundaciones
 
 ### Agregado
