@@ -1,7 +1,7 @@
 # Plan de la Fase 0 — Fundaciones (italarm-api)
 
 > Estado: **pendiente de aprobación de ITALARM** (AG-02). No se implementa nada hasta que el plan se apruebe.
-> Base: `docs/Requerimientos_Sistema_Inventario_v0.7.md`, secciones 9, 10, 12.1, 12.2 y 13, más las respuestas de ITALARM en `docs/preguntas.md` (P-01 a P-07).
+> Base: `docs/requerimientos.md`, secciones 9, 10, 12.1, 12.2 y 13, más las respuestas de ITALARM en `docs/preguntas.md` (P-01 a P-07).
 > Alcance de este plan: el repositorio **italarm-api** (backend). La parte de frontend de la Fase 0 se planea en `italarm-web/docs/plan-fase-0.md`; aquí solo figura lo que el backend debe entregarle.
 
 ## 1. Objetivo y entregable
@@ -31,7 +31,7 @@ Riesgos que ITALARM acepta con estas decisiones (se dejan por escrito):
 El orden sigue AG-03: migración → dominio con pruebas → casos de uso → endpoints → OpenAPI. Cada bloque es una rama y un Pull Request con Conventional Commits (AG-06).
 
 ### T0. Orden del repositorio — `docs:`
-- [ ] Renombrar `docs/Requerimientos_Sistema_Inventario_v0.7.md` a `docs/requerimientos.md`, como pide la nota del propio documento (sección 9.3).
+- [ ] Renombrar `docs/requerimientos.md` a `docs/requerimientos.md`, como pide la nota del propio documento (sección 9.3).
 - [ ] Eliminar `docs/test.txt` (archivo vacío).
 - [ ] `.gitignore` (Maven, IDE, `.env`), `.editorconfig` y `.env.example`.
 
