@@ -12,6 +12,13 @@ public interface SesionRepositorio extends JpaRepository<Sesion, Long> {
 
   Optional<Sesion> findByTokenHashAndRevocadaEnIsNull(String tokenHash);
 
+  /** Cierra todas las sesiones activas del usuario. */
+  @Modifying
+  @Query(
+      "update Sesion s set s.revocadaEn = :ahora"
+          + " where s.usuarioId = :usuarioId and s.revocadaEn is null")
+  int revocarTodas(@Param("usuarioId") Long usuarioId, @Param("ahora") Instant ahora);
+
   /** Cierra todas las sesiones activas del usuario, salvo la indicada. */
   @Modifying
   @Query(

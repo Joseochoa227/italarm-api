@@ -10,4 +10,8 @@ public interface UsuarioRepositorio extends JpaRepository<Usuario, Long> {
   Optional<Usuario> findByCorreo(String correo);
 
   List<Usuario> findByContrasenaHashIsNullOrderById();
+
+  List<Usuario> findAllByOrderByNombreAsc();
+
+  boolean existsByCorreo(String correo);
 }

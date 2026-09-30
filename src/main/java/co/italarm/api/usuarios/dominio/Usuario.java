@@ -1,6 +1,7 @@
 package co.italarm.api.usuarios.dominio;
 
 import co.italarm.api.shared.dominio.EntidadMaestra;
+import co.italarm.api.shared.dominio.Textos;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -31,6 +32,24 @@ public class Usuario extends EntidadMaestra {
   private boolean activo;
 
   protected Usuario() {}
+
+  /** Usuario nuevo, activo, con su contraseña ya cifrada (RU-04). */
+  public static Usuario crear(String nombre, String correo, String contrasenaHash) {
+    Usuario usuario = new Usuario();
+    usuario.nombre = Textos.limpiar(nombre);
+    usuario.correo = normalizarCorreo(correo);
+    usuario.contrasenaHash = contrasenaHash;
+    usuario.activo = true;
+    return usuario;
+  }
+
+  public void desactivar() {
+    this.activo = false;
+  }
+
+  public void activar() {
+    this.activo = true;
+  }
 
   public static String normalizarCorreo(String correo) {
     return correo.trim().toLowerCase(Locale.ROOT);

@@ -21,6 +21,9 @@ final class LimpiezaDatos {
     jdbc.update("delete from tasa_cambio");
     jdbc.update("delete from ejecucion_tarea_trm");
     jdbc.update("delete from producto");
+    jdbc.update("delete from sesion");
+    jdbc.update("update usuario set updated_by = null, created_by = null where id <= 2");
+    jdbc.update("delete from usuario where id > 2");
     jdbc.update("delete from cliente");
     jdbc.update("delete from proveedor");
     jdbc.update("delete from categoria where id > 8");

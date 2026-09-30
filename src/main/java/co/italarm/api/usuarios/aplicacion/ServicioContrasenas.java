@@ -3,7 +3,6 @@ package co.italarm.api.usuarios.aplicacion;
 import co.italarm.api.shared.seguridad.UsuarioAutenticado;
 import co.italarm.api.usuarios.dominio.ContrasenaActualIncorrectaException;
 import co.italarm.api.usuarios.dominio.ContrasenaDebilException;
-import co.italarm.api.usuarios.dominio.ContrasenaNoCoincideException;
 import co.italarm.api.usuarios.dominio.PoliticaContrasena;
 import co.italarm.api.usuarios.dominio.Usuario;
 import co.italarm.api.usuarios.infraestructura.SesionRepositorio;
@@ -41,14 +40,7 @@ public class ServicioContrasenas {
   @Transactional
   public void cambiar(
       UsuarioAutenticado actual, String contrasenaActual, String nueva, String confirmacion) {
-    if (!nueva.equals(confirmacion)) {
-      throw new ContrasenaNoCoincideException();
-    }
-    List<String> faltantes = PoliticaContrasena.incumplimientos(nueva);
-    if (!faltantes.isEmpty()) {
-      throw new ContrasenaDebilException(
-          PoliticaContrasena.DESCRIPCION + " Falta: " + String.join(", ", faltantes) + ".");
-    }
+    PoliticaContrasena.exigir(nueva, confirmacion);
     Usuario usuario =
         usuarios
             .findById(actual.usuarioId())

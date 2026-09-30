@@ -20,6 +20,23 @@ public final class PoliticaContrasena {
 
   private PoliticaContrasena() {}
 
+  /**
+   * Exige que la nueva contraseña y su confirmación coincidan y que cumpla la política.
+   *
+   * @throws ContrasenaNoCoincideException si la confirmación es distinta
+   * @throws ContrasenaDebilException si no cumple algún requisito
+   */
+  public static void exigir(String nueva, String confirmacion) {
+    if (nueva == null || !nueva.equals(confirmacion)) {
+      throw new ContrasenaNoCoincideException();
+    }
+    List<String> faltantes = incumplimientos(nueva);
+    if (!faltantes.isEmpty()) {
+      throw new ContrasenaDebilException(
+          DESCRIPCION + " Falta: " + String.join(", ", faltantes) + ".");
+    }
+  }
+
   public static boolean cumple(String contrasena) {
     return incumplimientos(contrasena).isEmpty();
   }

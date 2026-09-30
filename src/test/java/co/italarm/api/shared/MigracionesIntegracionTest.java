@@ -17,7 +17,7 @@ class MigracionesIntegracionTest extends PruebaIntegracion {
             "select version from flyway_schema_history where success order by installed_rank",
             String.class);
 
-    assertThat(versiones).containsExactly("1", "2", "3");
+    assertThat(versiones).containsExactly("1", "2", "3", "4", "5", "6");
   }
 
   @Test
