@@ -1,6 +1,6 @@
 # Plan de la Fase 0 — Fundaciones (italarm-api)
 
-> Estado: **pendiente de aprobación de ITALARM** (AG-02). No se implementa nada hasta que el plan se apruebe.
+> Estado: **aprobado por ITALARM el 30/09/2026**. En implementación; solo el despliegue a pruebas (T9) espera la elección de proveedor de hosting (P-04).
 > Base: `docs/requerimientos.md`, secciones 9, 10, 12.1, 12.2 y 13, más las respuestas de ITALARM en `docs/preguntas.md` (P-01 a P-07).
 > Alcance de este plan: el repositorio **italarm-api** (backend). La parte de frontend de la Fase 0 se planea en `italarm-web/docs/plan-fase-0.md`; aquí solo figura lo que el backend debe entregarle.
 
@@ -31,22 +31,22 @@ Riesgos que ITALARM acepta con estas decisiones (se dejan por escrito):
 El orden sigue AG-03: migración → dominio con pruebas → casos de uso → endpoints → OpenAPI. Cada bloque es una rama y un Pull Request con Conventional Commits (AG-06).
 
 ### T0. Orden del repositorio — `docs:`
-- [ ] Renombrar `docs/requerimientos.md` a `docs/requerimientos.md`, como pide la nota del propio documento (sección 9.3).
-- [ ] Eliminar `docs/test.txt` (archivo vacío).
-- [ ] `.gitignore` (Maven, IDE, `.env`), `.editorconfig` y `.env.example`.
+- [x] Renombrar `docs/requerimientos.md` a `docs/requerimientos.md`, como pide la nota del propio documento (sección 9.3).
+- [x] Eliminar `docs/test.txt` (archivo vacío).
+- [x] `.gitignore` (Maven, IDE, `.env`), `.editorconfig` y `.env.example`.
 
 ### T1. Proyecto base — `feat:`
-- [ ] Proyecto Spring Boot 3.5.x / Java 21 con Maven Wrapper (`./mvnw`), `groupId co.italarm`, paquete raíz `co.italarm.api`.
-- [ ] Dependencias: web, validation, data-jpa, security, actuator, flyway (+ `flyway-database-postgresql`), postgresql y springdoc-openapi-starter-webmvc-ui. Pruebas: spring-boot-starter-test (JUnit 5, AssertJ, Mockito), spring-security-test, testcontainers (postgresql, junit-jupiter) y ArchUnit.
-- [ ] Estructura de módulos de la sección 10.1. En esta fase solo tienen código `shared/`, `usuarios/` y `configuracion/`; los demás módulos se crean en la fase que los necesita.
-- [ ] Perfiles `local`, `test`, `staging`, `prod` (BP-17). Los secretos de conexión salen de variables de entorno.
-- [ ] `spring.jpa.hibernate.ddl-auto=validate`, `open-in-view=false`, zona JDBC en UTC (BP-13, BP-18).
+- [x] Proyecto Spring Boot 3.5.x / Java 21 con Maven Wrapper (`./mvnw`), `groupId co.italarm`, paquete raíz `co.italarm.api`.
+- [x] Dependencias: web, validation, data-jpa, security, actuator, flyway (+ `flyway-database-postgresql`), postgresql y springdoc-openapi-starter-webmvc-ui. Pruebas: spring-boot-starter-test (JUnit 5, AssertJ, Mockito), spring-security-test, testcontainers (postgresql, junit-jupiter) y ArchUnit.
+- [x] Estructura de módulos de la sección 10.1. En esta fase solo tienen código `shared/`, `usuarios/` y `configuracion/`; los demás módulos se crean en la fase que los necesita.
+- [x] Perfiles `local`, `test`, `staging`, `prod` (BP-17). Los secretos de conexión salen de variables de entorno.
+- [x] `spring.jpa.hibernate.ddl-auto=validate`, `open-in-view=false`, zona JDBC en UTC (BP-13, BP-18).
 
 ### T2. Herramientas de calidad — `build:`
-- [ ] Spotless con Google Java Format; `spotless:check` en `verify` (BP-22).
-- [ ] Checkstyle (se elige Checkstyle en lugar de SpotBugs; se deja constancia en CLAUDE.md) con reglas basadas en Google, adaptadas al formato de Spotless.
-- [ ] JaCoCo con regla de cobertura mínima de 80 % sobre los paquetes `..dominio..` y `..aplicacion..`; el build falla si no se cumple (BP-28).
-- [ ] Pruebas ArchUnit que hacen cumplir la sección 10 (BP-01, BP-03, BP-05, BP-08):
+- [x] Spotless con Google Java Format; `spotless:check` en `verify` (BP-22).
+- [x] Checkstyle (se elige Checkstyle en lugar de SpotBugs; se deja constancia en CLAUDE.md) con reglas basadas en Google, adaptadas al formato de Spotless.
+- [x] JaCoCo con regla de cobertura mínima de 80 % sobre los paquetes `..dominio..` y `..aplicacion..`; el build falla si no se cumple (BP-28).
+- [x] Pruebas ArchUnit que hacen cumplir la sección 10 (BP-01, BP-03, BP-05, BP-08):
   - los controladores no acceden a repositorios;
   - `dominio` no depende de Spring;
   - `@Transactional` solo en `aplicacion`;
@@ -54,40 +54,40 @@ El orden sigue AG-03: migración → dominio con pruebas → casos de uso → en
   - los módulos solo se usan entre sí a través de `api`/`aplicacion`.
 
 ### T3. Base de datos local y migraciones — `feat:`
-- [ ] `docker-compose.yml` con PostgreSQL 16 (volumen persistente, puerto 5432, credenciales de desarrollo tomadas de `.env`).
-- [ ] Migraciones Flyway (detalle en la sección 5).
+- [x] `docker-compose.yml` con PostgreSQL 16 (volumen persistente, puerto 5432, credenciales de desarrollo tomadas de `.env`).
+- [x] Migraciones Flyway (detalle en la sección 5).
 
 ### T4. Módulo `shared` — dominio puro con pruebas primero (AG-04) — `feat:`
-- [ ] `Moneda` (enum USD, COP, VES) con su símbolo y los decimales para mostrar (COP 0, USD 2, VES 2).
-- [ ] Objeto de valor `Dinero` (record: `BigDecimal monto` + `Moneda`): suma, resta, multiplicación por cantidad, porcentaje y comparación. Opera solo entre la misma moneda (en otro caso, excepción). Sin `double`/`float` (BP-06).
-- [ ] `Redondeo`: un único lugar con `HALF_UP` y las escalas: 6 decimales para calcular costos y tasas, 4 para guardar, y las de visualización por moneda (BP-06).
-- [ ] `FormatoDinero` (es-CO) para los PDF y Excel futuros: `$ 1.250.000` · `US$ 1.939,04` · `Bs 1.234,56` (RNF-04).
-- [ ] Fechas: zona `America/Bogota` definida en una sola constante, bean `Clock` inyectable y `FechaNegocio` para obtener el `LocalDate` de hoy en Colombia (BP-13).
-- [ ] Serialización JSON: `BigDecimal` como texto (`"19.5000"`), nunca como número (RT-06). El dinero viaja como `{ "monto": "19.5000", "moneda": "USD" }`.
+- [x] `Moneda` (enum USD, COP, VES) con su símbolo y los decimales para mostrar (COP 0, USD 2, VES 2).
+- [x] Objeto de valor `Dinero` (record: `BigDecimal monto` + `Moneda`): suma, resta, multiplicación por cantidad, porcentaje y comparación. Opera solo entre la misma moneda (en otro caso, excepción). Sin `double`/`float` (BP-06).
+- [x] `Redondeo`: un único lugar con `HALF_UP` y las escalas: 6 decimales para calcular costos y tasas, 4 para guardar, y las de visualización por moneda (BP-06).
+- [x] `FormatoDinero` (es-CO) para los PDF y Excel futuros: `$ 1.250.000` · `US$ 1.939,04` · `Bs 1.234,56` (RNF-04).
+- [x] Fechas: zona `America/Bogota` definida en una sola constante, bean `Clock` inyectable y `FechaNegocio` para obtener el `LocalDate` de hoy en Colombia (BP-13).
+- [x] Serialización JSON: `BigDecimal` como texto (`"19.5000"`), nunca como número (RT-06). El dinero viaja como `{ "monto": "19.5000", "moneda": "USD" }`.
 
 ### T5. Errores, auditoría y logs — `feat:`
-- [ ] Excepción base `NegocioException` (código de negocio estable, estado HTTP, mensaje en español), con subclases por caso.
-- [ ] `@RestControllerAdvice` global que responde Problem Details (RFC 9457) con las propiedades `codigo`, `correlationId` y, en las validaciones, `errores: [{campo, mensaje}]` (BP-16, RT-05). También cubre 401/403 de Spring Security, 404, 405, JSON mal formado y error interno (sin filtrar detalles técnicos).
-- [ ] Códigos de negocio de esta fase: `VALIDACION`, `NO_AUTENTICADO`, `ACCESO_DENEGADO`, `CREDENCIALES_INVALIDAS`, `CONTRASENA_ACTUAL_INCORRECTA`, `CONTRASENA_NO_COINCIDE`, `CONTRASENA_DEBIL`, `RECURSO_NO_ENCONTRADO` y `ERROR_INTERNO`.
-- [ ] Auditoría: `@MappedSuperclass` `EntidadAuditable` con `created_at`, `created_by`, `updated_at`, `updated_by` y `@Version` (datos maestros), más un `AuditorAware` que toma el usuario del token (BP-12). Sin Lombok en entidades.
-- [ ] Filtro de correlación: lee `X-Correlation-Id` o genera un UUID, lo pone en el MDC y en la respuesta. El patrón de log incluye el id. Nunca se registran contraseñas ni tokens, y la cabecera `Authorization` se enmascara (BP-21).
+- [x] Excepción base `NegocioException` (código de negocio estable, estado HTTP, mensaje en español), con subclases por caso.
+- [x] `@RestControllerAdvice` global que responde Problem Details (RFC 9457) con las propiedades `codigo`, `correlationId` y, en las validaciones, `errores: [{campo, mensaje}]` (BP-16, RT-05). También cubre 401/403 de Spring Security, 404, 405, JSON mal formado y error interno (sin filtrar detalles técnicos).
+- [x] Códigos de negocio de esta fase: `VALIDACION`, `NO_AUTENTICADO`, `ACCESO_DENEGADO`, `CREDENCIALES_INVALIDAS`, `CONTRASENA_ACTUAL_INCORRECTA`, `CONTRASENA_NO_COINCIDE`, `CONTRASENA_DEBIL`, `RECURSO_NO_ENCONTRADO` y `ERROR_INTERNO`.
+- [x] Auditoría: `@MappedSuperclass` `EntidadAuditable` con `created_at`, `created_by`, `updated_at`, `updated_by` y `@Version` (datos maestros), más un `AuditorAware` que toma el usuario del token (BP-12). Sin Lombok en entidades.
+- [x] Filtro de correlación: lee `X-Correlation-Id` o genera un UUID, lo pone en el MDC y en la respuesta. El patrón de log incluye el id. Nunca se registran contraseñas ni tokens, y la cabecera `Authorization` se enmascara (BP-21).
 
 ### T6. Seguridad y usuarios — `feat:`
-- [ ] Entidad `Usuario` (nombre, correo único en minúsculas, contraseña cifrada, activo) y su repositorio.
-- [ ] Contraseñas con BCrypt (BP-20, RNF-02).
-- [ ] **Sesión por token opaco** (decisión P-04/P-05):
+- [x] Entidad `Usuario` (nombre, correo único en minúsculas, contraseña cifrada, activo) y su repositorio.
+- [x] Contraseñas con BCrypt (BP-20, RNF-02).
+- [x] **Sesión por token opaco** (decisión P-04/P-05):
   - Al ingresar se genera un token aleatorio de 256 bits (`SecureRandom`, Base64URL).
   - Se devuelve una sola vez en la respuesta del ingreso; el frontend lo guarda en `localStorage`.
   - En la base de datos solo se guarda su hash SHA-256, así que una copia filtrada de la base no permite suplantar a nadie.
   - Se valida en cada petición con un filtro de Spring Security que lee `Authorization: Bearer <token>`.
   - Spring Security en modo sin estado (`STATELESS`), sin `HttpSession`.
   - Se eligió un token opaco en lugar de JWT porque, al no tener vencimiento (P-03), la única forma segura de invalidarlo es poder revocarlo en la base de datos.
-- [ ] Sin CSRF: no aplica, porque la API no usa cookies.
-- [ ] CORS limitado al origen del frontend (variable `ITALARM_CORS_ORIGENES`), sin credenciales, permitiendo la cabecera `Authorization`.
-- [ ] Cabeceras de seguridad: HSTS (fuera de `local`), `X-Content-Type-Options`, `X-Frame-Options: DENY`, `Referrer-Policy` y CSP restrictiva para la API.
-- [ ] Sin token válido, la API responde 401 en Problem Details, nunca con una redirección ni una página HTML.
-- [ ] Sin límite de intentos ni vencimiento de sesión (P-02, P-03).
-- [ ] Usuarios iniciales (P-01):
+- [x] Sin CSRF: no aplica, porque la API no usa cookies.
+- [x] CORS limitado al origen del frontend (variable `ITALARM_CORS_ORIGENES`), sin credenciales, permitiendo la cabecera `Authorization`.
+- [x] Cabeceras de seguridad: HSTS (fuera de `local`), `X-Content-Type-Options`, `X-Frame-Options: DENY`, `Referrer-Policy` y CSP restrictiva para la API.
+- [x] Sin token válido, la API responde 401 en Problem Details, nunca con una redirección ni una página HTML.
+- [x] Sin límite de intentos ni vencimiento de sesión (P-02, P-03).
+- [x] Usuarios iniciales (P-01):
 
   | Nombre | Correo |
   |---|---|
@@ -98,31 +98,31 @@ El orden sigue AG-03: migración → dominio con pruebas → casos de uso → en
   - Al arrancar, un inicializador asigna la contraseña inicial a los usuarios que no tienen ninguna, tomándola de la variable `ITALARM_CLAVE_INICIAL`. El valor acordado con ITALARM se configura en el `.env` local (no versionado) y en las variables del hosting; `.env.example` solo trae el nombre de la variable, sin valor.
   - Así el resultado es el que pidió ITALARM, pero la contraseña no queda en el código que se despliega (AG-09).
   - El inicializador nunca sobrescribe una contraseña ya asignada.
-- [ ] Política de contraseñas (P-07), aplicada al cambiar la contraseña:
+- [x] Política de contraseñas (P-07), aplicada al cambiar la contraseña:
   - al menos una mayúscula, una minúscula, un número y un signo;
   - mínimo 8 caracteres (P-08);
   - distinta de la actual.
 
   La contraseña inicial acordada no cumple esta política (no tiene signo): se acepta solo como contraseña inicial.
-- [ ] Casos de uso: `IniciarSesion`, `CerrarSesion` (revoca el token actual), `ConsultarUsuarioActual` y `CambiarContrasena` (verifica la actual, doble digitación y política; revoca los demás tokens del usuario y conserva el actual).
+- [x] Casos de uso: `IniciarSesion`, `CerrarSesion` (revoca el token actual), `ConsultarUsuarioActual` y `CambiarContrasena` (verifica la actual, doble digitación y política; revoca los demás tokens del usuario y conserva el actual).
 
 ### T7. Configuración — `feat:`
-- [ ] Solo la tabla y la entidad `Configuracion` (fila única) con los valores por defecto del documento. Las pantallas y los endpoints de edición son de la Fase 1 (12.3). Aquí no se expone ningún endpoint.
+- [x] Solo la tabla y la entidad `Configuracion` (fila única) con los valores por defecto del documento. Las pantallas y los endpoints de edición son de la Fase 1 (12.3). Aquí no se expone ningún endpoint.
 
 ### T8. OpenAPI y Actuator — `feat:`
-- [ ] springdoc: `/v3/api-docs` y `/swagger-ui.html`, **públicos en todos los ambientes, incluida producción (P-06)**. Incluye título, versión, esquema de seguridad `bearerAuth` (con botón "Authorize" en Swagger) y el esquema `ProblemDetail` documentado en las respuestas de error.
-- [ ] El OpenAPI generado se publica como artefacto de la CI (`openapi.json`) para que italarm-web genere su cliente (RT-08).
-- [ ] Actuator: solo `health` expuesto públicamente (con `liveness`/`readiness`); el resto deshabilitado.
+- [x] springdoc: `/v3/api-docs` y `/swagger-ui.html`, **públicos en todos los ambientes, incluida producción (P-06)**. Incluye título, versión, esquema de seguridad `bearerAuth` (con botón "Authorize" en Swagger) y el esquema `ProblemDetail` documentado en las respuestas de error.
+- [x] El OpenAPI generado se publica como artefacto de la CI (`openapi.json`) para que italarm-web genere su cliente (RT-08).
+- [x] Actuator: solo `health` expuesto públicamente (con `liveness`/`readiness`); el resto deshabilitado.
 
 ### T9. Contenedor, CI y ambiente de pruebas — `ci:`
-- [ ] `Dockerfile` multi-etapa: compila con JDK 21 y ejecuta con JRE 21, con usuario no root, `HEALTHCHECK` y opciones de memoria para ≥ 1 GB. La imagen no depende de ningún proveedor.
-- [ ] GitHub Actions `ci.yml` en cada Pull Request y en `main`: `./mvnw verify` (Spotless, Checkstyle, pruebas unitarias y de integración con Testcontainers, JaCoCo), construcción de la imagen Docker y publicación del reporte de cobertura y de `openapi.json`.
+- [x] `Dockerfile` multi-etapa: compila con JDK 21 y ejecuta con JRE 21, con usuario no root, `HEALTHCHECK` y opciones de memoria para ≥ 1 GB. La imagen no depende de ningún proveedor.
+- [x] GitHub Actions `ci.yml` en cada Pull Request y en `main`: `./mvnw verify` (Spotless, Checkstyle, pruebas unitarias y de integración con Testcontainers, JaCoCo), construcción de la imagen Docker y publicación del reporte de cobertura y de `openapi.json`.
 - [ ] **En espera de P-04:** `deploy-staging.yml` y la creación del ambiente de pruebas (PostgreSQL propio y variables de entorno). Se hará cuando ITALARM elija proveedor; no bloquea el resto de la fase.
 
 ### T10. Documentación — `docs:`
-- [ ] `README.md`: requisitos, cómo levantar PostgreSQL con Docker Compose, cómo ejecutar, probar y abrir Swagger, y variables de entorno.
-- [ ] `CLAUDE.md`: comandos (`./mvnw verify`, `./mvnw spotless:apply`, `docker compose up -d`, `./mvnw spring-boot:run -Dspring-boot.run.profiles=local`), convenciones (módulos, capas, dinero, fechas, errores, migraciones) y decisiones técnicas, incluidas las de la sección 2 (AG-07).
-- [ ] `CHANGELOG.md` con la entrada de la Fase 0 (AG-11).
+- [x] `README.md`: requisitos, cómo levantar PostgreSQL con Docker Compose, cómo ejecutar, probar y abrir Swagger, y variables de entorno.
+- [x] `CLAUDE.md`: comandos (`./mvnw verify`, `./mvnw spotless:apply`, `docker compose up -d`, `./mvnw spring-boot:run -Dspring-boot.run.profiles=local`), convenciones (módulos, capas, dinero, fechas, errores, migraciones) y decisiones técnicas, incluidas las de la sección 2 (AG-07).
+- [x] `CHANGELOG.md` con la entrada de la Fase 0 (AG-11).
 
 ## 4. Endpoints de la Fase 0
 
@@ -206,7 +206,7 @@ Ninguna prueba se desactiva para pasar la CI (AG-08, BP-29).
 ## 8. Definición de terminado (12.1) aplicada a la Fase 0
 
 - [ ] Pull Requests revisados con la CI en verde (compilación, Spotless, Checkstyle, pruebas, JaCoCo ≥ 80 %).
-- [ ] Pruebas de la sección 6 escritas y pasando.
+- [x] Pruebas de la sección 6 escritas y pasando.
 - [ ] Migraciones V1–V3 aplicadas en pruebas sin errores. *(Requiere P-04.)*
 - [ ] OpenAPI publicado y cliente de italarm-web regenerado.
 - [ ] Desplegado en pruebas y probado el ingreso desde celular y computador, junto con italarm-web. *(Requiere P-04.)*
