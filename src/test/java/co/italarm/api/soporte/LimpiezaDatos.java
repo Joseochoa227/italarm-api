@@ -9,6 +9,8 @@ final class LimpiezaDatos {
 
   static void restablecer(JdbcTemplate jdbc) {
     jdbc.update("delete from producto");
+    jdbc.update("delete from cliente");
+    jdbc.update("delete from proveedor");
     jdbc.update("delete from categoria where id > 8");
     jdbc.update("delete from unidad_medida where id > 3");
     jdbc.update(
