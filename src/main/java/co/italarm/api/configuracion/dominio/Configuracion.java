@@ -1,11 +1,14 @@
 package co.italarm.api.configuracion.dominio;
 
 import co.italarm.api.shared.dominio.EntidadMaestra;
+import co.italarm.api.shared.dominio.Redondeo;
+import co.italarm.api.shared.dominio.Textos;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
+import java.util.Set;
 
 /**
  * Datos de la empresa y valores por defecto del sistema (sección 3.17). Hay una sola fila. La
@@ -17,6 +20,9 @@ public class Configuracion extends EntidadMaestra {
 
   /** Identificador de la única fila de configuración. */
   public static final int ID_UNICO = 1;
+
+  private static final Set<Integer> VALIDECES_PERMITIDAS = Set.of(8, 15, 30);
+  private static final BigDecimal CIEN = new BigDecimal("100");
 
   @Id
   @Column(name = "id")
@@ -63,6 +69,53 @@ public class Configuracion extends EntidadMaestra {
   private String piePdf;
 
   protected Configuracion() {}
+
+  /**
+   * Aplica los datos de la empresa y los valores por defecto. Validez de 8, 15 o 30 días (RF-83);
+   * garantías de 1 a 3 meses (RF-123); límite de variación mayor que 0 % y hasta 100 %.
+   */
+  public void actualizar(DatosConfiguracion datos) {
+    if (!VALIDECES_PERMITIDAS.contains(datos.validezCotizacionDias())) {
+      throw new ConfiguracionInvalidaException(
+          "La validez de las cotizaciones debe ser de 8, 15 o 30 días.");
+    }
+    if (datos.garantiaManoObraMeses() < 1 || datos.garantiaManoObraMeses() > 3) {
+      throw new ConfiguracionInvalidaException(
+          "La garantía de mano de obra debe ser de 1 a 3 meses.");
+    }
+    if (datos.garantiaEquiposMeses() < 1 || datos.garantiaEquiposMeses() > 3) {
+      throw new ConfiguracionInvalidaException("La garantía de equipos debe ser de 1 a 3 meses.");
+    }
+    BigDecimal limite = datos.limiteVariacionTasa();
+    if (limite == null || limite.signum() <= 0 || limite.compareTo(CIEN) > 0) {
+      throw new ConfiguracionInvalidaException(
+          "El límite de variación de tasas debe ser mayor que 0 % y máximo 100 %.");
+    }
+    this.empresaNombre = Textos.limpiar(datos.empresaNombre());
+    this.empresaLema = Textos.limpiar(datos.empresaLema());
+    this.empresaNit = Textos.limpiar(datos.empresaNit());
+    this.empresaCiudad = Textos.limpiar(datos.empresaCiudad());
+    this.empresaTelefono = Textos.limpiar(datos.empresaTelefono());
+    this.empresaCorreo = Textos.limpiar(datos.empresaCorreo());
+    this.limiteVariacionTasa = Redondeo.paraAlmacenar(limite);
+    this.validezCotizacionDias = datos.validezCotizacionDias();
+    this.garantiaManoObraMeses = datos.garantiaManoObraMeses();
+    this.garantiaEquiposMeses = datos.garantiaEquiposMeses();
+    this.condicionesGarantia = datos.condicionesGarantia().trim();
+    this.piePdf = datos.piePdf().trim();
+  }
+
+  /** Asigna el nuevo logo y devuelve la clave del anterior (para eliminarlo), o null. */
+  public String cambiarLogo(String nuevaClave) {
+    String anterior = empresaLogoClave;
+    this.empresaLogoClave = nuevaClave;
+    return anterior;
+  }
+
+  /** Quita el logo y devuelve su clave (para eliminarlo), o null. */
+  public String quitarLogo() {
+    return cambiarLogo(null);
+  }
 
   public Integer getId() {
     return id;

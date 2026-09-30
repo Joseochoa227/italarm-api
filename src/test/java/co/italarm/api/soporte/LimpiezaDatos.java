@@ -8,6 +8,15 @@ final class LimpiezaDatos {
   private LimpiezaDatos() {}
 
   static void restablecer(JdbcTemplate jdbc) {
+    jdbc.update(
+        "update configuracion set empresa_nombre = 'ITALARM',"
+            + " empresa_lema = 'Instalación de cámaras de seguridad', empresa_nit = null,"
+            + " empresa_ciudad = null, empresa_telefono = null, empresa_correo = null,"
+            + " empresa_logo_clave = null, limite_variacion_tasa = 5, validez_cotizacion_dias = 15,"
+            + " garantia_mano_obra_meses = 3, garantia_equipos_meses = 3, version = 0,"
+            + " condiciones_garantia = 'No cubre daños por descargas eléctricas, humedad o"
+            + " manipulación de terceros.', pie_pdf = 'Pago de contado. Garantía de 3 meses en"
+            + " equipos y mano de obra. Documento no válido como factura.'");
     jdbc.update("delete from producto");
     jdbc.update("delete from cliente");
     jdbc.update("delete from proveedor");
