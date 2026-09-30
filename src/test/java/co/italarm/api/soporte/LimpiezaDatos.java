@@ -17,6 +17,9 @@ final class LimpiezaDatos {
             + " condiciones_garantia = 'No cubre daños por descargas eléctricas, humedad o"
             + " manipulación de terceros.', pie_pdf = 'Pago de contado. Garantía de 3 meses en"
             + " equipos y mano de obra. Documento no válido como factura.'");
+    jdbc.update("delete from correccion_tasa");
+    jdbc.update("delete from tasa_cambio");
+    jdbc.update("delete from ejecucion_tarea_trm");
     jdbc.update("delete from producto");
     jdbc.update("delete from cliente");
     jdbc.update("delete from proveedor");

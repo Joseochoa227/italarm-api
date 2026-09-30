@@ -33,11 +33,13 @@ public abstract class PruebaIntegracion {
   @Autowired protected JdbcTemplate jdbc;
   @Autowired protected PasswordEncoder codificador;
   @Autowired protected RelojPrueba reloj;
+  @Autowired protected FuenteTrmSimulada fuenteTrm;
 
   /** Cada prueba parte de los dos usuarios activos, con la contraseña inicial y sin sesiones. */
   @BeforeEach
   void restablecerUsuarios() {
     reloj.restablecer();
+    fuenteTrm.restablecer();
     LimpiezaDatos.restablecer(jdbc);
     jdbc.update("delete from sesion");
     jdbc.update(

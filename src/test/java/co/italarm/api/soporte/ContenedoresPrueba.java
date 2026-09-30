@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Primary;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
-/** PostgreSQL real y reloj controlable para las pruebas de integración (BP-25). */
+/** PostgreSQL real, reloj controlable y fuentes externas simuladas (BP-14, BP-25). */
 @TestConfiguration(proxyBeanMethods = false)
 public class ContenedoresPrueba {
 
@@ -16,6 +16,13 @@ public class ContenedoresPrueba {
   @Primary
   RelojPrueba relojPrueba() {
     return new RelojPrueba();
+  }
+
+  /** Fuente de la TRM simulada: las pruebas nunca consultan internet. */
+  @Bean
+  @Primary
+  FuenteTrmSimulada fuenteTrmSimulada() {
+    return new FuenteTrmSimulada();
   }
 
   @Bean
