@@ -1,6 +1,6 @@
 # Plan de la Fase 1 — Catálogo, terceros, tasas y configuración (italarm-api)
 
-> Estado: **pendiente de aprobación de ITALARM** (AG-02). No se implementa nada hasta que el plan se apruebe y se respondan las preguntas P-09 a P-18 de `docs/preguntas.md`.
+> Estado: **pendiente de aprobación de ITALARM** (AG-02). Las preguntas P-09 a P-18 ya están respondidas (ver `docs/preguntas.md`).
 > Base: `docs/requerimientos.md`, secciones 3.3, 3.5, 3.6, 3.10, 3.17, 5, 9, 10 y 12.3, más las decisiones de `docs/preguntas.md`.
 > Alcance: solo el backend (**italarm-api**). Las pantallas de esta fase se planean después en italarm-web, a partir del contrato OpenAPI que deja esta fase.
 
@@ -89,7 +89,7 @@ Orden según AG-03: migración → dominio con pruebas → casos de uso → endp
   - Idempotente: si la TRM del día ya está guardada, no hace nada. Además, la base de datos tiene una restricción única por par y fecha.
   - También corre al arrancar la API si falta la TRM de hoy. Así, si el hosting apaga la API de noche, la tasa se recupera al despertar.
   - Registra cada ejecución (inicio, fin, resultado, intentos, detalle).
-  - Si ya hay una TRM manual para ese día: según P-13.
+  - Si ya hay una TRM manual para ese día, la oficial la reemplaza (P-13). El cambio queda como una corrección automática: valor manual → valor oficial, sin usuario y con el motivo "Reemplazada por la TRM oficial". Los documentos ya guardados conservan su tasa (RN-04).
 - [ ] **Fuente de la TRM detrás de una interfaz** `FuenteTrm` (BP-14):
   - Implementación: datos abiertos de la Superintendencia Financiera en datos.gov.co, conjunto `32sa-8pi3`, campos `valor`, `vigenciadesde` y `vigenciahasta`. Toma la TRM cuya vigencia cubre la fecha pedida, lo que resuelve fines de semana y festivos.
   - Desde el entorno del agente `datos.gov.co` está bloqueado, así que **la fuente se verifica en tu equipo** durante la demostración. Las pruebas usan un servidor HTTP simulado.
@@ -211,7 +211,7 @@ Todos bajo `/api/v1` y con `Authorization: Bearer`. Los errores responden en Pro
 - Doble ejecución el mismo día: la segunda queda OMITIDA y no duplica.
 - Fin de semana: toma la TRM cuya vigencia cubre la fecha.
 - Al arrancar la API sin la TRM de hoy: la consulta.
-- Si ya hay TRM manual: se aplica lo que se decida en P-13.
+- Si ya hay TRM manual ese día: la oficial la reemplaza y queda registrada la corrección (P-13).
 
 **Unitarias del dominio:** doble confirmación, cálculo de variación (incluye el caso sin tasa anterior), selección de la tasa vigente y normalización del código de producto y del teléfono.
 
@@ -262,4 +262,4 @@ Cobertura mínima: 80 % en dominio y aplicación. Ninguna prueba se desactiva (A
 
 - **La fuente de la TRM no se puede verificar desde el entorno del agente**, porque `datos.gov.co` está bloqueado. Se implementa contra el formato publicado del conjunto `32sa-8pi3` y se valida en tu equipo. Si la fuente cambió, solo se ajusta la implementación de `FuenteTrm`.
 - **Proveedor S3 sin definir (P-04)**: no bloquea la fase, porque en local se usa el almacenamiento en disco.
-- **Preguntas P-09 a P-18**: afectan columnas de las migraciones. Como una migración aplicada no se modifica (AG-10), es mejor responderlas antes de implementar.
+- **Preguntas P-09 a P-18**: respondidas. Las decisiones que afectan el esquema se aplican en las migraciones V4 a V6.
