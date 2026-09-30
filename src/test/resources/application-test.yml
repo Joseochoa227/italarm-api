@@ -1,0 +1,11 @@
+# Pruebas: la conexión a PostgreSQL la entrega Testcontainers (@ServiceConnection).
+spring:
+  datasource:
+    url: jdbc:postgresql://reemplazada-por-testcontainers/italarm
+
+italarm:
+  cors:
+    origenes: https://app.italarm.test
+  usuarios:
+    # Valor ficticio solo para pruebas; no es la contraseña real.
+    clave-inicial: PruebaInicial1
