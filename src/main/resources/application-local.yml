@@ -1,0 +1,12 @@
+# Desarrollo local: lee las variables del archivo .env (no versionado).
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  datasource:
+    url: ${ITALARM_DB_URL:jdbc:postgresql://localhost:5432/italarm}
+    username: ${ITALARM_DB_USUARIO:italarm}
+    password: ${ITALARM_DB_CLAVE:}
+
+logging:
+  level:
+    co.italarm: DEBUG

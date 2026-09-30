@@ -1,0 +1,3 @@
+# Ambiente de pruebas: detrás del proxy HTTPS del proveedor de hosting.
+server:
+  forward-headers-strategy: framework

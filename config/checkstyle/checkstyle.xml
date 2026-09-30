@@ -1,0 +1,83 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+    "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+    "https://checkstyle.org/dtds/configuration_1_3.dtd">
+<!--
+  Análisis estático de ITALARM (BP-22). El formato lo aplica Spotless (Google Java Format);
+  aquí solo van reglas de corrección, nombres y buenas prácticas.
+-->
+<module name="Checker">
+  <property name="charset" value="UTF-8"/>
+  <property name="severity" value="error"/>
+  <property name="fileExtensions" value="java"/>
+
+  <module name="FileTabCharacter"/>
+  <module name="NewlineAtEndOfFile"/>
+
+  <!-- Prohibido imprimir en consola: se usa SLF4J (BP-21). -->
+  <module name="RegexpSingleline">
+    <property name="format" value="System\.(out|err)\.print"/>
+    <property name="message" value="Usa SLF4J en lugar de System.out / System.err."/>
+  </module>
+
+  <module name="TreeWalker">
+    <!-- Imports -->
+    <module name="AvoidStarImport"/>
+    <module name="RedundantImport"/>
+    <module name="UnusedImports"/>
+    <!-- Lombok no se usa (BP-22). -->
+    <module name="IllegalImport">
+      <property name="illegalPkgs" value="lombok, sun, org.junit.Assert, junit.framework"/>
+    </module>
+
+    <!-- Nombres -->
+    <module name="PackageName">
+      <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]*)*$"/>
+    </module>
+    <module name="TypeName"/>
+    <module name="MethodName">
+      <property name="format" value="^[a-z][a-zA-Z0-9_]*$"/>
+    </module>
+    <module name="ConstantName"/>
+    <module name="LocalVariableName"/>
+    <module name="LocalFinalVariableName"/>
+    <module name="MemberName"/>
+    <module name="ParameterName"/>
+    <module name="LambdaParameterName"/>
+    <module name="StaticVariableName"/>
+
+    <!-- Corrección -->
+    <module name="EqualsHashCode"/>
+    <module name="StringLiteralEquality"/>
+    <module name="SimplifyBooleanExpression"/>
+    <module name="SimplifyBooleanReturn"/>
+    <module name="OneStatementPerLine"/>
+    <module name="MultipleVariableDeclarations"/>
+    <module name="FallThrough"/>
+    <module name="ModifiedControlVariable"/>
+    <module name="EmptyStatement"/>
+    <module name="EmptyCatchBlock">
+      <property name="exceptionVariableName" value="esperada|ignorada"/>
+    </module>
+    <module name="NeedBraces"/>
+    <module name="AvoidNestedBlocks"/>
+    <module name="MissingOverride"/>
+    <module name="CovariantEquals"/>
+    <module name="DefaultComesLast"/>
+    <module name="FinalClass"/>
+    <module name="UpperEll"/>
+    <module name="ArrayTypeStyle"/>
+    <module name="IllegalInstantiation">
+      <property name="classes" value="java.lang.Boolean"/>
+    </module>
+    <!-- Dinero con BigDecimal, nunca double ni float (BP-06). -->
+    <module name="IllegalType">
+      <property name="illegalClassNames" value="java.lang.Double, java.lang.Float, Double, Float"/>
+    </module>
+    <module name="IllegalToken">
+      <property name="tokens" value="LITERAL_DOUBLE, LITERAL_FLOAT"/>
+      <message key="illegal.token"
+          value="No uses double ni float: el dinero y las cantidades van en BigDecimal (BP-06)."/>
+    </module>
+  </module>
+</module>
