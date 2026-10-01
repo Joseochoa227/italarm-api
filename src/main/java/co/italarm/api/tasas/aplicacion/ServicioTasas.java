@@ -84,6 +84,22 @@ public class ServicioTasas {
         fallo);
   }
 
+  /**
+   * Tasas para un documento de la fecha indicada: la de ese día o la última anterior (P-19, RF-32).
+   */
+  @Transactional(readOnly = true)
+  public TasasAplicables tasasPara(LocalDate fecha) {
+    Optional<TasaCambio> trm =
+        tasas.findFirstByParAndFechaLessThanEqualOrderByFechaDesc(ParMoneda.USD_COP, fecha);
+    Optional<TasaCambio> ves =
+        tasas.findFirstByParAndFechaLessThanEqualOrderByFechaDesc(ParMoneda.USD_VES, fecha);
+    return new TasasAplicables(
+        trm.map(TasaCambio::getValor).orElse(null),
+        trm.map(TasaCambio::getFecha).orElse(null),
+        ves.map(TasaCambio::getValor).orElse(null),
+        ves.map(TasaCambio::getFecha).orElse(null));
+  }
+
   /** Historial de tasas por par y rango de fechas (RF-34). */
   @Transactional(readOnly = true)
   public Page<TasaVista> historial(

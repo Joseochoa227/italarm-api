@@ -86,6 +86,10 @@ public class LineaCompra {
     return id;
   }
 
+  public Long getCompraId() {
+    return compra.getId();
+  }
+
   public Long getProductoId() {
     return productoId;
   }

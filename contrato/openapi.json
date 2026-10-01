@@ -39,6 +39,9 @@
     "description" : "Cambio de contraseña y gestión de usuarios (RF-148)",
     "name" : "Usuarios"
   }, {
+    "description" : "Compras a proveedores y su anulación (sección 3.6)",
+    "name" : "Compras"
+  }, {
     "description" : "Ingreso, usuario actual y cierre de sesión",
     "name" : "Sesión"
   } ],
@@ -89,7 +92,7 @@
     },
     "/api/v1/categorias" : {
       "get" : {
-        "operationId" : "listar_2",
+        "operationId" : "listar_3",
         "responses" : {
           "200" : {
             "content" : {
@@ -355,6 +358,303 @@
         },
         "summary" : "Editar un cliente",
         "tags" : [ "Clientes" ]
+      }
+    },
+    "/api/v1/compras" : {
+      "get" : {
+        "description" : "Sin fechas, el mes en curso. Los totales no incluyen las anuladas. Orden por defecto: más recientes primero.",
+        "operationId" : "listar_2",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "proveedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "in" : "query",
+          "name" : "productoId",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "in" : "query",
+          "name" : "desde",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "in" : "query",
+          "name" : "hasta",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "description" : "Incluir las anuladas en el listado (por defecto, sí)",
+          "in" : "query",
+          "name" : "incluirAnuladas",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "description" : "Zero-based page index (0..N)",
+          "in" : "query",
+          "name" : "page",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "default" : 0,
+            "minimum" : 0
+          }
+        }, {
+          "description" : "The size of the page to be returned",
+          "in" : "query",
+          "name" : "size",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "default" : 20,
+            "minimum" : 1
+          }
+        }, {
+          "description" : "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+          "in" : "query",
+          "name" : "sort",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ListadoComprasVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Listado paginado de compras con los totales del período",
+        "tags" : [ "Compras" ]
+      },
+      "post" : {
+        "description" : "Con la misma Idempotency-Key devuelve la compra ya creada. Errores (400): SERIALES_NO_COINCIDEN, CANTIDAD_INVALIDA, COMPRA_PRODUCTO_REPETIDO, COMPRA_FECHA_FUTURA, COMPRA_COSTO_INVALIDO, PROVEEDOR_NO_EXISTE, PRODUCTO_NO_EXISTE; (409) SERIAL_DUPLICADO; (422) TASA_NO_DISPONIBLE, PRODUCTO_INACTIVO.",
+        "operationId" : "registrar",
+        "parameters" : [ {
+          "description" : "Clave única por intento de guardar (RT-07)",
+          "in" : "header",
+          "name" : "Idempotency-Key",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudCompra"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CompraVista"
+                }
+              }
+            },
+            "description" : "Created"
+          }
+        },
+        "summary" : "Registrar una compra y sumarla al inventario",
+        "tags" : [ "Compras" ]
+      }
+    },
+    "/api/v1/compras/vista-previa" : {
+      "post" : {
+        "description" : "Es el valor oficial que muestra el frontend (BF-06). Errores: TASA_NO_DISPONIBLE, COMPRA_PRODUCTO_REPETIDO, COMPRA_FECHA_FUTURA, PRODUCTO_NO_EXISTE.",
+        "operationId" : "vistaPrevia_1",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudVistaPreviaCompra"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/VistaPreviaCompraVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Vista previa: costo actual → nuevo y regla por línea, sin guardar",
+        "tags" : [ "Compras" ]
+      }
+    },
+    "/api/v1/compras/{id}" : {
+      "get" : {
+        "operationId" : "detalle_4",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CompraVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Detalle de una compra, con si se puede anular y por qué no",
+        "tags" : [ "Compras" ]
+      }
+    },
+    "/api/v1/compras/{id}/anular" : {
+      "post" : {
+        "description" : "Solo si es el último movimiento de cada producto y sus seriales siguen en bodega. Errores: COMPRA_NO_ANULABLE (422), COMPRA_YA_ANULADA (409).",
+        "operationId" : "anular",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudAnulacion"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CompraVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Anular una compra",
+        "tags" : [ "Compras" ]
+      }
+    },
+    "/api/v1/compras/{id}/factura" : {
+      "delete" : {
+        "operationId" : "quitarFactura",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CompraVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Quitar la factura",
+        "tags" : [ "Compras" ]
+      },
+      "put" : {
+        "description" : "Errores: ARCHIVO_TIPO_NO_PERMITIDO, ARCHIVO_DEMASIADO_GRANDE (400).",
+        "operationId" : "cambiarFactura",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "archivo" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                },
+                "required" : [ "archivo" ]
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CompraVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Subir o reemplazar la factura (JPEG, PNG, WebP o PDF; máximo 5 MB)",
+        "tags" : [ "Compras" ]
       }
     },
     "/api/v1/configuracion" : {
@@ -1594,6 +1894,21 @@
   },
   "components" : {
     "schemas" : {
+      "Anulacion" : {
+        "type" : "object",
+        "properties" : {
+          "fecha" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "motivo" : {
+            "type" : "string"
+          },
+          "usuario" : {
+            "type" : "string"
+          }
+        }
+      },
       "CategoriaVista" : {
         "type" : "object",
         "properties" : {
@@ -1665,6 +1980,120 @@
           "version" : {
             "type" : "integer",
             "format" : "int64"
+          }
+        }
+      },
+      "CompraResumenVista" : {
+        "type" : "object",
+        "properties" : {
+          "consecutivo" : {
+            "type" : "string"
+          },
+          "estado" : {
+            "type" : "string"
+          },
+          "facturaUrl" : {
+            "type" : "string"
+          },
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "moneda" : {
+            "type" : "string",
+            "enum" : [ "USD", "COP", "VES" ]
+          },
+          "numeroFactura" : {
+            "type" : "string"
+          },
+          "productos" : {
+            "type" : "string"
+          },
+          "proveedor" : {
+            "$ref" : "#/components/schemas/Referencia"
+          },
+          "registradaEn" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "registradaPor" : {
+            "type" : "string"
+          },
+          "tasas" : {
+            "$ref" : "#/components/schemas/TasasCompraVista"
+          },
+          "total" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "totalUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
+          }
+        }
+      },
+      "CompraVista" : {
+        "type" : "object",
+        "properties" : {
+          "anulable" : {
+            "type" : "boolean"
+          },
+          "anulacion" : {
+            "$ref" : "#/components/schemas/Anulacion"
+          },
+          "consecutivo" : {
+            "type" : "string"
+          },
+          "estado" : {
+            "type" : "string"
+          },
+          "facturaUrl" : {
+            "type" : "string"
+          },
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "lineas" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Linea"
+            }
+          },
+          "moneda" : {
+            "type" : "string",
+            "enum" : [ "USD", "COP", "VES" ]
+          },
+          "motivoNoAnulable" : {
+            "type" : "string"
+          },
+          "numeroFactura" : {
+            "type" : "string"
+          },
+          "proveedor" : {
+            "$ref" : "#/components/schemas/Referencia"
+          },
+          "registradaEn" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "registradaPor" : {
+            "type" : "string"
+          },
+          "tasas" : {
+            "$ref" : "#/components/schemas/TasasCompraVista"
+          },
+          "total" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "totalUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
           }
         }
       },
@@ -1767,6 +2196,93 @@
           }
         }
       },
+      "Linea" : {
+        "type" : "object",
+        "properties" : {
+          "abreviatura" : {
+            "type" : "string"
+          },
+          "cantidad" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "codigo" : {
+            "type" : "string"
+          },
+          "costoAnteriorUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "costoNuevoUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "costoUnitario" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "costoUnitarioUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "nombre" : {
+            "type" : "string"
+          },
+          "productoId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "regla" : {
+            "type" : "string"
+          },
+          "seriales" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "subtotal" : {
+            "$ref" : "#/components/schemas/Dinero"
+          }
+        }
+      },
+      "ListadoComprasVista" : {
+        "type" : "object",
+        "properties" : {
+          "compras" : {
+            "$ref" : "#/components/schemas/PaginaCompraResumenVista"
+          },
+          "desde" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "hasta" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "totalUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "totalesPorMoneda" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TotalMoneda"
+            }
+          }
+        }
+      },
+      "MontoEnMonedas" : {
+        "type" : "object",
+        "properties" : {
+          "cop" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "usd" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "ves" : {
+            "$ref" : "#/components/schemas/Dinero"
+          }
+        }
+      },
       "PaginaClienteVista" : {
         "type" : "object",
         "properties" : {
@@ -1774,6 +2290,33 @@
             "type" : "array",
             "items" : {
               "$ref" : "#/components/schemas/ClienteVista"
+            }
+          },
+          "pagina" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "tamano" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElementos" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPaginas" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "PaginaCompraResumenVista" : {
+        "type" : "object",
+        "properties" : {
+          "contenido" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CompraResumenVista"
             }
           },
           "pagina" : {
@@ -2047,6 +2590,17 @@
           }
         }
       },
+      "SolicitudAnulacion" : {
+        "type" : "object",
+        "properties" : {
+          "motivo" : {
+            "type" : "string",
+            "maxLength" : 300,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "motivo" ]
+      },
       "SolicitudCambioContrasena" : {
         "type" : "object",
         "properties" : {
@@ -2132,6 +2686,37 @@
           }
         },
         "required" : [ "nombre", "telefono", "tipo", "version" ]
+      },
+      "SolicitudCompra" : {
+        "type" : "object",
+        "properties" : {
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "lineas" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SolicitudLineaCompra"
+            },
+            "maxItems" : 200,
+            "minItems" : 0
+          },
+          "moneda" : {
+            "type" : "string",
+            "enum" : [ "USD", "COP", "VES" ]
+          },
+          "numeroFactura" : {
+            "type" : "string",
+            "maxLength" : 50,
+            "minLength" : 0
+          },
+          "proveedorId" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "lineas", "moneda", "numeroFactura", "proveedorId" ]
       },
       "SolicitudConfiguracion" : {
         "type" : "object",
@@ -2244,6 +2829,38 @@
           }
         },
         "required" : [ "contrasena", "correo" ]
+      },
+      "SolicitudLineaCompra" : {
+        "type" : "object",
+        "properties" : {
+          "cantidad" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "costoUnitario" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "productoId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "seriales" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "maxLength" : 80,
+              "minLength" : 0
+            },
+            "maxItems" : 1000,
+            "minItems" : 0
+          }
+        },
+        "required" : [ "cantidad", "costoUnitario", "productoId" ]
       },
       "SolicitudNuevoUsuario" : {
         "type" : "object",
@@ -2462,6 +3079,28 @@
         },
         "required" : [ "par", "valor" ]
       },
+      "SolicitudVistaPreviaCompra" : {
+        "type" : "object",
+        "properties" : {
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "lineas" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SolicitudLineaCompra"
+            },
+            "maxItems" : 200,
+            "minItems" : 0
+          },
+          "moneda" : {
+            "type" : "string",
+            "enum" : [ "USD", "COP", "VES" ]
+          }
+        },
+        "required" : [ "lineas", "moneda" ]
+      },
       "TasaVigenteVista" : {
         "type" : "object",
         "properties" : {
@@ -2542,6 +3181,31 @@
           }
         }
       },
+      "TasasCompraVista" : {
+        "type" : "object",
+        "properties" : {
+          "fechaTasaVes" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "fechaTrm" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "tasaVes" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "trm" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          }
+        }
+      },
       "TasasVigentesVista" : {
         "type" : "object",
         "properties" : {
@@ -2557,6 +3221,21 @@
           },
           "trmAutomaticaFallo" : {
             "type" : "boolean"
+          }
+        }
+      },
+      "TotalMoneda" : {
+        "type" : "object",
+        "properties" : {
+          "compras" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "total" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "totalUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
           }
         }
       },
@@ -2648,6 +3327,37 @@
           },
           "superaLimite" : {
             "type" : "boolean"
+          }
+        }
+      },
+      "VistaPreviaCompraVista" : {
+        "type" : "object",
+        "properties" : {
+          "avisos" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "lineas" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Linea"
+            }
+          },
+          "moneda" : {
+            "type" : "string",
+            "enum" : [ "USD", "COP", "VES" ]
+          },
+          "tasas" : {
+            "$ref" : "#/components/schemas/TasasCompraVista"
+          },
+          "total" : {
+            "$ref" : "#/components/schemas/MontoEnMonedas"
           }
         }
       }

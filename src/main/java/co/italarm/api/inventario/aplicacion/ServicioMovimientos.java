@@ -248,6 +248,17 @@ public class ServicioMovimientos {
     }
   }
 
+  /** Seriales que entraron con un documento, por producto. */
+  @Transactional(readOnly = true)
+  public Map<Long, List<String>> serialesDeEntrada(DocumentoRef documento) {
+    return seriales
+        .findByDocumentoEntradaTipoAndDocumentoEntradaIdOrderById(documento.tipo(), documento.id())
+        .stream()
+        .collect(
+            Collectors.groupingBy(
+                Serial::getProductoId, Collectors.mapping(Serial::getNumero, Collectors.toList())));
+  }
+
   /** Bloquea los productos en orden de id y los devuelve por id. */
   Map<Long, ProductoInventario> bloquear(java.util.Collection<Long> ids) {
     return productos.bloquear(ids).stream()
