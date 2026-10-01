@@ -8,6 +8,19 @@ final class LimpiezaDatos {
   private LimpiezaDatos() {}
 
   static void restablecer(JdbcTemplate jdbc) {
+    jdbc.update("delete from movimiento_serial");
+    jdbc.update("delete from serial");
+    jdbc.update("delete from movimiento_inventario");
+    jdbc.update("delete from historial_costo");
+    jdbc.update("delete from linea_compra");
+    jdbc.update("delete from compra");
+    jdbc.update("delete from ajuste");
+    jdbc.update("delete from linea_inventario_inicial");
+    jdbc.update("delete from inventario_inicial");
+    jdbc.update("delete from idempotencia");
+    jdbc.execute("alter sequence seq_compra restart with 1");
+    jdbc.execute("alter sequence seq_ajuste restart with 1");
+    jdbc.execute("alter sequence seq_inventario_inicial restart with 1");
     jdbc.update(
         "update configuracion set empresa_nombre = 'ITALARM',"
             + " empresa_lema = 'Instalación de cámaras de seguridad', empresa_nit = null,"

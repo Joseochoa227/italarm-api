@@ -1,5 +1,6 @@
 package co.italarm.api.inventario.dominio;
 
+import co.italarm.api.shared.dominio.DocumentoRef;
 import co.italarm.api.shared.dominio.EntidadMaestra;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;

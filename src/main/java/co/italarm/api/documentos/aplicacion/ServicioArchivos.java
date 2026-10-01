@@ -1,7 +1,7 @@
 package co.italarm.api.documentos.aplicacion;
 
 import co.italarm.api.documentos.dominio.ClaveArchivo;
-import co.italarm.api.documentos.dominio.TipoImagen;
+import co.italarm.api.documentos.dominio.TipoArchivo;
 import co.italarm.api.documentos.dominio.ValidadorImagen;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -27,7 +27,17 @@ public class ServicioArchivos {
    * ejemplo {@code productos/12/foto-3f9a2c1b.jpg}. Devuelve la clave.
    */
   public String guardarImagen(String carpeta, String nombreBase, byte[] contenido) {
-    TipoImagen tipo = ValidadorImagen.validar(contenido);
+    TipoArchivo tipo = ValidadorImagen.validar(contenido);
+    String sufijo = UUID.randomUUID().toString().substring(0, 8);
+    String clave =
+        ClaveArchivo.validar(carpeta + "/" + nombreBase + "-" + sufijo + "." + tipo.extension());
+    almacenamiento.guardar(clave, contenido, tipo.tipoContenido());
+    return clave;
+  }
+
+  /** Guarda una imagen o un PDF (por ejemplo, la factura de una compra, RF-44). */
+  public String guardarImagenOPdf(String carpeta, String nombreBase, byte[] contenido) {
+    TipoArchivo tipo = ValidadorImagen.validarImagenOPdf(contenido);
     String sufijo = UUID.randomUUID().toString().substring(0, 8);
     String clave =
         ClaveArchivo.validar(carpeta + "/" + nombreBase + "-" + sufijo + "." + tipo.extension());

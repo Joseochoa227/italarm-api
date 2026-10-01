@@ -3,6 +3,7 @@ package co.italarm.api.inventario.dominio;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import co.italarm.api.shared.dominio.DocumentoRef;
 import co.italarm.api.shared.dominio.TipoDocumento;
 import java.math.BigDecimal;
 import java.time.LocalDate;

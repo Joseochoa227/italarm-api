@@ -4,18 +4,26 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.Optional;
 
-/** Formatos de imagen permitidos para fotos y logo (P-16). */
-public enum TipoImagen {
+/**
+ * Formatos de archivo permitidos: imágenes para fotos y logo (P-16); además PDF para facturas
+ * (RF-44).
+ */
+public enum TipoArchivo {
   JPEG("image/jpeg", "jpg"),
   PNG("image/png", "png"),
-  WEBP("image/webp", "webp");
+  WEBP("image/webp", "webp"),
+  PDF("application/pdf", "pdf");
 
   private final String tipoContenido;
   private final String extension;
 
-  TipoImagen(String tipoContenido, String extension) {
+  TipoArchivo(String tipoContenido, String extension) {
     this.tipoContenido = tipoContenido;
     this.extension = extension;
+  }
+
+  public boolean esImagen() {
+    return this != PDF;
   }
 
   public String tipoContenido() {
@@ -27,7 +35,7 @@ public enum TipoImagen {
   }
 
   /** Tipo de imagen según la extensión de una clave o nombre de archivo. */
-  public static Optional<TipoImagen> deExtension(String nombre) {
+  public static Optional<TipoArchivo> deExtension(String nombre) {
     int punto = nombre.lastIndexOf('.');
     if (punto < 0) {
       return Optional.empty();

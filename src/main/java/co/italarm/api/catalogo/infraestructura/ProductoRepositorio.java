@@ -22,6 +22,12 @@ public interface ProductoRepositorio
   @EntityGraph(attributePaths = {"categoria", "unidadMedida"})
   Optional<Producto> findConRelacionesById(Long id);
 
+  @EntityGraph(attributePaths = {"categoria", "unidadMedida"})
+  List<Producto> findByIdIn(java.util.Collection<Long> ids);
+
+  @EntityGraph(attributePaths = {"categoria", "unidadMedida"})
+  List<Producto> findByCodigoIn(java.util.Collection<String> codigos);
+
   boolean existsByCodigoIgnoreCase(String codigo);
 
   boolean existsByCodigoIgnoreCaseAndIdNot(String codigo, Long id);

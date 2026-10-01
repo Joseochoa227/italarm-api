@@ -14,9 +14,9 @@ class ValidadorImagenTest {
 
   @Test
   void reconoceElTipoPorElContenidoReal() {
-    assertThat(ValidadorImagen.validar(JPEG)).isEqualTo(TipoImagen.JPEG);
-    assertThat(ValidadorImagen.validar(PNG)).isEqualTo(TipoImagen.PNG);
-    assertThat(ValidadorImagen.validar(WEBP)).isEqualTo(TipoImagen.WEBP);
+    assertThat(ValidadorImagen.validar(JPEG)).isEqualTo(TipoArchivo.JPEG);
+    assertThat(ValidadorImagen.validar(PNG)).isEqualTo(TipoArchivo.PNG);
+    assertThat(ValidadorImagen.validar(WEBP)).isEqualTo(TipoArchivo.WEBP);
   }
 
   @Test
@@ -61,16 +61,40 @@ class ValidadorImagenTest {
     byte[] limite = new byte[ValidadorImagen.TAMANO_MAXIMO_BYTES];
     System.arraycopy(PNG, 0, limite, 0, PNG.length);
 
-    assertThat(ValidadorImagen.validar(limite)).isEqualTo(TipoImagen.PNG);
+    assertThat(ValidadorImagen.validar(limite)).isEqualTo(TipoArchivo.PNG);
   }
 
   @Test
   void cadaTipoConoceSuExtensionYTipoDeContenido() {
-    assertThat(TipoImagen.JPEG.extension()).isEqualTo("jpg");
-    assertThat(TipoImagen.PNG.tipoContenido()).isEqualTo("image/png");
-    assertThat(TipoImagen.deExtension("foto.webp")).contains(TipoImagen.WEBP);
-    assertThat(TipoImagen.deExtension("foto.JPG")).contains(TipoImagen.JPEG);
-    assertThat(TipoImagen.deExtension("archivo.pdf")).isEmpty();
-    assertThat(TipoImagen.deExtension("sin-extension")).isEmpty();
+    assertThat(TipoArchivo.JPEG.extension()).isEqualTo("jpg");
+    assertThat(TipoArchivo.PNG.tipoContenido()).isEqualTo("image/png");
+    assertThat(TipoArchivo.deExtension("foto.webp")).contains(TipoArchivo.WEBP);
+    assertThat(TipoArchivo.deExtension("foto.JPG")).contains(TipoArchivo.JPEG);
+    assertThat(TipoArchivo.deExtension("archivo.docx")).isEmpty();
+    assertThat(TipoArchivo.deExtension("sin-extension")).isEmpty();
+  }
+
+  @Test
+  void laFacturaPuedeSerImagenOPdf() {
+    byte[] pdf = "%PDF-1.7\n...".getBytes(StandardCharsets.ISO_8859_1);
+
+    assertThat(ValidadorImagen.validarImagenOPdf(pdf)).isEqualTo(TipoArchivo.PDF);
+    assertThat(ValidadorImagen.validarImagenOPdf(JPEG)).isEqualTo(TipoArchivo.JPEG);
+    assertThat(TipoArchivo.PDF.esImagen()).isFalse();
+    assertThat(TipoArchivo.deExtension("factura.pdf")).contains(TipoArchivo.PDF);
+    assertThatThrownBy(() -> ValidadorImagen.validarImagenOPdf(new byte[] {'M', 'Z'}))
+        .isInstanceOf(ArchivoTipoNoPermitidoException.class)
+        .hasMessage("El archivo debe ser una imagen JPEG, PNG o WebP, o un PDF.");
+    assertThatThrownBy(() -> ValidadorImagen.validarImagenOPdf(new byte[6 * 1024 * 1024]))
+        .isInstanceOf(ArchivoDemasiadoGrandeException.class)
+        .hasMessage("El archivo supera el tamaño máximo de 5 MB.");
+  }
+
+  @Test
+  void validarSoloImagenRechazaUnPdf() {
+    byte[] pdf = "%PDF-1.7".getBytes(StandardCharsets.ISO_8859_1);
+
+    assertThatThrownBy(() -> ValidadorImagen.validar(pdf))
+        .isInstanceOf(ArchivoTipoNoPermitidoException.class);
   }
 }

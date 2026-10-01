@@ -3,7 +3,7 @@ package co.italarm.api.documentos.aplicacion;
 import co.italarm.api.documentos.dominio.ClaveArchivo;
 import co.italarm.api.documentos.dominio.EnlaceInvalidoException;
 import co.italarm.api.documentos.dominio.FirmaEnlace;
-import co.italarm.api.documentos.dominio.TipoImagen;
+import co.italarm.api.documentos.dominio.TipoArchivo;
 import co.italarm.api.shared.dominio.RecursoNoEncontradoException;
 import java.time.Clock;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -45,8 +45,8 @@ public class ServicioDescargaLocal {
             .leer(clave)
             .orElseThrow(() -> new RecursoNoEncontradoException("El archivo ya no existe."));
     String tipo =
-        TipoImagen.deExtension(clave)
-            .map(TipoImagen::tipoContenido)
+        TipoArchivo.deExtension(clave)
+            .map(TipoArchivo::tipoContenido)
             .orElse("application/octet-stream");
     return new ArchivoDescargado(contenido, tipo);
   }
