@@ -1,4 +1,4 @@
-package co.italarm.api.catalogo.dominio;
+package co.italarm.api.shared.dominio;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

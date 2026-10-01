@@ -4,6 +4,7 @@ import co.italarm.api.shared.dominio.Dinero;
 import co.italarm.api.shared.dominio.EntidadMaestra;
 import co.italarm.api.shared.dominio.Moneda;
 import co.italarm.api.shared.dominio.Redondeo;
+import co.italarm.api.shared.dominio.ReglaCantidad;
 import co.italarm.api.shared.dominio.Textos;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

@@ -3,6 +3,7 @@ package co.italarm.api.catalogo.dominio;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import co.italarm.api.shared.dominio.CantidadInvalidaException;
 import co.italarm.api.shared.dominio.Dinero;
 import co.italarm.api.shared.dominio.Moneda;
 import java.math.BigDecimal;

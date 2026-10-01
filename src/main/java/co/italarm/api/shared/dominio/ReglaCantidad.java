@@ -1,4 +1,4 @@
-package co.italarm.api.catalogo.dominio;
+package co.italarm.api.shared.dominio;
 
 import java.math.BigDecimal;
 

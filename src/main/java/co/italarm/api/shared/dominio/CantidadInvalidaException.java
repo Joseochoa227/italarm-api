@@ -1,7 +1,4 @@
-package co.italarm.api.catalogo.dominio;
-
-import co.italarm.api.shared.dominio.NegocioException;
-import co.italarm.api.shared.dominio.TipoError;
+package co.italarm.api.shared.dominio;
 
 /** La cantidad no respeta la unidad de medida (P-09). */
 public class CantidadInvalidaException extends NegocioException {
