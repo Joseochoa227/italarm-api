@@ -1,6 +1,6 @@
 # Plan de la Fase 2 — Compras, inventario, costo y carga inicial (italarm-api)
 
-> Estado: **pendiente de aprobación de ITALARM** (AG-02). Antes de implementar hay que responder las preguntas P-19 a P-26 de `docs/preguntas.md`.
+> Estado: **aprobado por ITALARM el 01/10/2026**, en implementación. Preguntas P-19 a P-26 respondidas: de acuerdo con las propuestas (ver `docs/preguntas.md`).
 > Base: `docs/requerimientos.md`, secciones 3.4, 3.6 a 3.9, 3.18, 4, 5, 9.4, 10 y 12.4, más las decisiones de `docs/preguntas.md`.
 > Alcance: solo el backend (**italarm-api**). Las pantallas se hacen después en italarm-web, a partir del contrato OpenAPI que deja esta fase.
 
