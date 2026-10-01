@@ -45,6 +45,9 @@ public interface SerialRepositorio extends JpaRepository<Serial, Long> {
   List<Serial> findByDocumentoEntradaTipoAndDocumentoEntradaIdOrderById(
       TipoDocumento tipo, Long documentoId);
 
+  List<Serial> findByDocumentoSalidaTipoAndDocumentoSalidaIdOrderById(
+      TipoDocumento tipo, Long documentoId);
+
   List<Serial> findByProductoIdOrderByNumero(Long productoId);
 
   List<Serial> findByProductoIdAndEstadoOrderByNumero(Long productoId, EstadoSerial estado);

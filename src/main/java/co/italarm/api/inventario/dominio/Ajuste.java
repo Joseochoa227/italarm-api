@@ -68,13 +68,8 @@ public class Ajuste extends EntidadAuditable {
       String descripcion,
       BigDecimal cantidadConSigno,
       BigDecimal costoUnitarioUsd) {
-    if (cantidadConSigno.signum() == 0) {
-      throw new AjusteInvalidoException("La cantidad del ajuste no puede ser 0.");
-    }
+    validar(motivo, descripcion, cantidadConSigno);
     String texto = Textos.limpiar(descripcion);
-    if (motivo == MotivoAjuste.OTRO && texto == null) {
-      throw new AjusteInvalidoException("Con el motivo Otro, describe el ajuste.");
-    }
     Ajuste ajuste = new Ajuste();
     ajuste.numero = numero;
     ajuste.fecha = fecha;
@@ -85,6 +80,16 @@ public class Ajuste extends EntidadAuditable {
     ajuste.cantidad = cantidadConSigno.abs();
     ajuste.costoUnitarioUsd = costoUnitarioUsd;
     return ajuste;
+  }
+
+  /** La cantidad no puede ser 0 y el motivo Otro exige descripción (RF-58). */
+  public static void validar(MotivoAjuste motivo, String descripcion, BigDecimal cantidadConSigno) {
+    if (cantidadConSigno.signum() == 0) {
+      throw new AjusteInvalidoException("La cantidad del ajuste no puede ser 0.");
+    }
+    if (motivo == MotivoAjuste.OTRO && Textos.limpiar(descripcion) == null) {
+      throw new AjusteInvalidoException("Con el motivo Otro, describe el ajuste.");
+    }
   }
 
   public DocumentoRef documento() {

@@ -14,8 +14,6 @@ import co.italarm.api.inventario.dominio.ProductoNoExisteException;
 import co.italarm.api.inventario.dominio.ReglaCosto;
 import co.italarm.api.inventario.dominio.ResultadoCosto;
 import co.italarm.api.inventario.dominio.Serial;
-import co.italarm.api.inventario.dominio.SerialDuplicadoException;
-import co.italarm.api.inventario.dominio.SerialesNoCoincidenException;
 import co.italarm.api.inventario.dominio.TipoMovimiento;
 import co.italarm.api.inventario.dominio.TipoMovimientoSerial;
 import co.italarm.api.inventario.infraestructura.HistorialCostoRepositorio;
@@ -23,9 +21,7 @@ import co.italarm.api.inventario.infraestructura.MovimientoInventarioRepositorio
 import co.italarm.api.inventario.infraestructura.MovimientoSerialRepositorio;
 import co.italarm.api.inventario.infraestructura.ProductoInventarioRepositorio;
 import co.italarm.api.inventario.infraestructura.SerialRepositorio;
-import co.italarm.api.shared.dominio.CantidadInvalidaException;
 import co.italarm.api.shared.dominio.DocumentoRef;
-import co.italarm.api.shared.dominio.ReglaCantidad;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
@@ -34,7 +30,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -54,6 +49,7 @@ public class ServicioMovimientos {
   private final SerialRepositorio seriales;
   private final MovimientoSerialRepositorio movimientosSerial;
   private final ConsultaProductos consultaProductos;
+  private final OperacionesInventario operaciones;
   private final Clock reloj;
 
   public ServicioMovimientos(
@@ -63,6 +59,7 @@ public class ServicioMovimientos {
       SerialRepositorio seriales,
       MovimientoSerialRepositorio movimientosSerial,
       ConsultaProductos consultaProductos,
+      OperacionesInventario operaciones,
       Clock reloj) {
     this.productos = productos;
     this.kardex = kardex;
@@ -70,6 +67,7 @@ public class ServicioMovimientos {
     this.seriales = seriales;
     this.movimientosSerial = movimientosSerial;
     this.consultaProductos = consultaProductos;
+    this.operaciones = operaciones;
     this.reloj = reloj;
   }
 
@@ -100,17 +98,19 @@ public class ServicioMovimientos {
       Long usuarioId) {
     Map<Long, DatosProductoInventario> datos =
         consultaProductos.porId(lineas.stream().map(LineaEntradaCompra::productoId).toList());
-    Map<Long, ProductoInventario> bloqueados = bloquear(datos.keySet());
+    Map<Long, ProductoInventario> bloqueados = operaciones.bloquear(datos.keySet());
     Instant ahora = reloj.instant();
     List<CambioCosto> cambios = new ArrayList<>();
     for (LineaEntradaCompra linea : lineas) {
-      DatosProductoInventario producto = exigirProducto(datos, linea.productoId());
+      DatosProductoInventario producto =
+          OperacionesInventario.exigirProducto(datos, linea.productoId());
       if (!producto.activo()) {
         throw new ProductoInactivoException(
             producto.nombre() + " está inactivo y no se puede comprar.");
       }
-      exigirCantidad(linea.cantidad(), producto);
-      List<String> numeros = validarSerialesNuevos(producto, linea.cantidad(), linea.seriales());
+      OperacionesInventario.exigirCantidad(linea.cantidad(), producto);
+      List<String> numeros =
+          operaciones.validarSerialesNuevos(producto, linea.cantidad(), linea.seriales());
 
       ProductoInventario inventario = bloqueados.get(linea.productoId());
       BigDecimal stockAntes = inventario.getStock();
@@ -147,7 +147,7 @@ public class ServicioMovimientos {
               resultado,
               usuarioId,
               ahora));
-      registrarSeriales(
+      operaciones.registrarSeriales(
           linea.productoId(), numeros, compra, fecha, detalleSeriales, usuarioId, ahora);
       cambios.add(cambio(linea.productoId(), stockAntes, resultado));
     }
@@ -191,7 +191,7 @@ public class ServicioMovimientos {
       DocumentoRef compra, LocalDate fecha, List<LineaAnulacion> lineas, Long usuarioId) {
     Map<Long, DatosProductoInventario> datos =
         consultaProductos.porId(lineas.stream().map(LineaAnulacion::productoId).toList());
-    Map<Long, ProductoInventario> bloqueados = bloquear(datos.keySet());
+    Map<Long, ProductoInventario> bloqueados = operaciones.bloquear(datos.keySet());
     Optional<String> motivo =
         motivoNoAnulable(compra, lineas.stream().map(LineaAnulacion::productoId).toList());
     if (motivo.isPresent()) {
@@ -199,7 +199,8 @@ public class ServicioMovimientos {
     }
     Instant ahora = reloj.instant();
     for (LineaAnulacion linea : lineas) {
-      DatosProductoInventario producto = exigirProducto(datos, linea.productoId());
+      DatosProductoInventario producto =
+          OperacionesInventario.exigirProducto(datos, linea.productoId());
       ProductoInventario inventario = bloqueados.get(linea.productoId());
       BigDecimal costoActual = inventario.getCostoActualUsd();
       BigDecimal costoAnterior =
@@ -257,73 +258,6 @@ public class ServicioMovimientos {
         .collect(
             Collectors.groupingBy(
                 Serial::getProductoId, Collectors.mapping(Serial::getNumero, Collectors.toList())));
-  }
-
-  /** Bloquea los productos en orden de id y los devuelve por id. */
-  Map<Long, ProductoInventario> bloquear(java.util.Collection<Long> ids) {
-    return productos.bloquear(ids).stream()
-        .collect(Collectors.toMap(ProductoInventario::getId, Function.identity()));
-  }
-
-  static DatosProductoInventario exigirProducto(
-      Map<Long, DatosProductoInventario> datos, Long productoId) {
-    DatosProductoInventario producto = datos.get(productoId);
-    if (producto == null) {
-      throw new ProductoNoExisteException(productoId);
-    }
-    return producto;
-  }
-
-  static void exigirCantidad(BigDecimal cantidad, DatosProductoInventario producto) {
-    if (cantidad == null || cantidad.signum() <= 0) {
-      throw new CantidadInvalidaException(
-          producto.nombre() + ": la cantidad debe ser mayor que 0.");
-    }
-    ReglaCantidad.validar(
-        cantidad, producto.admiteDecimales(), producto.abreviatura(), producto.nombre());
-  }
-
-  /**
-   * Seriales de unidades que entran: tantos como la cantidad, sin repetir y que no existan ya para
-   * el producto (RF-20, P-22). Un producto sin serial no lleva seriales.
-   */
-  List<String> validarSerialesNuevos(
-      DatosProductoInventario producto, BigDecimal cantidad, List<String> recibidos) {
-    if (!producto.controlaSerial()) {
-      if (recibidos != null && !recibidos.isEmpty()) {
-        throw new SerialesNoCoincidenException(producto.nombre() + " no controla serial.");
-      }
-      return List.of();
-    }
-    List<String> numeros = Serial.validarLista(recibidos, cantidad, producto.nombre());
-    List<String> existentes = seriales.existentes(producto.id(), numeros);
-    if (!existentes.isEmpty()) {
-      throw new SerialDuplicadoException(
-          producto.nombre() + ": el serial " + existentes.get(0) + " ya está registrado.");
-    }
-    return numeros;
-  }
-
-  void registrarSeriales(
-      Long productoId,
-      List<String> numeros,
-      DocumentoRef documento,
-      LocalDate fecha,
-      String detalle,
-      Long usuarioId,
-      Instant ahora) {
-    for (String numero : numeros) {
-      Serial serial = seriales.save(Serial.entrar(productoId, numero, documento, fecha));
-      movimientosSerial.save(
-          MovimientoSerial.de(
-              serial.getId(),
-              TipoMovimientoSerial.ENTRADA,
-              documento,
-              fecha,
-              detalle,
-              usuarioId,
-              ahora));
-    }
   }
 
   private static CambioCosto cambio(Long productoId, BigDecimal stock, ResultadoCosto resultado) {
