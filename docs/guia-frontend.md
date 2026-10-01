@@ -41,18 +41,18 @@ Todos los errores responden con `Content-Type: application/problem+json` (RFC 94
 Cómo usar cada campo:
 - **`codigo`:** es estable. Decide el comportamiento por él, nunca por el texto.
 - **`detail`:** ya viene en español y se puede mostrar tal cual al usuario.
-- **`errores`:** solo aparece con `VALIDACION`. Trae un mensaje por campo; muéstralo junto al campo del formulario (BF-05).
+- **`errores`:** aparece con `VALIDACION` (un mensaje por campo; muéstralo junto al campo del formulario, BF-05) y con `CARGA_INICIAL_CON_ERRORES` (un error por hoja y fila: `{ hoja, fila, mensaje }`).
 - **`correlationId`:** también llega en la cabecera `X-Correlation-Id`. Sirve para buscar el error en los logs; si el frontend la envía, se reutiliza.
 
 | HTTP | Códigos |
 |---|---|
-| 400 | `VALIDACION`, `CANTIDAD_INVALIDA`, `CATEGORIA_NO_EXISTE`, `UNIDAD_NO_EXISTE`, `TELEFONO_INVALIDO`, `DOCUMENTO_INCOMPLETO`, `CONFIGURACION_INVALIDA`, `ARCHIVO_TIPO_NO_PERMITIDO`, `ARCHIVO_DEMASIADO_GRANDE`, `TASA_INVALIDA`, `TASA_NO_CONFIRMADA`, `TASA_SIN_CAMBIO`, `CONTRASENA_NO_COINCIDE`, `CONTRASENA_DEBIL`, `METODO_NO_PERMITIDO`, `FORMATO_NO_SOPORTADO` |
+| 400 | `VALIDACION`, `CANTIDAD_INVALIDA`, `CATEGORIA_NO_EXISTE`, `UNIDAD_NO_EXISTE`, `TELEFONO_INVALIDO`, `DOCUMENTO_INCOMPLETO`, `CONFIGURACION_INVALIDA`, `ARCHIVO_TIPO_NO_PERMITIDO`, `ARCHIVO_DEMASIADO_GRANDE`, `TASA_INVALIDA`, `TASA_NO_CONFIRMADA`, `TASA_SIN_CAMBIO`, `CONTRASENA_NO_COINCIDE`, `CONTRASENA_DEBIL`, `METODO_NO_PERMITIDO`, `FORMATO_NO_SOPORTADO`, `COMPRA_FECHA_FUTURA`, `COMPRA_SIN_LINEAS`, `COMPRA_PRODUCTO_REPETIDO`, `COMPRA_COSTO_INVALIDO`, `PROVEEDOR_NO_EXISTE`, `PRODUCTO_NO_EXISTE`, `SERIALES_NO_COINCIDEN`, `SERIAL_INVALIDO`, `AJUSTE_INVALIDO`, `COSTO_REQUERIDO`, `CARGA_INICIAL_CON_ERRORES` |
 | 401 | `NO_AUTENTICADO`, `CREDENCIALES_INVALIDAS` |
 | 403 | `ACCESO_DENEGADO`, `ENLACE_INVALIDO` |
 | 404 | `RECURSO_NO_ENCONTRADO` |
-| 409 | `MODIFICADO_POR_OTRO_USUARIO`, `DATOS_EN_CONFLICTO`, `CATEGORIA_DUPLICADA`, `UNIDAD_DUPLICADA`, `PRODUCTO_CODIGO_DUPLICADO`, `CLIENTE_DOCUMENTO_DUPLICADO`, `USUARIO_CORREO_DUPLICADO`, `TASA_YA_REGISTRADA`, `TRM_AUTOMATICA_DISPONIBLE`, `CONTRASENA_ACTUAL_INCORRECTA` |
+| 409 | `MODIFICADO_POR_OTRO_USUARIO`, `DATOS_EN_CONFLICTO`, `CATEGORIA_DUPLICADA`, `UNIDAD_DUPLICADA`, `PRODUCTO_CODIGO_DUPLICADO`, `CLIENTE_DOCUMENTO_DUPLICADO`, `USUARIO_CORREO_DUPLICADO`, `TASA_YA_REGISTRADA`, `TRM_AUTOMATICA_DISPONIBLE`, `CONTRASENA_ACTUAL_INCORRECTA`, `SERIAL_DUPLICADO`, `COMPRA_YA_ANULADA` |
 | 413 | `ARCHIVO_DEMASIADO_GRANDE` (cuando el archivo supera los 6 MB y ni siquiera llega a validarse) |
-| 422 | `CATEGORIA_CON_PRODUCTOS`, `UNIDAD_EN_USO`, `PRODUCTO_CON_MOVIMIENTOS`, `PRODUCTO_CAMBIO_NO_PERMITIDO`, `TASA_VARIACION_NO_ACEPTADA`, `NO_PUEDE_DESACTIVARSE_A_SI_MISMO`, `USAR_CAMBIO_DE_CONTRASENA` |
+| 422 | `CATEGORIA_CON_PRODUCTOS`, `UNIDAD_EN_USO`, `PRODUCTO_CON_MOVIMIENTOS`, `PRODUCTO_CAMBIO_NO_PERMITIDO`, `TASA_VARIACION_NO_ACEPTADA`, `NO_PUEDE_DESACTIVARSE_A_SI_MISMO`, `USAR_CAMBIO_DE_CONTRASENA`, `TASA_NO_DISPONIBLE`, `PRODUCTO_INACTIVO`, `STOCK_INSUFICIENTE`, `SERIAL_NO_DISPONIBLE`, `COMPRA_NO_ANULABLE` |
 | 500 | `ERROR_INTERNO` (mostrar un mensaje genérico y ofrecer reintentar, BF-09) |
 
 ## 3. Dinero, cantidades y tasas (RT-06)
@@ -66,7 +66,7 @@ Cómo usar cada campo:
   - `Bs 1.234,56` para VES;
   - fechas en `dd/mm/aaaa`.
 - **Cantidades:** vienen sin ceros sobrantes (`"0"`, `"12.5"`). La unidad dice si admite decimales (`unidadMedida.admiteDecimales`): Metro admite hasta 2 decimales; Unidad y Par, solo enteros (P-09).
-- **Equivalentes en otras monedas (RF-31):** el frontend los puede calcular como vista previa con `GET /api/v1/tasas/vigentes`. Los valores oficiales de los documentos los calcula y guarda el backend desde la Fase 2 (BF-06).
+- **Equivalentes en otras monedas (RF-31):** el frontend los puede calcular como vista previa con `GET /api/v1/tasas/vigentes`. Los valores oficiales de los documentos los calcula y guarda el backend (BF-06): por ejemplo, la vista previa de una compra o el inventario valorizado traen `{ usd, cop, ves }`. Si falta una tasa, ese equivalente llega `null` y la respuesta trae `avisos`.
 
 ## 4. Listados paginados (RT-04)
 
@@ -84,6 +84,12 @@ Filtros de cada listado:
 | `GET /clientes` | `tipo` (`INSTALADOR`/`CLIENTE_FINAL`), `buscar` (nombre, documento, teléfono, ciudad) | nombre |
 | `GET /proveedores` | `buscar` (nombre, NIT, ciudad) | nombre |
 | `GET /tasas` | `par` (`USD_COP`/`USD_VES`), `desde`, `hasta` (`aaaa-mm-dd`) | fecha, de la más reciente a la más antigua |
+| `GET /compras` | `proveedorId`, `productoId`, `desde`, `hasta` (sin fechas: el mes en curso), `incluirAnuladas` (por defecto `true`) | fecha y consecutivo, de la más reciente a la más antigua |
+| `GET /ajustes` | `productoId`, `desde`, `hasta` | fecha y consecutivo, del más reciente al más antiguo |
+| `GET /inventario` | `categoriaId`, `activo`, `buscar` (nombre, código, marca o número de serie) | nombre |
+| `GET /inventario/productos/{id}/kardex` | — (tamaño por defecto 50) | el movimiento más reciente primero |
+
+`GET /compras` y `GET /inventario` no devuelven la página sola: la envuelven con los totales de todo el filtro (`compras` + `totalesPorMoneda` + `totalUsd`; `productos` + `totalProductos` + `valorTotal`).
 
 `GET /categorias`, `GET /unidades-medida` y `GET /usuarios` devuelven listas sin paginar, porque son pocos registros.
 
@@ -125,7 +131,7 @@ Filtros de cada listado:
   - El teléfono llega con indicativo (`+573001234567`) y sirve directo para `https://wa.me/573001234567`. El usuario lo puede escribir sin indicativo: se asume +57 (P-10).
   - `cantidadMovimientos` y `fechaUltimoMovimiento` quedan en 0 y vacío hasta las fases 3 a 5.
 - **Productos:**
-  - `stock` y `costoActual` son de solo lectura; en la Fase 1 son `0` y `null`.
+  - `stock` y `costoActual` son de solo lectura: los mueven las compras, los ajustes y la carga inicial.
   - `bajoMinimo` marca la etiqueta **Bajo** (RF-52).
   - Un producto inactivo no se ofrece para vender.
 - **Clientes y proveedores no se eliminan** (P-11): no muestres botón de eliminar.
@@ -134,7 +140,49 @@ Filtros de cada listado:
   - Gestión de usuarios: `GET/POST /usuarios`, `POST /usuarios/{id}/desactivar|activar|restablecer-contrasena`.
   - Política de contraseñas: al menos 8 caracteres, con mayúscula, minúscula, número y signo.
 
-## 9. Cómo mantener el contrato al día
+## 9. Documentos y Idempotency-Key (RT-07, BF-10)
+
+- Al crear una compra, un ajuste o una carga inicial, genera una clave única (por ejemplo `crypto.randomUUID()`) **al abrir el formulario** y envíala en la cabecera `Idempotency-Key`. Si el usuario toca dos veces Guardar o la red reintenta, la segunda petición devuelve el mismo documento en lugar de crear otro. Genera una clave nueva para el siguiente documento.
+- Los consecutivos se muestran tal cual llegan: `C-0001` (compras), `AJ-001` (ajustes), `II-001` (inventario inicial).
+- Los documentos referencian su origen con `documento: { tipo, id, consecutivo }` (`tipo`: `COMPRA`, `AJUSTE`, `INVENTARIO_INICIAL`; después `VENTA`, `INSTALACION`).
+
+## 10. Compras (sección 3.6)
+
+1. **Vista previa (RF-41, RF-42):** mientras el usuario llena la compra, `POST /compras/vista-previa` con `{ fecha, moneda, lineas: [{ productoId, cantidad, costoUnitario }] }`. Devuelve, por línea, `stockActual`, `costoActualUsd`, `costoNuevoUsd`, la `regla` (`SUBE`, `PROMEDIO`, `SIN_STOCK`) y el `subtotal` en las tres monedas, más `tasas` y `avisos` (por ejemplo, que la TRM usada no es de la fecha de la compra). Es el valor oficial: no lo recalcules.
+2. **Guardar:** `POST /compras` con `{ proveedorId, numeroFactura, fecha, moneda, lineas: [{ productoId, cantidad, costoUnitario, seriales }] }` y la cabecera `Idempotency-Key`.
+   - `fecha` es la de la factura: puede ser anterior a hoy, nunca futura; vacía es hoy (P-19).
+   - Un producto por línea (P-20); costo mayor que 0 (P-21).
+   - Productos con serial: un serial por unidad (escáner o teclado). Se guardan en mayúsculas y sin espacios (P-22).
+3. **Factura adjunta:** `PUT /compras/{id}/factura` (`multipart`, campo `archivo`: JPEG, PNG, WebP o **PDF**, máximo 5 MB) y `DELETE /compras/{id}/factura`. `facturaUrl` es un enlace firmado de 15 minutos.
+4. **Detalle:** `GET /compras/{id}` trae `anulable` y, si no se puede anular, `motivoNoAnulable` para mostrarlo junto al botón deshabilitado.
+5. **Anular:** `POST /compras/{id}/anular` con `{ motivo }`. Solo se puede si la compra es el último movimiento de cada producto y sus seriales siguen en bodega (P-23); si no, `COMPRA_NO_ANULABLE` con la indicación de corregir con un ajuste.
+6. **Historial de compras de un proveedor (RF-38):** `GET /compras?proveedorId=…`.
+
+## 11. Ajustes (RF-58 a RF-62)
+
+- `POST /ajustes` con `{ productoId, motivo, descripcion, cantidad, costoUnitarioUsd, seriales }` y `Idempotency-Key`.
+  - `motivo`: `PERDIDA`, `DANO`, `CONTEO_FISICO`, `GARANTIA` u `OTRO` (este exige `descripcion`).
+  - `cantidad` positiva es entrada; negativa, salida. Una salida nunca deja el stock negativo (`STOCK_INSUFICIENTE`, con el mensaje "Stock insuficiente · quedan N und").
+  - `costoUnitarioUsd` solo se pide en una entrada de un producto que nunca tuvo costo (`COSTO_REQUERIDO`); en los demás casos entra al costo vigente y no lo cambia (P-25).
+  - Seriales: en una entrada, los nuevos; en una salida, los que se dan de baja (deben estar en bodega: `SERIAL_NO_DISPONIBLE`).
+- Los ajustes no se editan ni se anulan: un error se corrige con otro ajuste en sentido contrario (P-24).
+
+## 12. Inventario, kárdex y seriales (sección 3.7)
+
+- `GET /inventario`: listado valorizado con `totalProductos`, `valorTotal` (`{ usd, cop, ves }`) y `avisos`. Cada producto trae `stock`, `abreviatura`, `bajoMinimo`, `costoActualUsd` y `valorEnBodega`. La búsqueda también encuentra productos por número de serie.
+- `GET /inventario/productos/{id}`: indicadores en las tres monedas (costo, valor en bodega y precios) y `seriales` por estado.
+- `GET /inventario/productos/{id}/kardex`: movimientos con `tipoEtiqueta`, `detalle` (motivo del ajuste), `documento`, `entrada`, `salida`, `saldo` y `usuario`.
+- `GET /inventario/productos/{id}/historial-costo` y `GET /inventario/productos/{id}/seriales?estado=EN_BODEGA`.
+- **Buscar un serial desde cualquier pantalla:** `GET /seriales?numero=…` (hasta 50) y su historial con `GET /seriales/{id}`.
+
+## 13. Carga inicial desde Excel (sección 3.18)
+
+1. `GET /carga-inicial/plantilla` descarga el `.xlsx` (hojas Instrucciones, Productos, Inventario inicial, Clientes y Proveedores). Los ejemplos están en la hoja Instrucciones; las demás hojas solo traen el encabezado.
+2. `POST /carga-inicial/validar` (`multipart`, campo `archivo`) revisa todo sin guardar: `{ valido, errores: [{ hoja, fila, mensaje }], resumen }`. Muestra los errores agrupados por hoja, con el número de fila de Excel.
+3. Si `valido` es `true`, `POST /carga-inicial` con el mismo archivo y `Idempotency-Key`. Responde la carga creada (`II-00N`). Si mientras tanto apareció un error, responde `CARGA_INICIAL_CON_ERRORES` con la lista en `errores` y no guarda nada.
+4. `GET /carga-inicial` lista las cargas realizadas.
+
+## 14. Cómo mantener el contrato al día
 
 Cuando el backend cambia un endpoint:
 

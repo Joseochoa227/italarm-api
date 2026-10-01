@@ -1,6 +1,6 @@
 # Plan de la Fase 2 — Compras, inventario, costo y carga inicial (italarm-api)
 
-> Estado: **aprobado por ITALARM el 01/10/2026**, en implementación. Preguntas P-19 a P-26 respondidas: de acuerdo con las propuestas (ver `docs/preguntas.md`).
+> Estado: **aprobado por ITALARM el 01/10/2026**, implementado; pendiente de la prueba de ITALARM (lista de la sección 7). Preguntas P-19 a P-26 respondidas: de acuerdo con las propuestas (ver `docs/preguntas.md`).
 > Base: `docs/requerimientos.md`, secciones 3.4, 3.6 a 3.9, 3.18, 4, 5, 9.4, 10 y 12.4, más las decisiones de `docs/preguntas.md`.
 > Alcance: solo el backend (**italarm-api**). Las pantallas se hacen después en italarm-web, a partir del contrato OpenAPI que deja esta fase.
 
@@ -22,7 +22,7 @@ Entregable (12.4): ITALARM carga su inventario real y registra compras, y el cos
 Orden según AG-03: migración → dominio con pruebas → casos de uso → endpoints → OpenAPI. Las reglas de negocio se escriben primero como prueba del caso CP-xx (AG-04).
 
 ### T1. Dominio del inventario (puro, sin Spring, con TDD) — `feat:`
-- [ ] **`MotorCosto`** (sección 3.8, RF-66, BP-05). Calcula el nuevo costo en USD a partir de: stock actual, costo actual, cantidad comprada y costo unitario en USD.
+- [x] **`MotorCosto`** (sección 3.8, RF-66, BP-05). Calcula el nuevo costo en USD a partir de: stock actual, costo actual, cantidad comprada y costo unitario en USD.
 
   | Regla | Cuándo aplica | Resultado |
   |---|---|---|
@@ -31,71 +31,71 @@ Orden según AG-03: migración → dominio con pruebas → casos de uso → endp
   | `SIN_STOCK` | No hay unidades en bodega. | El costo de la factura. |
 
   Calcula con 6 decimales y guarda con 4 (BP-06). La regla `SIN_STOCK` se agrega para que el historial (RF-57) diga exactamente qué pasó; el documento solo nombra "sube" y "promedio".
-- [ ] **`ConversorUsd`**: convierte el costo de la factura a USD. COP ÷ TRM; VES ÷ tasa del bolívar; USD sin cambio.
-- [ ] **`ReglaStock`**: una salida nunca deja el stock negativo (`STOCK_INSUFICIENTE`, RF-62, RF-65, RN-05). Las cantidades respetan la unidad (P-09, ya existe `ReglaCantidad`).
-- [ ] **`Serial`**:
+- [x] **`ConversorUsd`**: convierte el costo de la factura a USD. COP ÷ TRM; VES ÷ tasa del bolívar; USD sin cambio.
+- [x] **`ReglaStock`**: una salida nunca deja el stock negativo (`STOCK_INSUFICIENTE`, RF-62, RF-65, RN-05). Las cantidades respetan la unidad (P-09, ya existe `ReglaCantidad`).
+- [x] **`Serial`**:
   - estados `EN_BODEGA`, `VENDIDO`, `INSTALADO`, `DADO_DE_BAJA` (RF-22) y `ANULADO` (el serial de una compra anulada; ver P-22);
   - transiciones válidas: solo un serial `EN_BODEGA` puede salir;
   - normalización del número según P-22.
-- [ ] **Validación de seriales de una línea** (RF-20): la cantidad de seriales igual a la cantidad, sin repetidos dentro del documento ni con los que ya existen del producto.
-- [ ] **Anulabilidad de una compra** según P-23, con el motivo cuando no se puede anular.
+- [x] **Validación de seriales de una línea** (RF-20): la cantidad de seriales igual a la cantidad, sin repetidos dentro del documento ni con los que ya existen del producto.
+- [x] **Anulabilidad de una compra** según P-23, con el motivo cuando no se puede anular.
 
 ### T2. Persistencia del inventario (migración V7) — `feat:`
-- [ ] Secuencias de consecutivos por tipo de documento (BP-11): `seq_compra` (C-0001), `seq_ajuste` (AJ-001) y `seq_inventario_inicial` (II-001). El formato se aplica al mostrar. Un consecutivo nunca se reutiliza; si una operación falla después de pedir su número, puede quedar un salto (RN-09 exige que sean únicos y no se reutilicen, no que sean continuos).
-- [ ] **Kárdex** (`movimiento_inventario`), solo de inserción (BP-10):
+- [x] Secuencias de consecutivos por tipo de documento (BP-11): `seq_compra` (C-0001), `seq_ajuste` (AJ-001) y `seq_inventario_inicial` (II-001). El formato se aplica al mostrar. Un consecutivo nunca se reutiliza; si una operación falla después de pedir su número, puede quedar un salto (RN-09 exige que sean únicos y no se reutilicen, no que sean continuos).
+- [x] **Kárdex** (`movimiento_inventario`), solo de inserción (BP-10):
   - producto, fecha de negocio y fecha y hora de registro;
   - tipo: `COMPRA`, `ANULACION_COMPRA`, `AJUSTE_ENTRADA`, `AJUSTE_SALIDA` o `INVENTARIO_INICIAL`. Las fases siguientes agregan venta, instalación y sus anulaciones;
   - documento (tipo, id y consecutivo), entrada, salida, saldo, costo unitario USD vigente, motivo (en los ajustes) y usuario.
-- [ ] **Historial de costo** (RF-57, RF-67):
+- [x] **Historial de costo** (RF-57, RF-67):
   - producto y compra;
   - fecha;
   - moneda, tasa y costo unitario de la factura;
   - costo en USD;
   - costo anterior, costo nuevo y regla.
-- [ ] **Seriales** (`serial`):
+- [x] **Seriales** (`serial`):
   - producto, número y estado;
   - documento de entrada (compra, ajuste o inventario inicial) y de salida;
   - fecha de entrada;
   - vencimiento de garantía (vacío por ahora).
 
   Índice único `(producto, número)` para los seriales no anulados (BP-09).
-- [ ] **Historial de cada serial** (`movimiento_serial`, solo de inserción): para RF-24.
-- [ ] **Ajustes** (`ajuste`): consecutivo, fecha, producto, motivo, descripción, cantidad, costo unitario USD y usuario.
-- [ ] **Inventario inicial** (`inventario_inicial` y sus líneas): consecutivo, fecha, nombre del archivo y usuario.
-- [ ] **Idempotencia** (`idempotencia`): clave, usuario, operación y documento resultante (RT-07).
-- [ ] `ProductoInventario`: una entidad del módulo inventario sobre la tabla `producto`, que solo maneja stock, costo, unidad y "controla serial". Así el inventario mueve el stock sin depender del dominio de catálogo. No toca la `version` del producto, para que una compra no le genere conflicto a quien está editando el producto.
-- [ ] `MovimientosProducto`: la implementa el inventario consultando el kárdex. Con esto se activan P-17 (serial y unidad fijos con movimientos) y RF-14 (no eliminar un producto con movimientos).
+- [x] **Historial de cada serial** (`movimiento_serial`, solo de inserción): para RF-24.
+- [x] **Ajustes** (`ajuste`): consecutivo, fecha, producto, motivo, descripción, cantidad, costo unitario USD y usuario.
+- [x] **Inventario inicial** (`inventario_inicial` y sus líneas): consecutivo, fecha, nombre del archivo y usuario.
+- [x] **Idempotencia** (`idempotencia`): clave, usuario, operación y documento resultante (RT-07).
+- [x] `ProductoInventario`: una entidad del módulo inventario sobre la tabla `producto`, que solo maneja stock, costo, unidad y "controla serial". Así el inventario mueve el stock sin depender del dominio de catálogo. No toca la `version` del producto, para que una compra no le genere conflicto a quien está editando el producto.
+- [x] `MovimientosProducto`: la implementa el inventario consultando el kárdex. Con esto se activan P-17 (serial y unidad fijos con movimientos) y RF-14 (no eliminar un producto con movimientos).
 
 ### T3. Concurrencia e integridad — `feat:`
-- [ ] Toda operación que mueve inventario bloquea las filas de los productos y seriales afectados (`SELECT … FOR UPDATE`), siempre en orden de id para evitar bloqueos mutuos (BP-08).
-- [ ] Segunda línea de defensa: `CHECK (stock >= 0)` ya existe; se agregan el índice único de seriales y llaves foráneas en todas las relaciones (BP-09).
-- [ ] **Idempotency-Key** en la creación de compras, ajustes y carga inicial (RT-07). Si se repite la misma clave, el mismo usuario recibe el mismo documento en lugar de crear otro.
+- [x] Toda operación que mueve inventario bloquea las filas de los productos y seriales afectados (`SELECT … FOR UPDATE`), siempre en orden de id para evitar bloqueos mutuos (BP-08).
+- [x] Segunda línea de defensa: `CHECK (stock >= 0)` ya existe; se agregan el índice único de seriales y llaves foráneas en todas las relaciones (BP-09).
+- [x] **Idempotency-Key** en la creación de compras, ajustes y carga inicial (RT-07). Si se repite la misma clave, el mismo usuario recibe el mismo documento en lugar de crear otro.
 
 ### T4. Compras (módulo `compras`, migración V8) — `feat:`
-- [ ] **Registrar una compra** (RF-39, RF-42 a RF-45):
+- [x] **Registrar una compra** (RF-39, RF-42 a RF-45):
   - Datos: proveedor, número de factura, fecha (P-19), moneda y líneas con producto, cantidad, costo unitario en la moneda de la factura y seriales.
   - Guarda las tasas del día con la compra (RF-32, RN-04): TRM y tasa del bolívar vigentes para esa fecha, aunque la factura sea en USD.
   - Si la moneda es COP o VES y no hay ninguna tasa para convertir: `TASA_NO_DISPONIBLE`. Si la tasa no es la del día, la compra se guarda igual y queda el aviso (RF-33).
   - En una sola transacción: bloquea los productos, aplica el motor de costo línea por línea, actualiza stock y costo, crea los seriales `EN_BODEGA`, y escribe el kárdex y el historial de costo.
   - Total en la moneda de la factura y su equivalente en USD.
-- [ ] **Vista previa** (RF-41, RF-42): para cada línea, el costo actual en USD, el costo nuevo, la regla y el subtotal en las tres monedas, sin guardar nada. Es el valor oficial que muestra el frontend (BF-06).
-- [ ] **Factura adjunta** (RF-44): foto (JPEG, PNG, WebP) o **PDF** (se agrega la validación del PDF por su firma `%PDF-`). Máximo 5 MB. Se puede subir, reemplazar y quitar, porque es un dato descriptivo (RF-70).
-- [ ] **Listado** (RF-46, RF-47):
+- [x] **Vista previa** (RF-41, RF-42): para cada línea, el costo actual en USD, el costo nuevo, la regla y el subtotal en las tres monedas, sin guardar nada. Es el valor oficial que muestra el frontend (BF-06).
+- [x] **Factura adjunta** (RF-44): foto (JPEG, PNG, WebP) o **PDF** (se agrega la validación del PDF por su firma `%PDF-`). Máximo 5 MB. Se puede subir, reemplazar y quitar, porque es un dato descriptivo (RF-70).
+- [x] **Listado** (RF-46, RF-47):
   - filtros por proveedor, producto, rango de fechas (por defecto, el mes en curso) e incluir o no las anuladas;
   - cada compra muestra proveedor, consecutivo, fecha, factura, usuario, resumen de productos, total y equivalente, tasa guardada y enlace a la factura;
   - **totales del período sin las anuladas** (RF-73): por moneda y su suma en USD.
-- [ ] **Detalle** (RF-48), que indica además si la compra se puede anular y, si no, por qué.
-- [ ] **Anular** (RF-71, RF-73):
+- [x] **Detalle** (RF-48), que indica además si la compra se puede anular y, si no, por qué.
+- [x] **Anular** (RF-71, RF-73):
   - exige un motivo;
   - verifica las condiciones de P-23;
   - descuenta el stock (kárdex `ANULACION_COMPRA`), devuelve el costo al valor anterior según el historial y deja los seriales `ANULADO`;
   - la compra queda visible como anulada, con motivo, usuario y fecha.
 
   Si no se puede anular: `COMPRA_NO_ANULABLE` (código de RT-05), con el motivo.
-- [ ] El historial de compras de un proveedor (RF-38) es el mismo listado filtrado por proveedor.
+- [x] El historial de compras de un proveedor (RF-38) es el mismo listado filtrado por proveedor.
 
 ### T5. Ajustes de inventario — `feat:`
-- [ ] **Registrar un ajuste** (RF-58 a RF-62): un producto por ajuste.
+- [x] **Registrar un ajuste** (RF-58 a RF-62): un producto por ajuste.
   - Motivo: `PERDIDA`, `DANO`, `CONTEO_FISICO`, `GARANTIA` u `OTRO` (este último con descripción obligatoria).
   - Cantidad: positiva es entrada; negativa, salida.
   - Ajuste de entrada:
@@ -106,34 +106,34 @@ Orden según AG-03: migración → dominio con pruebas → casos de uso → endp
     - no puede dejar el stock negativo (`STOCK_INSUFICIENTE`);
     - para productos con serial, se eligen los seriales que se dan de baja (`DADO_DE_BAJA`); deben estar `EN_BODEGA` (`SERIAL_NO_DISPONIBLE`, código de RT-05).
   - Consecutivo AJ-001 y movimiento en el kárdex con su motivo.
-- [ ] Listado y detalle de ajustes. Anulación de ajustes: según P-24.
+- [x] Listado y detalle de ajustes. Anulación de ajustes: según P-24.
 
 ### T6. Consultas de inventario — `feat:`
-- [ ] **Listado de inventario** (RF-49 a RF-52):
+- [x] **Listado de inventario** (RF-49 a RF-52):
   - filtros por categoría y búsqueda por nombre, código, marca **o serial**;
   - por producto: stock con su unidad, etiqueta "Bajo", costo actual en USD y valor en bodega;
   - encabezado: cantidad de productos y valor total del inventario.
 
   Los valores llegan en USD y convertidos a COP y VES con las tasas vigentes. Si falta una tasa, el equivalente queda vacío con el aviso.
-- [ ] **Detalle del producto** (RF-53 a RF-55): indicadores en las tres monedas (stock, mínimo, costo, valor en bodega, precios) y resumen de seriales por estado.
-- [ ] **Kárdex del producto** (RF-56): paginado. Columnas: fecha, movimiento (con motivo en los ajustes), documento, entrada, salida, saldo y usuario.
-- [ ] **Historial de costo** (RF-57).
-- [ ] **Seriales** (RF-24, RF-55): listado del producto por estado, búsqueda de un número desde cualquier pantalla y su historial (entrada con proveedor y compra; salidas en las fases siguientes).
+- [x] **Detalle del producto** (RF-53 a RF-55): indicadores en las tres monedas (stock, mínimo, costo, valor en bodega, precios) y resumen de seriales por estado.
+- [x] **Kárdex del producto** (RF-56): paginado. Columnas: fecha, movimiento (con motivo en los ajustes), documento, entrada, salida, saldo y usuario.
+- [x] **Historial de costo** (RF-57).
+- [x] **Seriales** (RF-24, RF-55): listado del producto por estado, búsqueda de un número desde cualquier pantalla y su historial (entrada con proveedor y compra; salidas en las fases siguientes).
 
 ### T7. Carga inicial desde Excel (sección 3.18) — `feat:`
-- [ ] **Plantilla** (RF-149), generada con Apache POI, con encabezados, una fila de ejemplo y una hoja de instrucciones. Hojas:
+- [x] **Plantilla** (RF-149), generada con Apache POI, con encabezados, una fila de ejemplo y una hoja de instrucciones. Los ejemplos quedan en la hoja Instrucciones, para que una fila de ejemplo olvidada en la plantilla no se cargue como dato real. Hojas:
   - `Productos`: código, nombre, marca, modelo, categoría (por nombre), unidad (por abreviatura), controla serial (Sí/No), precio instalador, precio cliente final, moneda del precio, stock mínimo y descripción;
   - `Inventario inicial`: código del producto, cantidad, costo unitario en USD y seriales (formato según P-26);
   - `Clientes`: los campos de la sección 3.10;
   - `Proveedores`: los campos de la sección 3.6.
-- [ ] **Validar** (RF-150): revisa todo el archivo sin guardar nada y devuelve los errores por hoja y fila, más un resumen de lo que se cargaría. Errores que detecta:
+- [x] **Validar** (RF-150): revisa todo el archivo sin guardar nada y devuelve los errores por hoja y fila, más un resumen de lo que se cargaría. Errores que detecta:
   - códigos repetidos en el archivo o ya existentes;
   - seriales repetidos, faltantes o que no corresponden a la cantidad;
   - cantidades y costos inválidos;
   - categorías y unidades inexistentes;
   - teléfonos o documentos inválidos o duplicados;
   - productos con movimientos (RF-152).
-- [ ] **Confirmar** (RF-151): vuelve a validar y, si no hay ningún error, guarda todo en una sola transacción:
+- [x] **Confirmar** (RF-151): vuelve a validar y, si no hay ningún error, guarda todo en una sola transacción:
   - productos, clientes y proveedores;
   - un documento II-001 con un movimiento de entrada por producto en el kárdex;
   - el costo cargado como costo inicial, sin aplicar la regla de costo;
@@ -142,14 +142,14 @@ Orden según AG-03: migración → dominio con pruebas → casos de uso → endp
   Si hay un solo error, no se guarda nada. Archivo `.xlsx` de máximo 5 MB.
 
 ### T8. Contrato y documentación — `docs:`
-- [ ] `contrato/openapi.json` actualizado y `docs/guia-frontend.md` con:
+- [x] `contrato/openapi.json` actualizado y `docs/guia-frontend.md` con:
   - compra y su vista previa;
   - seriales con escáner;
   - anulación;
   - ajustes;
   - carga inicial;
   - Idempotency-Key.
-- [ ] CHANGELOG.md, CLAUDE.md (módulos `inventario` y `compras`, decisiones) y README.
+- [x] CHANGELOG.md, CLAUDE.md (módulos `inventario` y `compras`, decisiones) y README.
 
 ## 4. Endpoints
 
@@ -231,10 +231,10 @@ Cobertura mínima de 80 % en dominio y aplicación; ninguna prueba se desactiva 
 
 ## 7. Definición de terminado (12.1)
 
-- [ ] Verificación completa en verde (en local y en la CI de GitHub).
-- [ ] CP-01 a CP-07, CP-13, CP-16, CP-17, CP-19, CP-28 y CP-29 automatizados y pasando, más la prueba de concurrencia y la de stock igual al kárdex.
-- [ ] Migraciones V7 y V8 aplicadas sin errores sobre la base de la Fase 1.
-- [ ] Contrato y guía del frontend actualizados; CHANGELOG.md actualizado.
+- [x] Verificación completa en verde en local (384 pruebas); falta confirmarla en la CI de GitHub.
+- [x] CP-01 a CP-07, CP-13, CP-16, CP-17, CP-19, CP-28 y CP-29 automatizados y pasando, más la prueba de concurrencia y la de stock igual al kárdex.
+- [x] Migraciones V7 y V8 aplicadas sin errores sobre la base de la Fase 1.
+- [x] Contrato y guía del frontend actualizados; CHANGELOG.md actualizado.
 - [ ] Lista de verificación para ITALARM en Swagger:
   1. Descargar la plantilla, cargar una parte del inventario real con un error a propósito, ver el error por fila, corregirlo y confirmar.
   2. Registrar compras en USD, COP y VES con seriales y verificar el costo resultante contra los ejemplos de la sección 3.8.

@@ -29,6 +29,7 @@
     <jacoco.version>0.8.15</jacoco.version>
     <cobertura.minima>0.80</cobertura.minima>
     <awssdk.version>2.55.7</awssdk.version>
+    <poi.version>5.5.1</poi.version>
   </properties>
 
   <dependencyManagement>
@@ -87,6 +88,12 @@
           <artifactId>netty-nio-client</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <!-- Plantilla y carga inicial desde Excel (sección 3.18). -->
+    <dependency>
+      <groupId>org.apache.poi</groupId>
+      <artifactId>poi-ooxml</artifactId>
+      <version>${poi.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springdoc</groupId>

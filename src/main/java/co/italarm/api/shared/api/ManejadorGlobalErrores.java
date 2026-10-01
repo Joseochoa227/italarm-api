@@ -52,6 +52,9 @@ public class ManejadorGlobalErrores extends ResponseEntityExceptionHandler {
   @ExceptionHandler(NegocioException.class)
   public ResponseEntity<ProblemDetail> manejarNegocio(NegocioException ex) {
     ProblemDetail problema = fabrica.crear(ex.tipo(), ex.codigo(), ex.getMessage());
+    if (ex.detalles() != null) {
+      problema.setProperty(FabricaProblemas.PROPIEDAD_ERRORES, ex.detalles());
+    }
     return ResponseEntity.status(problema.getStatus()).body(problema);
   }
 

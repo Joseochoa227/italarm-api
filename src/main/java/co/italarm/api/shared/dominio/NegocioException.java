@@ -22,4 +22,9 @@ public abstract class NegocioException extends RuntimeException {
   public String codigo() {
     return codigo;
   }
+
+  /** Lista de errores detallados que acompaña al error (por ejemplo, por fila), o null. */
+  public Object detalles() {
+    return null;
+  }
 }

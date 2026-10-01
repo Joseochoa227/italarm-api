@@ -41,6 +41,9 @@ documentos/      almacenamiento de archivos (S3 o disco), validación de imágen
 catalogo/        categorías, unidades de medida y productos
 terceros/        clientes y proveedores
 tasas/           TRM automática, tasa del bolívar manual, correcciones e historial
+inventario/      kárdex, motor de costo, seriales, ajustes, consultas e inventario inicial
+compras/         compras a proveedores, vista previa, anulación y factura
+cargainicial/    plantilla y lectura del Excel de la carga inicial (usa catalogo, terceros e inventario)
 ```
 
 Capas dentro de cada módulo:
@@ -96,6 +99,9 @@ Los módulos que falten se crean en la fase que los necesita.
 - **Restricciones de la base de datos**: cada módulo declara las suyas en un `RestriccionesModulo` (índice o constraint → código de negocio); el manejador global las traduce.
 - **Integraciones externas** (BP-14): interfaz en `aplicacion` (`AlmacenamientoArchivos`, `FuenteTrm`) e implementación en `infraestructura`. En las pruebas se usan `FuenteTrmSimulada`, el almacenamiento en disco y `RelojPrueba` (en `soporte/`).
 - **Contrato OpenAPI**: `contrato/openapi.json` está versionado y `ApiComunIntegracionTest` falla si no corresponde al código. Tras cambiar un endpoint: `./mvnw test -Dtest=ApiComunIntegracionTest -Dcontrato.actualizar=true`. Los `BigDecimal` se declaran como texto decimal.
+- **Movimientos de inventario**: siempre por `inventario.aplicacion` (`ServicioMovimientos`, `RegistroAjustes`, `CargaInventario`), que bloquean productos y seriales en orden de id (`OperacionesInventario`) y escriben kárdex, historial de costo y seriales en la misma transacción. Nunca se actualiza `producto.stock` o `costo_actual_usd` desde otro lugar.
+- **Creaciones idempotentes**: el servicio público no es transaccional y llama a `ServicioIdempotencia.ejecutar`; la transacción la abre un bean `Registro*` que reserva la clave al empezar y la asocia al documento al final.
+- **Pruebas de inventario**: heredan de `soporte.PruebaInventario` (reloj fijo el 01/10/2026, TRM 4.000, bolívar 50 y utilidades para productos, proveedores y compras).
 - **Limpieza en pruebas**: `soporte/LimpiezaDatos` deja la base como la dejan las migraciones antes de cada prueba de integración; al agregar tablas, agrégalas ahí.
 - **Secretos**: nunca en el repositorio ni en `application*.yml`, y tampoco las contraseñas de usuarios (AG-09). Todo va por variables de entorno. El `.env` local está en `.gitignore`.
 
@@ -121,4 +127,11 @@ Los módulos que falten se crean en la fase que los necesita.
 | TRM desde datos.gov.co (conjunto `32sa-8pi3`), tarea a las 6:00 con reintentos cada 30 min hasta las 12:00 y al arrancar. La oficial reemplaza a la manual del día y queda como corrección automática. | RF-28, P-13, P-18. |
 | Cualquier tasa se puede corregir, con doble digitación y alerta de variación. | P-14. |
 | Gestión mínima de usuarios: crear, desactivar/activar (cierra sesiones), restablecer contraseña de otro. | P-15. |
-| `MovimientosProducto` responde siempre "sin movimientos" en la Fase 1; en la Fase 2 lo implementa el inventario. | P-17 aplica desde la Fase 2. |
+| `MovimientosProducto` lo implementa el inventario con el kárdex (`MovimientosProductoKardex`). | P-17 y RF-14. |
+| La tabla `producto` tiene dos entidades: `catalogo.Producto` (stock y costo de solo lectura) e `inventario.ProductoInventario` (stock y costo, sin `@Version`). | El inventario mueve el stock sin depender del dominio del catálogo y sin generar conflictos de versión a quien edita el producto. |
+| La regla de costo se aplica en el orden en que se registran las compras; la fecha de la factura solo elige las tasas (la del día o la última anterior). | P-19. |
+| Una compra se anula solo si es el último movimiento de cada producto y sus seriales siguen en bodega; el costo vuelve al anterior según el historial. | P-23, RF-71. |
+| Los ajustes no se anulan; entran al costo vigente salvo que el producto no tenga costo. | P-24, P-25. |
+| Seriales en mayúsculas y sin espacios, únicos por producto salvo los anulados (índice parcial). | P-22. |
+| Carga inicial: módulo `cargainicial` con la lectura de Excel en infraestructura; cada módulo valida y crea sus filas (`CargaProductos`, `CargaTerceros`, `CargaInventario`). Seriales separados por coma en la fila del producto. | Sección 3.18, P-26. |
+| `Idempotency-Key` guardada en la tabla `idempotencia` (usuario, operación, clave → documento). | RT-07, BF-10. |

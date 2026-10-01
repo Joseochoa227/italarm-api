@@ -2,6 +2,25 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado semántico.
 
+## [Sin publicar] — Fase 2: Compras, inventario, costo y carga inicial
+
+### Agregado
+- Inventario (migración V7):
+  - kárdex solo de inserción, historial de costo, seriales con su historial y consecutivos por tipo de documento;
+  - motor de costo en USD (sube, promedio ponderado o costo de la factura sin stock) con los casos CP-01 a CP-07;
+  - bloqueo de productos y seriales en orden de id: dos salidas simultáneas de la última unidad no dejan el stock negativo;
+  - `Idempotency-Key` en la creación de compras, ajustes y carga inicial.
+- Compras (migración V8):
+  - vista previa del cambio de costo por línea con subtotales en USD, COP y VES;
+  - registro con las tasas de la fecha de la factura, seriales y avisos de tasa;
+  - listado con filtros y totales del período sin las anuladas;
+  - detalle con `anulable` y su motivo, y anulación que revierte stock, costo y seriales (CP-16, CP-17);
+  - factura adjunta en imagen o PDF.
+- Ajustes de entrada y salida con motivo, costo requerido si el producto no tiene costo (P-25) y baja de seriales (CP-19).
+- Consultas: inventario valorizado con búsqueda por serial, detalle en tres monedas, kárdex, historial de costo, seriales del producto y búsqueda e historial de un serial.
+- Carga inicial desde Excel (Apache POI): plantilla, validación por hoja y fila sin guardar y confirmación en una sola transacción con el documento II-001 (CP-28, CP-29).
+- Desde esta fase, un producto con movimientos no se elimina ni cambia su serial o su unidad (P-17).
+
 ## [Sin publicar] — Fase 1: Catálogo, terceros, tasas y configuración
 
 ### Agregado

@@ -12,29 +12,20 @@
     "bearerAuth" : [ ]
   } ],
   "tags" : [ {
-    "description" : "Solo en desarrollo local: en el hosting los sirve S3",
-    "name" : "Archivos"
+    "description" : "Búsqueda e historial de números de serie (RF-24)",
+    "name" : "Seriales"
   }, {
-    "description" : "Categorías de productos (RF-15)",
-    "name" : "Categorías"
+    "description" : "Productos, inventario inicial, clientes y proveedores desde Excel (sección 3.18)",
+    "name" : "Carga inicial"
   }, {
-    "description" : "Instaladores y clientes finales (sección 3.10)",
-    "name" : "Clientes"
+    "description" : "Stock valorizado, kárdex, costos y seriales (sección 3.7)",
+    "name" : "Inventario"
   }, {
     "description" : "Datos de la empresa y valores por defecto (3.17)",
     "name" : "Configuración"
   }, {
-    "description" : "Catálogo de productos (sección 3.3)",
-    "name" : "Productos"
-  }, {
     "description" : "TRM automática y tasa del bolívar manual (3.5)",
     "name" : "Tasas de cambio"
-  }, {
-    "description" : "Unidad, Metro, Par… (RF-148, P-09)",
-    "name" : "Unidades de medida"
-  }, {
-    "description" : "Proveedores y su moneda habitual (sección 3.6)",
-    "name" : "Proveedores"
   }, {
     "description" : "Cambio de contraseña y gestión de usuarios (RF-148)",
     "name" : "Usuarios"
@@ -44,8 +35,170 @@
   }, {
     "description" : "Ingreso, usuario actual y cierre de sesión",
     "name" : "Sesión"
+  }, {
+    "description" : "Solo en desarrollo local: en el hosting los sirve S3",
+    "name" : "Archivos"
+  }, {
+    "description" : "Categorías de productos (RF-15)",
+    "name" : "Categorías"
+  }, {
+    "description" : "Instaladores y clientes finales (sección 3.10)",
+    "name" : "Clientes"
+  }, {
+    "description" : "Catálogo de productos (sección 3.3)",
+    "name" : "Productos"
+  }, {
+    "description" : "Ajustes de inventario (RF-58 a RF-62). No se editan ni se anulan (P-24).",
+    "name" : "Ajustes"
+  }, {
+    "description" : "Unidad, Metro, Par… (RF-148, P-09)",
+    "name" : "Unidades de medida"
+  }, {
+    "description" : "Proveedores y su moneda habitual (sección 3.6)",
+    "name" : "Proveedores"
   } ],
   "paths" : {
+    "/api/v1/ajustes" : {
+      "get" : {
+        "description" : "Orden por defecto: más recientes primero.",
+        "operationId" : "listar_5",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "productoId",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "in" : "query",
+          "name" : "desde",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "in" : "query",
+          "name" : "hasta",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "description" : "Zero-based page index (0..N)",
+          "in" : "query",
+          "name" : "page",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "default" : 0,
+            "minimum" : 0
+          }
+        }, {
+          "description" : "The size of the page to be returned",
+          "in" : "query",
+          "name" : "size",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "default" : 20,
+            "minimum" : 1
+          }
+        }, {
+          "description" : "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+          "in" : "query",
+          "name" : "sort",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaginaAjusteVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Listado paginado de ajustes",
+        "tags" : [ "Ajustes" ]
+      },
+      "post" : {
+        "description" : "La entrada entra al costo vigente; si el producto nunca tuvo costo, exige costoUnitarioUsd. Con la misma Idempotency-Key devuelve el ajuste ya creado. Errores (400): AJUSTE_INVALIDO, COSTO_REQUERIDO, CANTIDAD_INVALIDA, SERIALES_NO_COINCIDEN, PRODUCTO_NO_EXISTE; (409) SERIAL_DUPLICADO; (422) STOCK_INSUFICIENTE, SERIAL_NO_DISPONIBLE.",
+        "operationId" : "registrar_1",
+        "parameters" : [ {
+          "description" : "Clave única por intento de guardar (RT-07)",
+          "in" : "header",
+          "name" : "Idempotency-Key",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudAjuste"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AjusteVista"
+                }
+              }
+            },
+            "description" : "Created"
+          }
+        },
+        "summary" : "Registrar un ajuste de entrada (cantidad positiva) o de salida (negativa)",
+        "tags" : [ "Ajustes" ]
+      }
+    },
+    "/api/v1/ajustes/{id}" : {
+      "get" : {
+        "operationId" : "detalle_6",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AjusteVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Detalle de un ajuste",
+        "tags" : [ "Ajustes" ]
+      }
+    },
     "/api/v1/archivos" : {
       "get" : {
         "operationId" : "descargar",
@@ -88,6 +241,127 @@
         "security" : [ ],
         "summary" : "Descargar un archivo con un enlace firmado",
         "tags" : [ "Archivos" ]
+      }
+    },
+    "/api/v1/carga-inicial" : {
+      "get" : {
+        "operationId" : "listar_4",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/CargaInicialVista"
+                  }
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Cargas realizadas, de la más reciente a la más antigua",
+        "tags" : [ "Carga inicial" ]
+      },
+      "post" : {
+        "description" : "Crea los productos, clientes y proveedores y el documento II-00N. Con un solo error no guarda nada: CARGA_INICIAL_CON_ERRORES (400) con la lista en 'errores'. Además: ARCHIVO_TIPO_NO_PERMITIDO, ARCHIVO_DEMASIADO_GRANDE (400).",
+        "operationId" : "confirmar",
+        "parameters" : [ {
+          "description" : "Clave única por intento de guardar (RT-07)",
+          "in" : "header",
+          "name" : "Idempotency-Key",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "archivo" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                },
+                "required" : [ "archivo" ]
+              }
+            }
+          }
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CargaInicialVista"
+                }
+              }
+            },
+            "description" : "Created"
+          }
+        },
+        "summary" : "Guardar la carga si el archivo no tiene errores",
+        "tags" : [ "Carga inicial" ]
+      }
+    },
+    "/api/v1/carga-inicial/plantilla" : {
+      "get" : {
+        "operationId" : "plantilla",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Descargar la plantilla .xlsx",
+        "tags" : [ "Carga inicial" ]
+      }
+    },
+    "/api/v1/carga-inicial/validar" : {
+      "post" : {
+        "description" : "Devuelve los errores por hoja y fila y un resumen. Errores: ARCHIVO_TIPO_NO_PERMITIDO, ARCHIVO_DEMASIADO_GRANDE (400).",
+        "operationId" : "validar",
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "archivo" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                },
+                "required" : [ "archivo" ]
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ResultadoCargaVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Revisar el archivo sin guardar nada",
+        "tags" : [ "Carga inicial" ]
       }
     },
     "/api/v1/categorias" : {
@@ -521,7 +795,7 @@
     },
     "/api/v1/compras/{id}" : {
       "get" : {
-        "operationId" : "detalle_4",
+        "operationId" : "detalle_5",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -755,6 +1029,241 @@
         },
         "summary" : "Subir o reemplazar el logo (JPEG, PNG o WebP; máximo 5 MB)",
         "tags" : [ "Configuración" ]
+      }
+    },
+    "/api/v1/inventario" : {
+      "get" : {
+        "description" : "Busca por nombre, código, marca o número de serie. Valores en USD, COP y VES con las tasas vigentes. Orden por defecto: nombre.",
+        "operationId" : "listar_6",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "categoriaId",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "true: solo activos; false: solo inactivos; vacío: todos",
+          "in" : "query",
+          "name" : "activo",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "in" : "query",
+          "name" : "buscar",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Zero-based page index (0..N)",
+          "in" : "query",
+          "name" : "page",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "default" : 0,
+            "minimum" : 0
+          }
+        }, {
+          "description" : "The size of the page to be returned",
+          "in" : "query",
+          "name" : "size",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "default" : 10,
+            "minimum" : 1
+          }
+        }, {
+          "description" : "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+          "in" : "query",
+          "name" : "sort",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "default" : [ "nombre,ASC" ],
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/InventarioVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Listado valorizado con la cantidad de productos y el valor total",
+        "tags" : [ "Inventario" ]
+      }
+    },
+    "/api/v1/inventario/productos/{id}" : {
+      "get" : {
+        "operationId" : "detalle_4",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProductoInventarioVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Indicadores del producto en las tres monedas y seriales por estado",
+        "tags" : [ "Inventario" ]
+      }
+    },
+    "/api/v1/inventario/productos/{id}/historial-costo" : {
+      "get" : {
+        "operationId" : "historialCosto",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/CambioCostoVista"
+                  }
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Cambios de costo del producto, del más reciente al más antiguo",
+        "tags" : [ "Inventario" ]
+      }
+    },
+    "/api/v1/inventario/productos/{id}/kardex" : {
+      "get" : {
+        "description" : "Orden por defecto: el movimiento más reciente primero.",
+        "operationId" : "kardex",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "Zero-based page index (0..N)",
+          "in" : "query",
+          "name" : "page",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "default" : 0,
+            "minimum" : 0
+          }
+        }, {
+          "description" : "The size of the page to be returned",
+          "in" : "query",
+          "name" : "size",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "default" : 50,
+            "minimum" : 1
+          }
+        }, {
+          "description" : "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+          "in" : "query",
+          "name" : "sort",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "default" : [ "id,DESC" ],
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaginaMovimientoKardexVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Kárdex del producto",
+        "tags" : [ "Inventario" ]
+      }
+    },
+    "/api/v1/inventario/productos/{id}/seriales" : {
+      "get" : {
+        "operationId" : "seriales",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "in" : "query",
+          "name" : "estado",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "EN_BODEGA", "VENDIDO", "INSTALADO", "DADO_DE_BAJA", "ANULADO" ]
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/SerialVista"
+                  }
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Seriales del producto, todos o de un estado",
+        "tags" : [ "Inventario" ]
       }
     },
     "/api/v1/productos" : {
@@ -1224,6 +1733,65 @@
         },
         "summary" : "Editar un proveedor",
         "tags" : [ "Proveedores" ]
+      }
+    },
+    "/api/v1/seriales" : {
+      "get" : {
+        "description" : "Hasta 50 seriales que contienen el texto, sin distinguir mayúsculas.",
+        "operationId" : "buscar_3",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "numero",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/SerialVista"
+                  }
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Buscar un serial desde cualquier pantalla",
+        "tags" : [ "Seriales" ]
+      }
+    },
+    "/api/v1/seriales/{id}" : {
+      "get" : {
+        "operationId" : "historial_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/HistorialSerialVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Historial completo de un serial",
+        "tags" : [ "Seriales" ]
       }
     },
     "/api/v1/sesion" : {
@@ -1894,6 +2462,65 @@
   },
   "components" : {
     "schemas" : {
+      "AjusteVista" : {
+        "type" : "object",
+        "properties" : {
+          "abreviatura" : {
+            "type" : "string"
+          },
+          "cantidad" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "consecutivo" : {
+            "type" : "string"
+          },
+          "costoUnitarioUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "descripcion" : {
+            "type" : "string"
+          },
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "motivo" : {
+            "type" : "string"
+          },
+          "motivoEtiqueta" : {
+            "type" : "string"
+          },
+          "producto" : {
+            "$ref" : "#/components/schemas/ProductoReferencia"
+          },
+          "registradoEn" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "registradoPor" : {
+            "type" : "string"
+          },
+          "seriales" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "valorUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
+          }
+        }
+      },
       "Anulacion" : {
         "type" : "object",
         "properties" : {
@@ -1906,6 +2533,95 @@
           },
           "usuario" : {
             "type" : "string"
+          }
+        }
+      },
+      "CambioCostoVista" : {
+        "type" : "object",
+        "properties" : {
+          "costoAnteriorUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "costoFactura" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "costoFacturaUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "costoNuevoUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "documento" : {
+            "$ref" : "#/components/schemas/DocumentoRef"
+          },
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "registradoEn" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "regla" : {
+            "type" : "string"
+          },
+          "tasaFactura" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "usuario" : {
+            "type" : "string"
+          }
+        }
+      },
+      "CargaInicialVista" : {
+        "type" : "object",
+        "properties" : {
+          "archivo" : {
+            "type" : "string"
+          },
+          "clientesCreados" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "consecutivo" : {
+            "type" : "string"
+          },
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "productosConStock" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "productosCreados" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "proveedoresCreados" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "registradaEn" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "registradaPor" : {
+            "type" : "string"
+          },
+          "valorUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
           }
         }
       },
@@ -2196,6 +2912,72 @@
           }
         }
       },
+      "DocumentoRef" : {
+        "type" : "object",
+        "properties" : {
+          "consecutivo" : {
+            "type" : "string"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "tipo" : {
+            "type" : "string",
+            "enum" : [ "COMPRA", "AJUSTE", "INVENTARIO_INICIAL", "VENTA", "INSTALACION", "COTIZACION" ]
+          }
+        }
+      },
+      "ErrorCarga" : {
+        "type" : "object",
+        "properties" : {
+          "fila" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "hoja" : {
+            "type" : "string"
+          },
+          "mensaje" : {
+            "type" : "string"
+          }
+        }
+      },
+      "HistorialSerialVista" : {
+        "type" : "object",
+        "properties" : {
+          "movimientos" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Movimiento"
+            }
+          },
+          "serial" : {
+            "$ref" : "#/components/schemas/SerialVista"
+          }
+        }
+      },
+      "InventarioVista" : {
+        "type" : "object",
+        "properties" : {
+          "avisos" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "productos" : {
+            "$ref" : "#/components/schemas/PaginaProducto"
+          },
+          "totalProductos" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "valorTotal" : {
+            "$ref" : "#/components/schemas/MontoEnMonedas"
+          }
+        }
+      },
       "Linea" : {
         "type" : "object",
         "properties" : {
@@ -2283,6 +3065,111 @@
           }
         }
       },
+      "Movimiento" : {
+        "type" : "object",
+        "properties" : {
+          "detalle" : {
+            "type" : "string"
+          },
+          "documento" : {
+            "$ref" : "#/components/schemas/DocumentoRef"
+          },
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "registradoEn" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "usuario" : {
+            "type" : "string"
+          }
+        }
+      },
+      "MovimientoKardexVista" : {
+        "type" : "object",
+        "properties" : {
+          "costoUnitarioUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "detalle" : {
+            "type" : "string"
+          },
+          "documento" : {
+            "$ref" : "#/components/schemas/DocumentoRef"
+          },
+          "entrada" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "registradoEn" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "saldo" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "salida" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "tipoEtiqueta" : {
+            "type" : "string"
+          },
+          "usuario" : {
+            "type" : "string"
+          }
+        }
+      },
+      "PaginaAjusteVista" : {
+        "type" : "object",
+        "properties" : {
+          "contenido" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AjusteVista"
+            }
+          },
+          "pagina" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "tamano" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElementos" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPaginas" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
       "PaginaClienteVista" : {
         "type" : "object",
         "properties" : {
@@ -2317,6 +3204,60 @@
             "type" : "array",
             "items" : {
               "$ref" : "#/components/schemas/CompraResumenVista"
+            }
+          },
+          "pagina" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "tamano" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElementos" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPaginas" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "PaginaMovimientoKardexVista" : {
+        "type" : "object",
+        "properties" : {
+          "contenido" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/MovimientoKardexVista"
+            }
+          },
+          "pagina" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "tamano" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElementos" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPaginas" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "PaginaProducto" : {
+        "type" : "object",
+        "properties" : {
+          "contenido" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Producto"
             }
           },
           "pagina" : {
@@ -2445,6 +3386,147 @@
           }
         }
       },
+      "Producto" : {
+        "type" : "object",
+        "properties" : {
+          "abreviatura" : {
+            "type" : "string"
+          },
+          "activo" : {
+            "type" : "boolean"
+          },
+          "bajoMinimo" : {
+            "type" : "boolean"
+          },
+          "categoria" : {
+            "type" : "string"
+          },
+          "codigo" : {
+            "type" : "string"
+          },
+          "controlaSerial" : {
+            "type" : "boolean"
+          },
+          "costoActualUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "fotoUrl" : {
+            "type" : "string"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "marca" : {
+            "type" : "string"
+          },
+          "nombre" : {
+            "type" : "string"
+          },
+          "stock" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "stockMinimo" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "valorEnBodega" : {
+            "$ref" : "#/components/schemas/MontoEnMonedas"
+          }
+        }
+      },
+      "ProductoInventarioVista" : {
+        "type" : "object",
+        "properties" : {
+          "abreviatura" : {
+            "type" : "string"
+          },
+          "activo" : {
+            "type" : "boolean"
+          },
+          "avisos" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "bajoMinimo" : {
+            "type" : "boolean"
+          },
+          "categoria" : {
+            "type" : "string"
+          },
+          "codigo" : {
+            "type" : "string"
+          },
+          "controlaSerial" : {
+            "type" : "boolean"
+          },
+          "costoActual" : {
+            "$ref" : "#/components/schemas/MontoEnMonedas"
+          },
+          "fotoUrl" : {
+            "type" : "string"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "marca" : {
+            "type" : "string"
+          },
+          "modelo" : {
+            "type" : "string"
+          },
+          "nombre" : {
+            "type" : "string"
+          },
+          "precioClienteFinal" : {
+            "$ref" : "#/components/schemas/MontoEnMonedas"
+          },
+          "precioInstalador" : {
+            "$ref" : "#/components/schemas/MontoEnMonedas"
+          },
+          "seriales" : {
+            "$ref" : "#/components/schemas/SerialesPorEstado"
+          },
+          "stock" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "stockMinimo" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "valorEnBodega" : {
+            "$ref" : "#/components/schemas/MontoEnMonedas"
+          }
+        }
+      },
+      "ProductoReferencia" : {
+        "type" : "object",
+        "properties" : {
+          "codigo" : {
+            "type" : "string"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "nombre" : {
+            "type" : "string"
+          }
+        }
+      },
       "ProductoVista" : {
         "type" : "object",
         "properties" : {
@@ -2568,6 +3650,23 @@
           }
         }
       },
+      "ResultadoCargaVista" : {
+        "type" : "object",
+        "properties" : {
+          "errores" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ErrorCarga"
+            }
+          },
+          "resumen" : {
+            "$ref" : "#/components/schemas/Resumen"
+          },
+          "valido" : {
+            "type" : "boolean"
+          }
+        }
+      },
       "ResultadoTrm" : {
         "type" : "object",
         "properties" : {
@@ -2589,6 +3688,124 @@
             "pattern" : "^-?\\d+(\\.\\d+)?$"
           }
         }
+      },
+      "Resumen" : {
+        "type" : "object",
+        "properties" : {
+          "clientes" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "productos" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "productosConStock" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "proveedores" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "valorUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
+          }
+        }
+      },
+      "SerialVista" : {
+        "type" : "object",
+        "properties" : {
+          "documentoEntrada" : {
+            "$ref" : "#/components/schemas/DocumentoRef"
+          },
+          "documentoSalida" : {
+            "$ref" : "#/components/schemas/DocumentoRef"
+          },
+          "estado" : {
+            "type" : "string"
+          },
+          "fechaEntrada" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "numero" : {
+            "type" : "string"
+          },
+          "producto" : {
+            "$ref" : "#/components/schemas/ProductoReferencia"
+          }
+        }
+      },
+      "SerialesPorEstado" : {
+        "type" : "object",
+        "properties" : {
+          "anulados" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "dadosDeBaja" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "enBodega" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "instalados" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "vendidos" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "SolicitudAjuste" : {
+        "type" : "object",
+        "properties" : {
+          "cantidad" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "costoUnitarioUsd" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "descripcion" : {
+            "type" : "string",
+            "maxLength" : 300,
+            "minLength" : 0
+          },
+          "motivo" : {
+            "type" : "string",
+            "enum" : [ "PERDIDA", "DANO", "CONTEO_FISICO", "GARANTIA", "OTRO" ]
+          },
+          "productoId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "seriales" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "maxLength" : 80,
+              "minLength" : 0
+            },
+            "maxItems" : 1000,
+            "minItems" : 0
+          }
+        },
+        "required" : [ "cantidad", "motivo", "productoId" ]
       },
       "SolicitudAnulacion" : {
         "type" : "object",
