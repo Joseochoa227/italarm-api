@@ -1,6 +1,6 @@
 # Plan de la Fase 1 — Catálogo, terceros, tasas y configuración (italarm-api)
 
-> Estado: **aprobado por ITALARM e implementado** (backend). Pendiente la demostración y la verificación de la TRM contra datos.gov.co en el equipo de ITALARM. Las preguntas P-09 a P-18 están respondidas (ver `docs/preguntas.md`).
+> Estado: **terminada (backend)**. Probada y aprobada por ITALARM en su equipo el 01/10/2026, incluida la TRM automática desde datos.gov.co. Pendiente el despliegue al ambiente de pruebas (P-04) y las pantallas en italarm-web.
 > Base: `docs/requerimientos.md`, secciones 3.3, 3.5, 3.6, 3.10, 3.17, 5, 9, 10 y 12.3, más las decisiones de `docs/preguntas.md`.
 > Alcance: solo el backend (**italarm-api**). Las pantallas de esta fase se planean después en italarm-web, a partir del contrato OpenAPI que deja esta fase.
 
@@ -248,7 +248,7 @@ Cobertura mínima: 80 % en dominio y aplicación. Ninguna prueba se desactiva (A
 - [x] Migraciones V4 a V6 aplicadas sin errores en local, sobre la base de la Fase 0. En el ambiente de pruebas, cuando exista (P-04).
 - [x] `contrato/openapi.json` actualizado y `docs/guia-frontend.md` listo para italarm-web.
 - [x] CHANGELOG.md actualizado.
-- [ ] Lista de verificación para ITALARM en Swagger:
+- [x] Lista de verificación para ITALARM en Swagger (probada por ITALARM el 01/10/2026):
   1. Crear una categoría, una unidad y un producto con foto.
   2. Intentar eliminar una categoría con productos.
   3. Crear un cliente instalador y uno final, y un proveedor en COP.
