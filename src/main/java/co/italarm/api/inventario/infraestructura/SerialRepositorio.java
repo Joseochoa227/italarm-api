@@ -53,4 +53,12 @@ public interface SerialRepositorio extends JpaRepository<Serial, Long> {
   List<Serial> findByProductoIdAndEstadoOrderByNumero(Long productoId, EstadoSerial estado);
 
   List<Serial> findTop50ByNumeroContainingOrderByNumero(String numero);
+
+  /** Productos con algún serial que contiene el texto (búsqueda del inventario, RF-51). */
+  @Query("select distinct s.productoId from Serial s where s.numero like :patron escape '\\'")
+  List<Long> productosConSerial(@Param("patron") String patron);
+
+  /** Cantidad de seriales del producto por estado: filas {@code [estado, cantidad]}. */
+  @Query("select s.estado, count(s) from Serial s where s.productoId = :producto group by s.estado")
+  List<Object[]> contarPorEstado(@Param("producto") Long productoId);
 }

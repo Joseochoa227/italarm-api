@@ -1,6 +1,8 @@
 package co.italarm.api.catalogo.infraestructura;
 
 import co.italarm.api.catalogo.dominio.Producto;
+import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -10,6 +12,15 @@ public final class EspecificacionesProducto {
   private EspecificacionesProducto() {}
 
   public static Specification<Producto> filtrar(Long categoriaId, Boolean activo, String buscar) {
+    return filtrar(categoriaId, activo, buscar, List.of());
+  }
+
+  /**
+   * Como {@link #filtrar(Long, Boolean, String)}, y la búsqueda también encuentra los productos
+   * indicados (por ejemplo, los que tienen un serial que coincide, RF-51).
+   */
+  public static Specification<Producto> filtrar(
+      Long categoriaId, Boolean activo, String buscar, Collection<Long> ademasIds) {
     Specification<Producto> especificacion = (raiz, consulta, cb) -> cb.conjunction();
     if (categoriaId != null) {
       especificacion =
@@ -28,7 +39,8 @@ public final class EspecificacionesProducto {
                   cb.or(
                       cb.like(cb.lower(raiz.get("nombre")), patron, '\\'),
                       cb.like(cb.lower(raiz.get("codigo")), patron, '\\'),
-                      cb.like(cb.lower(raiz.get("marca")), patron, '\\')));
+                      cb.like(cb.lower(raiz.get("marca")), patron, '\\'),
+                      ademasIds.isEmpty() ? cb.disjunction() : raiz.get("id").in(ademasIds)));
     }
     return especificacion;
   }
