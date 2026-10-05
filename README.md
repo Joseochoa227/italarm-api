@@ -3,7 +3,7 @@
 API del sistema de inventario, ventas, cotizaciones e instalaciones de ITALARM.
 
 - Requerimientos: [`docs/requerimientos.md`](docs/requerimientos.md)
-- Planes por fase: [`docs/plan-fase-0.md`](docs/plan-fase-0.md), [`docs/plan-fase-1.md`](docs/plan-fase-1.md), [`docs/plan-fase-2.md`](docs/plan-fase-2.md)
+- Planes por fase: [`docs/plan-fase-0.md`](docs/plan-fase-0.md), [`docs/plan-fase-1.md`](docs/plan-fase-1.md), [`docs/plan-fase-2.md`](docs/plan-fase-2.md), [`docs/plan-fase-3.md`](docs/plan-fase-3.md)
 - Contrato de la API: [`contrato/openapi.json`](contrato/openapi.json) y [`docs/guia-frontend.md`](docs/guia-frontend.md)
 - Preguntas y decisiones de ITALARM: [`docs/preguntas.md`](docs/preguntas.md)
 - Cambios por versión: [`CHANGELOG.md`](CHANGELOG.md)

@@ -2,6 +2,19 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado semántico.
 
+## [Sin publicar] — Fase 3: Ventas, comprobantes y anulaciones
+
+### Agregado
+- Ventas (migración V9):
+  - vista previa con precio sugerido según el tipo de cliente, disponibilidad con aviso de stock insuficiente, costo con las tasas de hoy y de la última compra (CP-09) y resumen con utilidad en USD, COP y VES;
+  - registro con descuento en porcentaje o valor, costo vigente y utilidad guardados (CP-08, CP-27), tasas del día (CP-12), seriales vendidos con garantía de 3 meses (CP-25) e `Idempotency-Key`;
+  - listado con filtros y totales del período sin las anuladas; detalle; edición de observaciones y monedas del comprobante;
+  - anulación que devuelve material y seriales al costo vigente (CP-18);
+  - venta sin stock rechazada y dos ventas simultáneas de la última unidad: solo una se guarda.
+- Comprobante de venta en PDF (OpenPDF) con datos de la empresa, del cliente, ítems con seriales y garantía, totales en otras monedas y pie; marca "ANULADA" en las ventas anuladas.
+- Enlace público del comprobante para WhatsApp: vence a los 30 días y trae el mensaje y el enlace `wa.me` del cliente.
+- Clientes con cantidad de movimientos, fecha del último e historial; el historial del serial muestra el cliente y la garantía.
+
 ## [Sin publicar] — Fase 2: Compras, inventario, costo y carga inicial
 
 ### Agregado

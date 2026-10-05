@@ -46,11 +46,11 @@ Cómo usar cada campo:
 
 | HTTP | Códigos |
 |---|---|
-| 400 | `VALIDACION`, `CANTIDAD_INVALIDA`, `CATEGORIA_NO_EXISTE`, `UNIDAD_NO_EXISTE`, `TELEFONO_INVALIDO`, `DOCUMENTO_INCOMPLETO`, `CONFIGURACION_INVALIDA`, `ARCHIVO_TIPO_NO_PERMITIDO`, `ARCHIVO_DEMASIADO_GRANDE`, `TASA_INVALIDA`, `TASA_NO_CONFIRMADA`, `TASA_SIN_CAMBIO`, `CONTRASENA_NO_COINCIDE`, `CONTRASENA_DEBIL`, `METODO_NO_PERMITIDO`, `FORMATO_NO_SOPORTADO`, `COMPRA_FECHA_FUTURA`, `COMPRA_SIN_LINEAS`, `COMPRA_PRODUCTO_REPETIDO`, `COMPRA_COSTO_INVALIDO`, `PROVEEDOR_NO_EXISTE`, `PRODUCTO_NO_EXISTE`, `SERIALES_NO_COINCIDEN`, `SERIAL_INVALIDO`, `AJUSTE_INVALIDO`, `COSTO_REQUERIDO`, `CARGA_INICIAL_CON_ERRORES` |
+| 400 | `VALIDACION`, `CANTIDAD_INVALIDA`, `CATEGORIA_NO_EXISTE`, `UNIDAD_NO_EXISTE`, `TELEFONO_INVALIDO`, `DOCUMENTO_INCOMPLETO`, `CONFIGURACION_INVALIDA`, `ARCHIVO_TIPO_NO_PERMITIDO`, `ARCHIVO_DEMASIADO_GRANDE`, `TASA_INVALIDA`, `TASA_NO_CONFIRMADA`, `TASA_SIN_CAMBIO`, `CONTRASENA_NO_COINCIDE`, `CONTRASENA_DEBIL`, `METODO_NO_PERMITIDO`, `FORMATO_NO_SOPORTADO`, `COMPRA_FECHA_FUTURA`, `COMPRA_SIN_LINEAS`, `COMPRA_PRODUCTO_REPETIDO`, `COMPRA_COSTO_INVALIDO`, `PROVEEDOR_NO_EXISTE`, `PRODUCTO_NO_EXISTE`, `SERIALES_NO_COINCIDEN`, `SERIAL_INVALIDO`, `AJUSTE_INVALIDO`, `COSTO_REQUERIDO`, `CARGA_INICIAL_CON_ERRORES`, `CLIENTE_NO_EXISTE`, `DESCUENTO_INVALIDO`, `VENTA_PRODUCTO_REPETIDO`, `VENTA_PRECIO_INVALIDO`, `VENTA_SIN_LINEAS` |
 | 401 | `NO_AUTENTICADO`, `CREDENCIALES_INVALIDAS` |
 | 403 | `ACCESO_DENEGADO`, `ENLACE_INVALIDO` |
 | 404 | `RECURSO_NO_ENCONTRADO` |
-| 409 | `MODIFICADO_POR_OTRO_USUARIO`, `DATOS_EN_CONFLICTO`, `CATEGORIA_DUPLICADA`, `UNIDAD_DUPLICADA`, `PRODUCTO_CODIGO_DUPLICADO`, `CLIENTE_DOCUMENTO_DUPLICADO`, `USUARIO_CORREO_DUPLICADO`, `TASA_YA_REGISTRADA`, `TRM_AUTOMATICA_DISPONIBLE`, `CONTRASENA_ACTUAL_INCORRECTA`, `SERIAL_DUPLICADO`, `COMPRA_YA_ANULADA` |
+| 409 | `MODIFICADO_POR_OTRO_USUARIO`, `DATOS_EN_CONFLICTO`, `CATEGORIA_DUPLICADA`, `UNIDAD_DUPLICADA`, `PRODUCTO_CODIGO_DUPLICADO`, `CLIENTE_DOCUMENTO_DUPLICADO`, `USUARIO_CORREO_DUPLICADO`, `TASA_YA_REGISTRADA`, `TRM_AUTOMATICA_DISPONIBLE`, `CONTRASENA_ACTUAL_INCORRECTA`, `SERIAL_DUPLICADO`, `COMPRA_YA_ANULADA`, `VENTA_YA_ANULADA` |
 | 413 | `ARCHIVO_DEMASIADO_GRANDE` (cuando el archivo supera los 6 MB y ni siquiera llega a validarse) |
 | 422 | `CATEGORIA_CON_PRODUCTOS`, `UNIDAD_EN_USO`, `PRODUCTO_CON_MOVIMIENTOS`, `PRODUCTO_CAMBIO_NO_PERMITIDO`, `TASA_VARIACION_NO_ACEPTADA`, `NO_PUEDE_DESACTIVARSE_A_SI_MISMO`, `USAR_CAMBIO_DE_CONTRASENA`, `TASA_NO_DISPONIBLE`, `PRODUCTO_INACTIVO`, `STOCK_INSUFICIENTE`, `SERIAL_NO_DISPONIBLE`, `COMPRA_NO_ANULABLE` |
 | 500 | `ERROR_INTERNO` (mostrar un mensaje genérico y ofrecer reintentar, BF-09) |
@@ -86,10 +86,11 @@ Filtros de cada listado:
 | `GET /tasas` | `par` (`USD_COP`/`USD_VES`), `desde`, `hasta` (`aaaa-mm-dd`) | fecha, de la más reciente a la más antigua |
 | `GET /compras` | `proveedorId`, `productoId`, `desde`, `hasta` (sin fechas: el mes en curso), `incluirAnuladas` (por defecto `true`) | fecha y consecutivo, de la más reciente a la más antigua |
 | `GET /ajustes` | `productoId`, `desde`, `hasta` | fecha y consecutivo, del más reciente al más antiguo |
+| `GET /ventas` | `clienteId`, `productoId`, `desde`, `hasta` (sin fechas: el mes en curso), `incluirAnuladas` (por defecto `true`) | fecha y consecutivo, de la más reciente a la más antigua |
 | `GET /inventario` | `categoriaId`, `activo`, `buscar` (nombre, código, marca o número de serie) | nombre |
 | `GET /inventario/productos/{id}/kardex` | — (tamaño por defecto 50) | el movimiento más reciente primero |
 
-`GET /compras` y `GET /inventario` no devuelven la página sola: la envuelven con los totales de todo el filtro (`compras` + `totalesPorMoneda` + `totalUsd`; `productos` + `totalProductos` + `valorTotal`).
+`GET /compras`, `GET /ventas` y `GET /inventario` no devuelven la página sola: la envuelven con los totales de todo el filtro (`compras` o `ventas` + `totalesPorMoneda` + `totalUsd`; `productos` + `totalProductos` + `valorTotal`).
 
 `GET /categorias`, `GET /unidades-medida` y `GET /usuarios` devuelven listas sin paginar, porque son pocos registros.
 
@@ -129,7 +130,8 @@ Filtros de cada listado:
 - **Clientes:**
   - `precioAplicado` y `precioAplicadoDescripcion` dan el texto "Se le aplicará el precio instalador" (RF-75).
   - El teléfono llega con indicativo (`+573001234567`) y sirve directo para `https://wa.me/573001234567`. El usuario lo puede escribir sin indicativo: se asume +57 (P-10).
-  - `cantidadMovimientos` y `fechaUltimoMovimiento` quedan en 0 y vacío hasta las fases 3 a 5.
+  - `cantidadMovimientos` y `fechaUltimoMovimiento` cuentan las ventas no anuladas (las instalaciones desde la Fase 4).
+  - Historial del cliente (RF-77): `GET /clientes/{id}/historial`, con `compras`, `instalaciones` y sus documentos (incluidos los anulados, con su `estado`).
 - **Productos:**
   - `stock` y `costoActual` son de solo lectura: los mueven las compras, los ajustes y la carga inicial.
   - `bajoMinimo` marca la etiqueta **Bajo** (RF-52).
@@ -142,8 +144,8 @@ Filtros de cada listado:
 
 ## 9. Documentos y Idempotency-Key (RT-07, BF-10)
 
-- Al crear una compra, un ajuste o una carga inicial, genera una clave única (por ejemplo `crypto.randomUUID()`) **al abrir el formulario** y envíala en la cabecera `Idempotency-Key`. Si el usuario toca dos veces Guardar o la red reintenta, la segunda petición devuelve el mismo documento en lugar de crear otro. Genera una clave nueva para el siguiente documento.
-- Los consecutivos se muestran tal cual llegan: `C-0001` (compras), `AJ-001` (ajustes), `II-001` (inventario inicial).
+- Al crear una compra, una venta, un ajuste o una carga inicial, genera una clave única (por ejemplo `crypto.randomUUID()`) **al abrir el formulario** y envíala en la cabecera `Idempotency-Key`. Si el usuario toca dos veces Guardar o la red reintenta, la segunda petición devuelve el mismo documento en lugar de crear otro. Genera una clave nueva para el siguiente documento.
+- Los consecutivos se muestran tal cual llegan: `C-0001` (compras), `V-0001` (ventas), `AJ-001` (ajustes), `II-001` (inventario inicial).
 - Los documentos referencian su origen con `documento: { tipo, id, consecutivo }` (`tipo`: `COMPRA`, `AJUSTE`, `INVENTARIO_INICIAL`; después `VENTA`, `INSTALACION`).
 
 ## 10. Compras (sección 3.6)
@@ -182,7 +184,29 @@ Filtros de cada listado:
 3. Si `valido` es `true`, `POST /carga-inicial` con el mismo archivo y `Idempotency-Key`. Responde la carga creada (`II-00N`). Si mientras tanto apareció un error, responde `CARGA_INICIAL_CON_ERRORES` con la lista en `errores` y no guarda nada.
 4. `GET /carga-inicial` lista las cargas realizadas.
 
-## 14. Cómo mantener el contrato al día
+## 14. Ventas (sección 3.12)
+
+1. **Vista previa (RF-98 a RF-101):** mientras el usuario llena la venta, `POST /ventas/vista-previa` con el mismo cuerpo que el registro. Devuelve:
+   - `cliente.precioAplicado` ("Se le aplicará el precio instalador");
+   - por línea: `precioSugerido`, `precioUnitario`, `disponible` ("hay 24 und"), `avisoStock` ("Stock insuficiente · quedan N und"), `subtotal` en las tres monedas, `costoUnitarioHoy` y `costoUnitarioUltimaCompra` (RF-69, con `ultimaCompra`), y `avisoPrecio` si el precio queda por debajo del costo;
+   - `resumen` (subtotal, descuento, total, costo y utilidad en USD, COP y VES, más `porcentajeUtilidad`), `tasas` y `avisos`;
+   - `puedeGuardar`: si es `false`, bloquea el botón Guardar (RF-101).
+2. **Guardar:** `POST /ventas` con `Idempotency-Key` y `{ clienteId, moneda, lineas: [{ productoId, cantidad, seriales, precioUnitario }], descuentoTipo, descuentoValor, observaciones, monedasComprobante }`.
+   - La fecha siempre es hoy (P-27).
+   - Productos con serial: envía los `seriales` elegidos de `GET /inventario/productos/{id}/seriales?estado=EN_BODEGA`; la cantidad es la de seriales (RF-21).
+   - `precioUnitario` vacío usa el sugerido; se puede cambiar, incluso por debajo del costo (P-29).
+   - `descuentoTipo`: `PORCENTAJE` o `VALOR`; nunca mayor que el subtotal (`DESCUENTO_INVALIDO`).
+   - `monedasComprobante`: otras monedas en que el PDF muestra el total (P-34).
+3. **Confirmación (RF-104):** la respuesta es la venta guardada (`consecutivo`, `cliente`, `total`). Muestra "Venta V-0001 registrada" con los botones:
+   - **Descargar PDF:** `GET /ventas/{id}/comprobante` (con sesión).
+   - **Enviar por WhatsApp:**
+     - en el celular, descarga el PDF y usa el compartir nativo (`navigator.share` con el archivo);
+     - en el computador, `POST /ventas/{id}/enlace` y abre `whatsappUrl` (trae el número del cliente y el mensaje con el enlace). El enlace (`url`) funciona sin sesión durante 30 días (P-33).
+4. **Detalle:** `GET /ventas/{id}` con líneas, seriales y su `vencimientoGarantia`, resumen en las tres monedas, utilidad, `anulacion` y `version`.
+5. **Editar:** `PUT /ventas/{id}` con `{ observaciones, monedasComprobante, version }`. Los valores no se editan (RF-70).
+6. **Anular:** `POST /ventas/{id}/anular` con `{ motivo }`. El material y los seriales vuelven a bodega; el PDF queda con la marca "ANULADA".
+
+## 15. Cómo mantener el contrato al día
 
 Cuando el backend cambia un endpoint:
 

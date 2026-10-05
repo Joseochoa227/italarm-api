@@ -37,12 +37,14 @@ shared/          dinero, moneda, fechas, errores, auditoría, seguridad, OpenAPI
   infraestructura/ reloj, auditoría JPA, OpenAPI, PropiedadesItalarm
 usuarios/        sesión (token), cambio de contraseña, gestión de usuarios
 configuracion/   datos de la empresa, logo y valores por defecto
-documentos/      almacenamiento de archivos (S3 o disco), validación de imágenes, enlaces firmados
+documentos/      almacenamiento de archivos (S3 o disco), validación de imágenes, enlaces firmados,
+                 generador de PDF y enlaces públicos de comprobantes
 catalogo/        categorías, unidades de medida y productos
 terceros/        clientes y proveedores
 tasas/           TRM automática, tasa del bolívar manual, correcciones e historial
 inventario/      kárdex, motor de costo, seriales, ajustes, consultas e inventario inicial
 compras/         compras a proveedores, vista previa, anulación y factura
+ventas/          ventas de material, utilidad, anulación, comprobante en PDF y enlace para WhatsApp
 cargainicial/    plantilla y lectura del Excel de la carga inicial (usa catalogo, terceros e inventario)
 ```
 
@@ -99,9 +101,11 @@ Los módulos que falten se crean en la fase que los necesita.
 - **Restricciones de la base de datos**: cada módulo declara las suyas en un `RestriccionesModulo` (índice o constraint → código de negocio); el manejador global las traduce.
 - **Integraciones externas** (BP-14): interfaz en `aplicacion` (`AlmacenamientoArchivos`, `FuenteTrm`) e implementación en `infraestructura`. En las pruebas se usan `FuenteTrmSimulada`, el almacenamiento en disco y `RelojPrueba` (en `soporte/`).
 - **Contrato OpenAPI**: `contrato/openapi.json` está versionado y `ApiComunIntegracionTest` falla si no corresponde al código. Tras cambiar un endpoint: `./mvnw test -Dtest=ApiComunIntegracionTest -Dcontrato.actualizar=true`. Los `BigDecimal` se declaran como texto decimal.
-- **Movimientos de inventario**: siempre por `inventario.aplicacion` (`ServicioMovimientos`, `RegistroAjustes`, `CargaInventario`), que bloquean productos y seriales en orden de id (`OperacionesInventario`) y escriben kárdex, historial de costo y seriales en la misma transacción. Nunca se actualiza `producto.stock` o `costo_actual_usd` desde otro lugar.
+- **Movimientos de inventario**: siempre por `inventario.aplicacion` (`ServicioMovimientos` para compras y ventas, `RegistroAjustes`, `CargaInventario`), que bloquean productos y seriales en orden de id (`OperacionesInventario`) y escriben kárdex, historial de costo y seriales en la misma transacción. Nunca se actualiza `producto.stock` o `costo_actual_usd` desde otro lugar.
 - **Creaciones idempotentes**: el servicio público no es transaccional y llama a `ServicioIdempotencia.ejecutar`; la transacción la abre un bean `Registro*` que reserva la clave al empezar y la asocia al documento al final.
-- **Pruebas de inventario**: heredan de `soporte.PruebaInventario` (reloj fijo el 01/10/2026, TRM 4.000, bolívar 50 y utilidades para productos, proveedores y compras).
+- **Pruebas de inventario**: heredan de `soporte.PruebaInventario` (reloj fijo el 01/10/2026, TRM 4.000, bolívar 50 y utilidades para productos, proveedores, clientes y compras).
+- **PDF**: los módulos arman un `DocumentoPdf` con los textos ya formateados (`FormatoDinero`) y lo pasan a `GeneradorPdf` (OpenPDF, paquete `org.openpdf`). Para servir un tipo de documento por enlace público, el módulo implementa `FuenteComprobantes`.
+- **Movimientos del cliente**: cada módulo con documentos de clientes implementa `terceros.aplicacion.MovimientosCliente`; así `terceros` no depende de `ventas` ni de `instalaciones`.
 - **Limpieza en pruebas**: `soporte/LimpiezaDatos` deja la base como la dejan las migraciones antes de cada prueba de integración; al agregar tablas, agrégalas ahí.
 - **Secretos**: nunca en el repositorio ni en `application*.yml`, y tampoco las contraseñas de usuarios (AG-09). Todo va por variables de entorno. El `.env` local está en `.gitignore`.
 
@@ -135,3 +139,7 @@ Los módulos que falten se crean en la fase que los necesita.
 | Seriales en mayúsculas y sin espacios, únicos por producto salvo los anulados (índice parcial). | P-22. |
 | Carga inicial: módulo `cargainicial` con la lectura de Excel en infraestructura; cada módulo valida y crea sus filas (`CargaProductos`, `CargaTerceros`, `CargaInventario`). Seriales separados por coma en la fila del producto. | Sección 3.18, P-26. |
 | `Idempotency-Key` guardada en la tabla `idempotencia` (usuario, operación, clave → documento). | RT-07, BF-10. |
+| La venta bloquea los productos antes de calcular (`bloquearParaSalida`) para guardar el costo vigente en cada línea y la utilidad en la misma transacción. | RF-68, BP-08. |
+| La fecha de la venta es siempre hoy; el precio sugerido se convierte con las tasas del día (COP a pesos enteros) y puede cambiarse, incluso por debajo del costo (con aviso). | P-27 a P-29. |
+| La venta guarda una copia de los datos del cliente para el comprobante. | P-35. |
+| Comprobantes en PDF generados al pedirlos (no se guardan); los enlaces públicos usan un token aleatorio cuyo SHA-256 se guarda en `enlace_comprobante` y vencen a los 30 días. | RF-133, RF-134, P-33. |

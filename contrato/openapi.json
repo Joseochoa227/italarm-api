@@ -51,17 +51,23 @@
     "description" : "Ajustes de inventario (RF-58 a RF-62). No se editan ni se anulan (P-24).",
     "name" : "Ajustes"
   }, {
+    "description" : "PDF compartidos por WhatsApp con un enlace público (RF-134)",
+    "name" : "Comprobantes"
+  }, {
     "description" : "Unidad, Metro, Par… (RF-148, P-09)",
     "name" : "Unidades de medida"
   }, {
     "description" : "Proveedores y su moneda habitual (sección 3.6)",
     "name" : "Proveedores"
+  }, {
+    "description" : "Ventas de material y su anulación (sección 3.12)",
+    "name" : "Ventas"
   } ],
   "paths" : {
     "/api/v1/ajustes" : {
       "get" : {
         "description" : "Orden por defecto: más recientes primero.",
-        "operationId" : "listar_5",
+        "operationId" : "listar_6",
         "parameters" : [ {
           "in" : "query",
           "name" : "productoId",
@@ -135,7 +141,7 @@
       },
       "post" : {
         "description" : "La entrada entra al costo vigente; si el producto nunca tuvo costo, exige costoUnitarioUsd. Con la misma Idempotency-Key devuelve el ajuste ya creado. Errores (400): AJUSTE_INVALIDO, COSTO_REQUERIDO, CANTIDAD_INVALIDA, SERIALES_NO_COINCIDEN, PRODUCTO_NO_EXISTE; (409) SERIAL_DUPLICADO; (422) STOCK_INSUFICIENTE, SERIAL_NO_DISPONIBLE.",
-        "operationId" : "registrar_1",
+        "operationId" : "registrar_2",
         "parameters" : [ {
           "description" : "Clave única por intento de guardar (RT-07)",
           "in" : "header",
@@ -173,7 +179,7 @@
     },
     "/api/v1/ajustes/{id}" : {
       "get" : {
-        "operationId" : "detalle_6",
+        "operationId" : "detalle_7",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -201,7 +207,7 @@
     },
     "/api/v1/archivos" : {
       "get" : {
-        "operationId" : "descargar",
+        "operationId" : "descargar_1",
         "parameters" : [ {
           "in" : "query",
           "name" : "clave",
@@ -245,7 +251,7 @@
     },
     "/api/v1/carga-inicial" : {
       "get" : {
-        "operationId" : "listar_4",
+        "operationId" : "listar_5",
         "responses" : {
           "200" : {
             "content" : {
@@ -366,7 +372,7 @@
     },
     "/api/v1/categorias" : {
       "get" : {
-        "operationId" : "listar_3",
+        "operationId" : "listar_4",
         "responses" : {
           "200" : {
             "content" : {
@@ -437,7 +443,7 @@
       },
       "put" : {
         "description" : "Errores: CATEGORIA_DUPLICADA, MODIFICADO_POR_OTRO_USUARIO (409).",
-        "operationId" : "actualizar_5",
+        "operationId" : "actualizar_6",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -571,7 +577,7 @@
     },
     "/api/v1/clientes/{id}" : {
       "get" : {
-        "operationId" : "detalle_2",
+        "operationId" : "detalle_3",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -598,7 +604,7 @@
       },
       "put" : {
         "description" : "Además: MODIFICADO_POR_OTRO_USUARIO (409).",
-        "operationId" : "actualizar_4",
+        "operationId" : "actualizar_5",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -634,10 +640,39 @@
         "tags" : [ "Clientes" ]
       }
     },
+    "/api/v1/clientes/{id}/historial" : {
+      "get" : {
+        "description" : "Sus ventas (y desde la Fase 4, instalaciones), incluidas las anuladas (RF-77).",
+        "operationId" : "historial_2",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/HistorialClienteVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Historial del cliente",
+        "tags" : [ "Clientes" ]
+      }
+    },
     "/api/v1/compras" : {
       "get" : {
         "description" : "Sin fechas, el mes en curso. Los totales no incluyen las anuladas. Orden por defecto: más recientes primero.",
-        "operationId" : "listar_2",
+        "operationId" : "listar_3",
         "parameters" : [ {
           "in" : "query",
           "name" : "proveedorId",
@@ -727,7 +762,7 @@
       },
       "post" : {
         "description" : "Con la misma Idempotency-Key devuelve la compra ya creada. Errores (400): SERIALES_NO_COINCIDEN, CANTIDAD_INVALIDA, COMPRA_PRODUCTO_REPETIDO, COMPRA_FECHA_FUTURA, COMPRA_COSTO_INVALIDO, PROVEEDOR_NO_EXISTE, PRODUCTO_NO_EXISTE; (409) SERIAL_DUPLICADO; (422) TASA_NO_DISPONIBLE, PRODUCTO_INACTIVO.",
-        "operationId" : "registrar",
+        "operationId" : "registrar_1",
         "parameters" : [ {
           "description" : "Clave única por intento de guardar (RT-07)",
           "in" : "header",
@@ -766,7 +801,7 @@
     "/api/v1/compras/vista-previa" : {
       "post" : {
         "description" : "Es el valor oficial que muestra el frontend (BF-06). Errores: TASA_NO_DISPONIBLE, COMPRA_PRODUCTO_REPETIDO, COMPRA_FECHA_FUTURA, PRODUCTO_NO_EXISTE.",
-        "operationId" : "vistaPrevia_1",
+        "operationId" : "vistaPrevia_2",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -795,7 +830,7 @@
     },
     "/api/v1/compras/{id}" : {
       "get" : {
-        "operationId" : "detalle_5",
+        "operationId" : "detalle_6",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -824,7 +859,7 @@
     "/api/v1/compras/{id}/anular" : {
       "post" : {
         "description" : "Solo si es el último movimiento de cada producto y sus seriales siguen en bodega. Errores: COMPRA_NO_ANULABLE (422), COMPRA_YA_ANULADA (409).",
-        "operationId" : "anular",
+        "operationId" : "anular_1",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -931,6 +966,36 @@
         "tags" : [ "Compras" ]
       }
     },
+    "/api/v1/comprobantes/{token}" : {
+      "get" : {
+        "description" : "El enlace vence a los 30 días (P-33). Error: RECURSO_NO_ENCONTRADO (404).",
+        "operationId" : "descargar",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "token",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/pdf" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ ],
+        "summary" : "Descargar un comprobante con su enlace público, sin sesión",
+        "tags" : [ "Comprobantes" ]
+      }
+    },
     "/api/v1/configuracion" : {
       "get" : {
         "operationId" : "obtener",
@@ -951,7 +1016,7 @@
       },
       "put" : {
         "description" : "Errores: CONFIGURACION_INVALIDA (400), MODIFICADO_POR_OTRO_USUARIO (409). Validez: 8, 15 o 30 días; garantías: 1 a 3 meses; límite de variación: más de 0 % y hasta 100 %.",
-        "operationId" : "actualizar_3",
+        "operationId" : "actualizar_4",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -1034,7 +1099,7 @@
     "/api/v1/inventario" : {
       "get" : {
         "description" : "Busca por nombre, código, marca o número de serie. Valores en USD, COP y VES con las tasas vigentes. Orden por defecto: nombre.",
-        "operationId" : "listar_6",
+        "operationId" : "listar_7",
         "parameters" : [ {
           "in" : "query",
           "name" : "categoriaId",
@@ -1109,7 +1174,7 @@
     },
     "/api/v1/inventario/productos/{id}" : {
       "get" : {
-        "operationId" : "detalle_4",
+        "operationId" : "detalle_5",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1392,7 +1457,7 @@
         "tags" : [ "Productos" ]
       },
       "get" : {
-        "operationId" : "detalle_1",
+        "operationId" : "detalle_2",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1419,7 +1484,7 @@
       },
       "put" : {
         "description" : "Errores: PRODUCTO_CODIGO_DUPLICADO, MODIFICADO_POR_OTRO_USUARIO (409); PRODUCTO_CAMBIO_NO_PERMITIDO (422).",
-        "operationId" : "actualizar_2",
+        "operationId" : "actualizar_3",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1672,7 +1737,7 @@
     },
     "/api/v1/proveedores/{id}" : {
       "get" : {
-        "operationId" : "detalle",
+        "operationId" : "detalle_1",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1699,7 +1764,7 @@
       },
       "put" : {
         "description" : "Además: MODIFICADO_POR_OTRO_USUARIO (409).",
-        "operationId" : "actualizar_1",
+        "operationId" : "actualizar_2",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -2067,7 +2132,7 @@
     },
     "/api/v1/tasas/vista-previa" : {
       "post" : {
-        "operationId" : "vistaPrevia",
+        "operationId" : "vistaPrevia_1",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -2096,7 +2161,7 @@
     },
     "/api/v1/tasas/{id}" : {
       "get" : {
-        "operationId" : "detalle_3",
+        "operationId" : "detalle_4",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -2163,7 +2228,7 @@
     },
     "/api/v1/unidades-medida" : {
       "get" : {
-        "operationId" : "listar_1",
+        "operationId" : "listar_2",
         "responses" : {
           "200" : {
             "content" : {
@@ -2234,7 +2299,7 @@
       },
       "put" : {
         "description" : "Errores: UNIDAD_DUPLICADA, MODIFICADO_POR_OTRO_USUARIO (409); UNIDAD_EN_USO (422) si se cambia admiteDecimales y la usan productos.",
-        "operationId" : "actualizar",
+        "operationId" : "actualizar_1",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -2272,7 +2337,7 @@
     },
     "/api/v1/usuarios" : {
       "get" : {
-        "operationId" : "listar",
+        "operationId" : "listar_1",
         "responses" : {
           "200" : {
             "content" : {
@@ -2458,6 +2523,327 @@
         "summary" : "Asignar una nueva contraseña a otro usuario y cerrar sus sesiones",
         "tags" : [ "Usuarios" ]
       }
+    },
+    "/api/v1/ventas" : {
+      "get" : {
+        "description" : "Sin fechas, el mes en curso. Los totales no incluyen las anuladas. Orden por defecto: más recientes primero.",
+        "operationId" : "listar",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "clienteId",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "in" : "query",
+          "name" : "productoId",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "in" : "query",
+          "name" : "desde",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "in" : "query",
+          "name" : "hasta",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "description" : "Incluir las anuladas en el listado (por defecto, sí)",
+          "in" : "query",
+          "name" : "incluirAnuladas",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "description" : "Zero-based page index (0..N)",
+          "in" : "query",
+          "name" : "page",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "default" : 0,
+            "minimum" : 0
+          }
+        }, {
+          "description" : "The size of the page to be returned",
+          "in" : "query",
+          "name" : "size",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "default" : 20,
+            "minimum" : 1
+          }
+        }, {
+          "description" : "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+          "in" : "query",
+          "name" : "sort",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ListadoVentasVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Listado paginado de ventas con los totales del período",
+        "tags" : [ "Ventas" ]
+      },
+      "post" : {
+        "description" : "La fecha es hoy. Con la misma Idempotency-Key devuelve la venta ya creada. Errores (400): CANTIDAD_INVALIDA, SERIALES_NO_COINCIDEN, DESCUENTO_INVALIDO, VENTA_PRODUCTO_REPETIDO, VENTA_PRECIO_INVALIDO, CLIENTE_NO_EXISTE, PRODUCTO_NO_EXISTE; (422) STOCK_INSUFICIENTE, SERIAL_NO_DISPONIBLE, PRODUCTO_INACTIVO, TASA_NO_DISPONIBLE.",
+        "operationId" : "registrar",
+        "parameters" : [ {
+          "description" : "Clave única por intento de guardar (RT-07)",
+          "in" : "header",
+          "name" : "Idempotency-Key",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudVenta"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/VentaVista"
+                }
+              }
+            },
+            "description" : "Created"
+          }
+        },
+        "summary" : "Registrar una venta y descontarla del inventario",
+        "tags" : [ "Ventas" ]
+      }
+    },
+    "/api/v1/ventas/vista-previa" : {
+      "post" : {
+        "description" : "Es el valor oficial que muestra el frontend (BF-06). Si una línea no tiene stock suficiente, trae avisoStock y puedeGuardar=false. Errores: TASA_NO_DISPONIBLE (422), DESCUENTO_INVALIDO, VENTA_PRODUCTO_REPETIDO, CLIENTE_NO_EXISTE (400).",
+        "operationId" : "vistaPrevia",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudVenta"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/VistaPreviaVentaVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Vista previa: precios, disponibilidad, costos y utilidad, sin guardar",
+        "tags" : [ "Ventas" ]
+      }
+    },
+    "/api/v1/ventas/{id}" : {
+      "get" : {
+        "operationId" : "detalle",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/VentaVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Detalle de una venta con seriales, garantía y utilidad",
+        "tags" : [ "Ventas" ]
+      },
+      "put" : {
+        "description" : "Los valores de la venta no se editan (RF-70). Error: MODIFICADO_POR_OTRO_USUARIO (409).",
+        "operationId" : "actualizar",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudEdicionVenta"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/VentaVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Cambiar las observaciones y las monedas adicionales del comprobante",
+        "tags" : [ "Ventas" ]
+      }
+    },
+    "/api/v1/ventas/{id}/anular" : {
+      "post" : {
+        "description" : "El material vuelve al costo vigente y los seriales a bodega. Error: VENTA_YA_ANULADA (409).",
+        "operationId" : "anular",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudAnulacionVenta"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/VentaVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Anular una venta",
+        "tags" : [ "Ventas" ]
+      }
+    },
+    "/api/v1/ventas/{id}/comprobante" : {
+      "get" : {
+        "operationId" : "comprobante",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/pdf" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Descargar el comprobante de venta en PDF (RF-133)",
+        "tags" : [ "Ventas" ]
+      }
+    },
+    "/api/v1/ventas/{id}/enlace" : {
+      "post" : {
+        "description" : "Vence a los 30 días (P-33). Trae el mensaje listo y el enlace wa.me con el número del cliente (RF-134).",
+        "operationId" : "enlace",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EnlaceComprobanteVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Crear el enlace público del comprobante para WhatsApp",
+        "tags" : [ "Ventas" ]
+      }
     }
   },
   "components" : {
@@ -2642,6 +3028,36 @@
           "version" : {
             "type" : "integer",
             "format" : "int64"
+          }
+        }
+      },
+      "ClienteVentaVista" : {
+        "type" : "object",
+        "properties" : {
+          "ciudad" : {
+            "type" : "string"
+          },
+          "direccion" : {
+            "type" : "string"
+          },
+          "documento" : {
+            "type" : "string"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "nombre" : {
+            "type" : "string"
+          },
+          "precioAplicado" : {
+            "type" : "string"
+          },
+          "telefono" : {
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
           }
         }
       },
@@ -2928,6 +3344,24 @@
           }
         }
       },
+      "EnlaceComprobanteVista" : {
+        "type" : "object",
+        "properties" : {
+          "mensaje" : {
+            "type" : "string"
+          },
+          "url" : {
+            "type" : "string"
+          },
+          "venceEn" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "whatsappUrl" : {
+            "type" : "string"
+          }
+        }
+      },
       "ErrorCarga" : {
         "type" : "object",
         "properties" : {
@@ -2939,6 +3373,32 @@
             "type" : "string"
           },
           "mensaje" : {
+            "type" : "string"
+          }
+        }
+      },
+      "HistorialClienteVista" : {
+        "type" : "object",
+        "properties" : {
+          "clienteId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "compras" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "instalaciones" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "movimientos" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Movimiento"
+            }
+          },
+          "nombre" : {
             "type" : "string"
           }
         }
@@ -2981,9 +3441,6 @@
       "Linea" : {
         "type" : "object",
         "properties" : {
-          "abreviatura" : {
-            "type" : "string"
-          },
           "cantidad" : {
             "type" : "string",
             "format" : "decimal",
@@ -2993,36 +3450,33 @@
           "codigo" : {
             "type" : "string"
           },
-          "costoAnteriorUsd" : {
-            "$ref" : "#/components/schemas/Dinero"
-          },
-          "costoNuevoUsd" : {
-            "$ref" : "#/components/schemas/Dinero"
-          },
-          "costoUnitario" : {
-            "$ref" : "#/components/schemas/Dinero"
-          },
           "costoUnitarioUsd" : {
             "$ref" : "#/components/schemas/Dinero"
           },
-          "nombre" : {
+          "descripcion" : {
             "type" : "string"
+          },
+          "precioSugerido" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "precioUnitario" : {
+            "$ref" : "#/components/schemas/Dinero"
           },
           "productoId" : {
             "type" : "integer",
             "format" : "int64"
           },
-          "regla" : {
-            "type" : "string"
-          },
           "seriales" : {
             "type" : "array",
             "items" : {
-              "type" : "string"
+              "$ref" : "#/components/schemas/SerialVendido"
             }
           },
           "subtotal" : {
             "$ref" : "#/components/schemas/Dinero"
+          },
+          "unidad" : {
+            "type" : "string"
           }
         }
       },
@@ -3048,6 +3502,34 @@
             "items" : {
               "$ref" : "#/components/schemas/TotalMoneda"
             }
+          }
+        }
+      },
+      "ListadoVentasVista" : {
+        "type" : "object",
+        "properties" : {
+          "desde" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "hasta" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "totalUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "totalesPorMoneda" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TotalMoneda"
+            }
+          },
+          "utilidadUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "ventas" : {
+            "$ref" : "#/components/schemas/PaginaVentaResumenVista"
           }
         }
       },
@@ -3339,6 +3821,33 @@
             "type" : "array",
             "items" : {
               "$ref" : "#/components/schemas/TasaVista"
+            }
+          },
+          "pagina" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "tamano" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElementos" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPaginas" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "PaginaVentaResumenVista" : {
+        "type" : "object",
+        "properties" : {
+          "contenido" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/VentaResumenVista"
             }
           },
           "pagina" : {
@@ -3713,6 +4222,48 @@
           }
         }
       },
+      "ResumenVentaVista" : {
+        "type" : "object",
+        "properties" : {
+          "costo" : {
+            "$ref" : "#/components/schemas/MontoEnMonedas"
+          },
+          "descuento" : {
+            "$ref" : "#/components/schemas/MontoEnMonedas"
+          },
+          "porcentajeUtilidad" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "subtotal" : {
+            "$ref" : "#/components/schemas/MontoEnMonedas"
+          },
+          "total" : {
+            "$ref" : "#/components/schemas/MontoEnMonedas"
+          },
+          "utilidad" : {
+            "$ref" : "#/components/schemas/MontoEnMonedas"
+          }
+        }
+      },
+      "SerialVendido" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "numero" : {
+            "type" : "string"
+          },
+          "vencimientoGarantia" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }
+      },
       "SerialVista" : {
         "type" : "object",
         "properties" : {
@@ -3738,6 +4289,10 @@
           },
           "producto" : {
             "$ref" : "#/components/schemas/ProductoReferencia"
+          },
+          "vencimientoGarantia" : {
+            "type" : "string",
+            "format" : "date"
           }
         }
       },
@@ -3808,6 +4363,17 @@
         "required" : [ "cantidad", "motivo", "productoId" ]
       },
       "SolicitudAnulacion" : {
+        "type" : "object",
+        "properties" : {
+          "motivo" : {
+            "type" : "string",
+            "maxLength" : 300,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "motivo" ]
+      },
+      "SolicitudAnulacionVenta" : {
         "type" : "object",
         "properties" : {
           "motivo" : {
@@ -4030,6 +4596,29 @@
         },
         "required" : [ "confirmacion", "valor" ]
       },
+      "SolicitudEdicionVenta" : {
+        "type" : "object",
+        "properties" : {
+          "monedasComprobante" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "USD", "COP", "VES" ]
+            },
+            "uniqueItems" : true
+          },
+          "observaciones" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "version" ]
+      },
       "SolicitudIngreso" : {
         "type" : "object",
         "properties" : {
@@ -4078,6 +4667,38 @@
           }
         },
         "required" : [ "cantidad", "costoUnitario", "productoId" ]
+      },
+      "SolicitudLineaVenta" : {
+        "type" : "object",
+        "properties" : {
+          "cantidad" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "precioUnitario" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "productoId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "seriales" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "maxLength" : 80,
+              "minLength" : 0
+            },
+            "maxItems" : 1000,
+            "minItems" : 0
+          }
+        },
+        "required" : [ "productoId" ]
       },
       "SolicitudNuevoUsuario" : {
         "type" : "object",
@@ -4276,6 +4897,51 @@
         },
         "required" : [ "abreviatura", "admiteDecimales", "nombre", "version" ]
       },
+      "SolicitudVenta" : {
+        "type" : "object",
+        "properties" : {
+          "clienteId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "descuentoTipo" : {
+            "type" : "string",
+            "enum" : [ "PORCENTAJE", "VALOR" ]
+          },
+          "descuentoValor" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "lineas" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SolicitudLineaVenta"
+            },
+            "maxItems" : 200,
+            "minItems" : 0
+          },
+          "moneda" : {
+            "type" : "string",
+            "enum" : [ "USD", "COP", "VES" ]
+          },
+          "monedasComprobante" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "USD", "COP", "VES" ]
+            },
+            "uniqueItems" : true
+          },
+          "observaciones" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "clienteId", "lineas", "moneda" ]
+      },
       "SolicitudVistaPrevia" : {
         "type" : "object",
         "properties" : {
@@ -4423,6 +5089,31 @@
           }
         }
       },
+      "TasasVentaVista" : {
+        "type" : "object",
+        "properties" : {
+          "fechaTasaVes" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "fechaTrm" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "tasaVes" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "trm" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          }
+        }
+      },
       "TasasVigentesVista" : {
         "type" : "object",
         "properties" : {
@@ -4444,15 +5135,18 @@
       "TotalMoneda" : {
         "type" : "object",
         "properties" : {
-          "compras" : {
-            "type" : "integer",
-            "format" : "int64"
+          "costo" : {
+            "$ref" : "#/components/schemas/Dinero"
           },
           "total" : {
             "$ref" : "#/components/schemas/Dinero"
           },
-          "totalUsd" : {
+          "utilidad" : {
             "$ref" : "#/components/schemas/Dinero"
+          },
+          "ventas" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         }
       },
@@ -4547,6 +5241,139 @@
           }
         }
       },
+      "VentaResumenVista" : {
+        "type" : "object",
+        "properties" : {
+          "cliente" : {
+            "type" : "string"
+          },
+          "clienteId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "consecutivo" : {
+            "type" : "string"
+          },
+          "estado" : {
+            "type" : "string"
+          },
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "moneda" : {
+            "type" : "string",
+            "enum" : [ "USD", "COP", "VES" ]
+          },
+          "productos" : {
+            "type" : "string"
+          },
+          "registradaEn" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "registradaPor" : {
+            "type" : "string"
+          },
+          "total" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "totalUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "utilidad" : {
+            "$ref" : "#/components/schemas/Dinero"
+          }
+        }
+      },
+      "VentaVista" : {
+        "type" : "object",
+        "properties" : {
+          "anulacion" : {
+            "$ref" : "#/components/schemas/Anulacion"
+          },
+          "cliente" : {
+            "$ref" : "#/components/schemas/ClienteVentaVista"
+          },
+          "consecutivo" : {
+            "type" : "string"
+          },
+          "descuentoTipo" : {
+            "type" : "string"
+          },
+          "descuentoValor" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "estado" : {
+            "type" : "string"
+          },
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "lineas" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Linea"
+            }
+          },
+          "moneda" : {
+            "type" : "string",
+            "enum" : [ "USD", "COP", "VES" ]
+          },
+          "monedasComprobante" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "USD", "COP", "VES" ]
+            },
+            "uniqueItems" : true
+          },
+          "observaciones" : {
+            "type" : "string"
+          },
+          "porcentajeUtilidad" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "registradaEn" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "registradaPor" : {
+            "type" : "string"
+          },
+          "resumen" : {
+            "$ref" : "#/components/schemas/ResumenVentaVista"
+          },
+          "tasas" : {
+            "$ref" : "#/components/schemas/TasasVentaVista"
+          },
+          "total" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "utilidad" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
       "VistaPreviaCompraVista" : {
         "type" : "object",
         "properties" : {
@@ -4575,6 +5402,43 @@
           },
           "total" : {
             "$ref" : "#/components/schemas/MontoEnMonedas"
+          }
+        }
+      },
+      "VistaPreviaVentaVista" : {
+        "type" : "object",
+        "properties" : {
+          "avisos" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "cliente" : {
+            "$ref" : "#/components/schemas/ClienteVentaVista"
+          },
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "lineas" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Linea"
+            }
+          },
+          "moneda" : {
+            "type" : "string",
+            "enum" : [ "USD", "COP", "VES" ]
+          },
+          "puedeGuardar" : {
+            "type" : "boolean"
+          },
+          "resumen" : {
+            "$ref" : "#/components/schemas/ResumenVentaVista"
+          },
+          "tasas" : {
+            "$ref" : "#/components/schemas/TasasVentaVista"
           }
         }
       }
