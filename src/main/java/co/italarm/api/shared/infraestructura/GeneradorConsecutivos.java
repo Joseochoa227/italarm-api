@@ -24,6 +24,7 @@ public class GeneradorConsecutivos {
           case COMPRA -> "seq_compra";
           case AJUSTE -> "seq_ajuste";
           case INVENTARIO_INICIAL -> "seq_inventario_inicial";
+          case VENTA -> "seq_venta";
           default -> throw new IllegalStateException("Sin secuencia para " + tipo);
         };
     Long numero = jdbc.queryForObject("select nextval('" + secuencia + "')", Long.class);

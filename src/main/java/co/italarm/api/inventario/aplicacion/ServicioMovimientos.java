@@ -27,6 +27,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -247,6 +248,133 @@ public class ServicioMovimientos {
                 ahora));
       }
     }
+  }
+
+  /**
+   * Bloquea los productos de una salida en orden de id (BP-08) y devuelve su stock y costo vigente
+   * (RF-68). Los bloqueos duran hasta el final de la transacción, así que el costo no cambia antes
+   * de registrar la salida.
+   */
+  @Transactional(propagation = Propagation.MANDATORY)
+  public Map<Long, ExistenciaProducto> bloquearParaSalida(Collection<Long> productoIds) {
+    return operaciones.bloquear(productoIds).values().stream()
+        .collect(
+            Collectors.toMap(
+                ProductoInventario::getId,
+                p -> new ExistenciaProducto(p.getId(), p.getStock(), p.getCostoActualUsd())));
+  }
+
+  /**
+   * Descuenta lo que sale con una venta (RF-102): stock, kárdex con el costo vigente y seriales
+   * vendidos con su garantía (RF-22, RF-23). Corre dentro de la transacción de la venta.
+   *
+   * @param vencimientoGarantia fin de la garantía de los equipos con serial
+   * @param detalleSeriales texto para el historial de los seriales (cliente y venta)
+   */
+  @Transactional(propagation = Propagation.MANDATORY)
+  public void registrarSalidaVenta(
+      DocumentoRef venta,
+      LocalDate fecha,
+      List<LineaSalida> lineas,
+      LocalDate vencimientoGarantia,
+      String detalleSeriales,
+      Long usuarioId) {
+    Map<Long, DatosProductoInventario> datos =
+        consultaProductos.porId(lineas.stream().map(LineaSalida::productoId).toList());
+    Map<Long, ProductoInventario> bloqueados = operaciones.bloquear(datos.keySet());
+    Instant ahora = reloj.instant();
+    for (LineaSalida linea : lineas) {
+      DatosProductoInventario producto =
+          OperacionesInventario.exigirProducto(datos, linea.productoId());
+      if (!producto.activo()) {
+        throw new ProductoInactivoException(
+            producto.nombre() + " está inactivo y no se puede vender.");
+      }
+      OperacionesInventario.exigirCantidad(linea.cantidad(), producto);
+      ProductoInventario inventario = bloqueados.get(linea.productoId());
+      inventario.salir(linea.cantidad(), producto.abreviatura());
+      List<Serial> salen =
+          operaciones.serialesQueSalen(producto, linea.cantidad(), linea.seriales());
+      kardex.save(
+          MovimientoInventario.salida(
+              linea.productoId(),
+              TipoMovimiento.VENTA,
+              venta,
+              fecha,
+              linea.cantidad(),
+              inventario.getStock(),
+              inventario.getCostoActualUsd(),
+              null,
+              usuarioId,
+              ahora));
+      for (Serial serial : salen) {
+        serial.vender(venta, vencimientoGarantia);
+        movimientosSerial.save(
+            MovimientoSerial.de(
+                serial.getId(),
+                TipoMovimientoSerial.VENTA,
+                venta,
+                fecha,
+                detalleSeriales,
+                usuarioId,
+                ahora));
+      }
+    }
+  }
+
+  /**
+   * Devuelve a bodega lo que salió con una venta anulada (RF-72): entra al costo vigente sin
+   * cambiarlo (como un ajuste de entrada, RN-06) y los seriales vuelven a bodega sin garantía.
+   */
+  @Transactional(propagation = Propagation.MANDATORY)
+  public void anularSalidaVenta(
+      DocumentoRef venta, LocalDate fecha, List<LineaAnulacion> lineas, Long usuarioId) {
+    Map<Long, ProductoInventario> bloqueados =
+        operaciones.bloquear(lineas.stream().map(LineaAnulacion::productoId).toList());
+    Instant ahora = reloj.instant();
+    for (LineaAnulacion linea : lineas) {
+      ProductoInventario inventario = bloqueados.get(linea.productoId());
+      inventario.entrar(linea.cantidad());
+      kardex.save(
+          MovimientoInventario.entrada(
+              linea.productoId(),
+              TipoMovimiento.ANULACION_VENTA,
+              venta,
+              fecha,
+              linea.cantidad(),
+              inventario.getStock(),
+              inventario.getCostoActualUsd(),
+              null,
+              usuarioId,
+              ahora));
+      for (Serial serial :
+          seriales.bloquearDeSalida(linea.productoId(), venta.tipo(), venta.id())) {
+        serial.devolver(venta);
+        movimientosSerial.save(
+            MovimientoSerial.de(
+                serial.getId(),
+                TipoMovimientoSerial.ANULACION_VENTA,
+                venta,
+                fecha,
+                "Venta anulada",
+                usuarioId,
+                ahora));
+      }
+    }
+  }
+
+  /** Seriales que salieron con un documento, por producto, con su garantía. */
+  @Transactional(readOnly = true)
+  public Map<Long, List<SerialSalida>> serialesDeSalida(DocumentoRef documento) {
+    return seriales
+        .findByDocumentoSalidaTipoAndDocumentoSalidaIdOrderById(documento.tipo(), documento.id())
+        .stream()
+        .collect(
+            Collectors.groupingBy(
+                Serial::getProductoId,
+                Collectors.mapping(
+                    s -> new SerialSalida(s.getId(), s.getNumero(), s.getVencimientoGarantia()),
+                    Collectors.toList())));
   }
 
   /** Seriales que entraron con un documento, por producto. */

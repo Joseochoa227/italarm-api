@@ -57,6 +57,14 @@ public class ConsultaProductos {
     return new TotalInventario(total.productos(), total.valorUsd());
   }
 
+  /** Productos con precios, stock y costo, por id (vista previa de ventas). */
+  @Transactional(readOnly = true)
+  public Map<Long, ProductoValorizado> valorizadosPorId(Collection<Long> ids) {
+    return productos.findByIdIn(ids).stream()
+        .map(this::valorizado)
+        .collect(Collectors.toMap(ProductoValorizado::id, Function.identity()));
+  }
+
   @Transactional(readOnly = true)
   public Optional<ProductoValorizado> valorizado(Long id) {
     return productos.findConRelacionesById(id).map(this::valorizado);

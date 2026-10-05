@@ -8,10 +8,13 @@ final class LimpiezaDatos {
   private LimpiezaDatos() {}
 
   static void restablecer(JdbcTemplate jdbc) {
+    jdbc.update("delete from enlace_comprobante");
     jdbc.update("delete from movimiento_serial");
     jdbc.update("delete from serial");
     jdbc.update("delete from movimiento_inventario");
     jdbc.update("delete from historial_costo");
+    jdbc.update("delete from linea_venta");
+    jdbc.update("delete from venta");
     jdbc.update("delete from linea_compra");
     jdbc.update("delete from compra");
     jdbc.update("delete from ajuste");
@@ -19,6 +22,7 @@ final class LimpiezaDatos {
     jdbc.update("delete from inventario_inicial");
     jdbc.update("delete from idempotencia");
     jdbc.execute("alter sequence seq_compra restart with 1");
+    jdbc.execute("alter sequence seq_venta restart with 1");
     jdbc.execute("alter sequence seq_ajuste restart with 1");
     jdbc.execute("alter sequence seq_inventario_inicial restart with 1");
     jdbc.update(

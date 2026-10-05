@@ -114,23 +114,17 @@ public class OperacionesInventario {
   }
 
   /**
-   * Da de baja los seriales que salen con un ajuste (RF-59): deben existir y estar en bodega. Los
-   * bloquea en orden de id (BP-08).
+   * Seriales que salen de bodega con un documento (ajuste, venta o instalación): tantos como la
+   * cantidad, sin repetir y registrados para el producto. Los bloquea en orden de id (BP-08). Un
+   * producto sin serial no lleva seriales.
    */
-  public void darDeBajaSeriales(
-      DatosProductoInventario producto,
-      BigDecimal cantidad,
-      List<String> recibidos,
-      DocumentoRef documento,
-      LocalDate fecha,
-      String detalle,
-      Long usuarioId,
-      Instant ahora) {
+  public List<Serial> serialesQueSalen(
+      DatosProductoInventario producto, BigDecimal cantidad, List<String> recibidos) {
     if (!producto.controlaSerial()) {
       if (recibidos != null && !recibidos.isEmpty()) {
         throw new SerialesNoCoincidenException(producto.nombre() + " no controla serial.");
       }
-      return;
+      return List.of();
     }
     List<String> numeros = Serial.validarLista(recibidos, cantidad, producto.nombre());
     List<Serial> encontrados = seriales.bloquear(producto.id(), numeros);
@@ -142,7 +136,20 @@ public class OperacionesInventario {
             producto.nombre() + ": el serial " + numero + " no está registrado.");
       }
     }
-    for (Serial serial : encontrados) {
+    return encontrados;
+  }
+
+  /** Da de baja los seriales que salen con un ajuste (RF-59); deben estar en bodega. */
+  public void darDeBajaSeriales(
+      DatosProductoInventario producto,
+      BigDecimal cantidad,
+      List<String> recibidos,
+      DocumentoRef documento,
+      LocalDate fecha,
+      String detalle,
+      Long usuarioId,
+      Instant ahora) {
+    for (Serial serial : serialesQueSalen(producto, cantidad, recibidos)) {
       serial.darDeBaja(documento);
       movimientosSerial.save(
           MovimientoSerial.de(

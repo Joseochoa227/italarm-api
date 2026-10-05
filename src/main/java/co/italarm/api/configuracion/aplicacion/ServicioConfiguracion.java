@@ -58,6 +58,12 @@ public class ServicioConfiguracion {
     return cargar().getLimiteVariacionTasa();
   }
 
+  /** Meses de garantía de los equipos con serial (RF-23, RF-147). */
+  @Transactional(readOnly = true)
+  public int garantiaEquiposMeses() {
+    return cargar().getGarantiaEquiposMeses();
+  }
+
   private Configuracion cargar() {
     return configuraciones
         .findById(Configuracion.ID_UNICO)

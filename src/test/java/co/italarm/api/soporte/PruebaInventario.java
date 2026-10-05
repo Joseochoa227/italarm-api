@@ -77,6 +77,17 @@ public abstract class PruebaInventario extends PruebaIntegracion {
         nombre);
   }
 
+  /** Cliente de prueba: {@code tipo} es INSTALADOR o CLIENTE_FINAL. */
+  protected long crearCliente(String nombre, String tipo) {
+    return jdbc.queryForObject(
+        "insert into cliente (tipo, nombre, tipo_documento, numero_documento, telefono, direccion)"
+            + " values (?, ?, 'CC', ?, '+573001234567', 'Calle 10 # 5-20') returning id",
+        Long.class,
+        tipo,
+        nombre,
+        String.valueOf(Math.abs(nombre.hashCode())));
+  }
+
   protected long crearProducto(String codigo, long categoriaId, long unidadId, boolean serial)
       throws Exception {
     Map<String, Object> datos = new HashMap<>();

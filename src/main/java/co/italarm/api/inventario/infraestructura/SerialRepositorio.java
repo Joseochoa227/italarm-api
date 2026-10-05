@@ -39,6 +39,16 @@ public interface SerialRepositorio extends JpaRepository<Serial, Long> {
       @Param("tipo") TipoDocumento tipo,
       @Param("documento") Long documentoId);
 
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query(
+      "select s from Serial s where s.productoId = :producto"
+          + " and s.documentoSalida.tipo = :tipo and s.documentoSalida.id = :documento"
+          + " order by s.id")
+  List<Serial> bloquearDeSalida(
+      @Param("producto") Long productoId,
+      @Param("tipo") TipoDocumento tipo,
+      @Param("documento") Long documentoId);
+
   List<Serial> findByProductoIdAndDocumentoEntradaTipoAndDocumentoEntradaId(
       Long productoId, TipoDocumento tipo, Long documentoId);
 
