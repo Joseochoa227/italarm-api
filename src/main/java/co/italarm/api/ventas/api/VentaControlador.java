@@ -1,7 +1,9 @@
 package co.italarm.api.ventas.api;
 
+import co.italarm.api.documentos.aplicacion.ArchivoGenerado;
 import co.italarm.api.shared.dominio.ClaveIdempotencia;
 import co.italarm.api.shared.seguridad.UsuarioAutenticado;
+import co.italarm.api.ventas.aplicacion.EnlaceComprobanteVista;
 import co.italarm.api.ventas.aplicacion.ListadoVentasVista;
 import co.italarm.api.ventas.aplicacion.ServicioVentas;
 import co.italarm.api.ventas.aplicacion.VentaVista;
@@ -15,7 +17,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -115,6 +121,29 @@ public class VentaControlador {
       @PathVariable Long id, @Validated @RequestBody SolicitudEdicionVenta solicitud) {
     return servicio.actualizar(
         id, solicitud.observaciones(), solicitud.monedasComprobante(), solicitud.version());
+  }
+
+  @GetMapping(path = "/{id}/comprobante", produces = MediaType.APPLICATION_PDF_VALUE)
+  @Operation(summary = "Descargar el comprobante de venta en PDF (RF-133)")
+  public ResponseEntity<byte[]> comprobante(@PathVariable Long id) {
+    ArchivoGenerado archivo = servicio.comprobante(id);
+    return ResponseEntity.ok()
+        .header(
+            HttpHeaders.CONTENT_DISPOSITION,
+            ContentDisposition.attachment().filename(archivo.nombre()).build().toString())
+        .contentType(MediaType.APPLICATION_PDF)
+        .body(archivo.contenido());
+  }
+
+  @PostMapping("/{id}/enlace")
+  @Operation(
+      summary = "Crear el enlace público del comprobante para WhatsApp",
+      description =
+          "Vence a los 30 días (P-33). Trae el mensaje listo y el enlace wa.me con el número del"
+              + " cliente (RF-134).")
+  public EnlaceComprobanteVista enlace(
+      @PathVariable Long id, @AuthenticationPrincipal UsuarioAutenticado usuario) {
+    return servicio.crearEnlace(id, usuario.usuarioId());
   }
 
   @PostMapping("/{id}/anular")

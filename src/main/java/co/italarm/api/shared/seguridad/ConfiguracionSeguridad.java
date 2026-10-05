@@ -49,6 +49,9 @@ public class ConfiguracionSeguridad {
                     // Descarga con enlace firmado (modo disco): la firma es el permiso.
                     .requestMatchers(HttpMethod.GET, "/api/v1/archivos")
                     .permitAll()
+                    // Comprobante compartido por WhatsApp: el token del enlace es el permiso.
+                    .requestMatchers(HttpMethod.GET, "/api/v1/comprobantes/*")
+                    .permitAll()
                     .requestMatchers(
                         "/actuator/health",
                         "/actuator/health/**",

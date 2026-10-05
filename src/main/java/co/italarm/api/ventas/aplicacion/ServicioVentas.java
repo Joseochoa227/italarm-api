@@ -4,6 +4,9 @@ import co.italarm.api.catalogo.aplicacion.ConsultaProductos;
 import co.italarm.api.catalogo.aplicacion.ProductoValorizado;
 import co.italarm.api.compras.aplicacion.ConsultaCompras;
 import co.italarm.api.compras.aplicacion.TasasUltimaCompra;
+import co.italarm.api.documentos.aplicacion.ArchivoGenerado;
+import co.italarm.api.documentos.aplicacion.EnlaceCreado;
+import co.italarm.api.documentos.aplicacion.ServicioEnlacesComprobante;
 import co.italarm.api.inventario.aplicacion.LineaAnulacion;
 import co.italarm.api.inventario.aplicacion.SerialSalida;
 import co.italarm.api.inventario.aplicacion.ServicioMovimientos;
@@ -35,6 +38,8 @@ import co.italarm.api.ventas.infraestructura.LineaVentaRepositorio;
 import co.italarm.api.ventas.infraestructura.TotalesVentas;
 import co.italarm.api.ventas.infraestructura.VentaRepositorio;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
@@ -65,6 +70,8 @@ public class ServicioVentas {
   private final ServicioTasas tasas;
   private final ServicioIdempotencia idempotencia;
   private final ConsultaUsuarios usuarios;
+  private final ComprobantesVenta comprobantes;
+  private final ServicioEnlacesComprobante enlaces;
   private final FechaNegocio fechas;
 
   public ServicioVentas(
@@ -79,6 +86,8 @@ public class ServicioVentas {
       ServicioTasas tasas,
       ServicioIdempotencia idempotencia,
       ConsultaUsuarios usuarios,
+      ComprobantesVenta comprobantes,
+      ServicioEnlacesComprobante enlaces,
       FechaNegocio fechas) {
     this.ventas = ventas;
     this.lineas = lineas;
@@ -91,6 +100,8 @@ public class ServicioVentas {
     this.tasas = tasas;
     this.idempotencia = idempotencia;
     this.usuarios = usuarios;
+    this.comprobantes = comprobantes;
+    this.enlaces = enlaces;
     this.fechas = fechas;
   }
 
@@ -365,6 +376,40 @@ public class ServicioVentas {
     venta.anular(motivo, usuarioId, fechas.ahora());
     ventas.flush();
     return detalle(id);
+  }
+
+  /** PDF del comprobante para descargar con sesión (RF-133). */
+  public ArchivoGenerado comprobante(Long id) {
+    return comprobantes.pdf(id);
+  }
+
+  /**
+   * Enlace público del comprobante, con el mensaje y el enlace de WhatsApp al número del cliente
+   * (RF-134). En el celular, el frontend comparte el PDF descargado.
+   */
+  @Transactional
+  public EnlaceComprobanteVista crearEnlace(Long id, Long usuarioId) {
+    Venta venta = buscar(id);
+    EnlaceCreado enlace = enlaces.crear(TipoDocumento.VENTA, venta.getId(), usuarioId);
+    String mensaje =
+        "Hola "
+            + venta.getCliente().nombre()
+            + ", te compartimos el comprobante de venta "
+            + venta.consecutivo()
+            + " de ITALARM: "
+            + enlace.url();
+    String telefono = venta.getCliente().telefono();
+    String digitos = telefono == null ? "" : telefono.replaceAll("\\D", "");
+    return new EnlaceComprobanteVista(
+        enlace.url(),
+        enlace.venceEn(),
+        mensaje,
+        digitos.isEmpty()
+            ? null
+            : "https://wa.me/"
+                + digitos
+                + "?text="
+                + URLEncoder.encode(mensaje, StandardCharsets.UTF_8));
   }
 
   private Venta buscar(Long id) {

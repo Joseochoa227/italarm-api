@@ -30,6 +30,7 @@
     <cobertura.minima>0.80</cobertura.minima>
     <awssdk.version>2.55.7</awssdk.version>
     <poi.version>5.5.1</poi.version>
+    <openpdf.version>3.0.5</openpdf.version>
   </properties>
 
   <dependencyManagement>
@@ -94,6 +95,12 @@
       <groupId>org.apache.poi</groupId>
       <artifactId>poi-ooxml</artifactId>
       <version>${poi.version}</version>
+    </dependency>
+    <!-- Comprobantes en PDF (sección 3.15). -->
+    <dependency>
+      <groupId>com.github.librepdf</groupId>
+      <artifactId>openpdf</artifactId>
+      <version>${openpdf.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springdoc</groupId>

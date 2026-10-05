@@ -3,6 +3,7 @@ package co.italarm.api.documentos.aplicacion;
 import co.italarm.api.documentos.dominio.ClaveArchivo;
 import co.italarm.api.documentos.dominio.TipoArchivo;
 import co.italarm.api.documentos.dominio.ValidadorImagen;
+import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +44,11 @@ public class ServicioArchivos {
         ClaveArchivo.validar(carpeta + "/" + nombreBase + "-" + sufijo + "." + tipo.extension());
     almacenamiento.guardar(clave, contenido, tipo.tipoContenido());
     return clave;
+  }
+
+  /** Contenido de un archivo guardado (por ejemplo, el logo para los PDF); vacío si no existe. */
+  public Optional<byte[]> leer(String clave) {
+    return clave == null ? Optional.empty() : almacenamiento.leer(clave);
   }
 
   /** Enlace firmado para mostrar el archivo, o {@code null} si no hay archivo. */

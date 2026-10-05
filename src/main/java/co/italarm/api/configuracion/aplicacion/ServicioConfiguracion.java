@@ -58,6 +58,24 @@ public class ServicioConfiguracion {
     return cargar().getLimiteVariacionTasa();
   }
 
+  /** Datos de la empresa y textos para los PDF (RF-127, RF-131, RF-145). */
+  @Transactional(readOnly = true)
+  public EmpresaDocumentos empresaParaDocumentos() {
+    Configuracion c = cargar();
+    return new EmpresaDocumentos(
+        c.getEmpresaNombre(),
+        c.getEmpresaLema(),
+        c.getEmpresaNit(),
+        c.getEmpresaCiudad(),
+        c.getEmpresaTelefono(),
+        c.getEmpresaCorreo(),
+        archivos.leer(c.getEmpresaLogoClave()).orElse(null),
+        c.getCondicionesGarantia(),
+        c.getPiePdf(),
+        c.getGarantiaEquiposMeses(),
+        c.getGarantiaManoObraMeses());
+  }
+
   /** Meses de garantía de los equipos con serial (RF-23, RF-147). */
   @Transactional(readOnly = true)
   public int garantiaEquiposMeses() {
