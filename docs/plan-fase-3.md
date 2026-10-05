@@ -1,6 +1,6 @@
 # Plan de la Fase 3 — Ventas, comprobantes y anulaciones (italarm-api)
 
-> Estado: **borrador para aprobación de ITALARM**. No se implementa nada hasta que ITALARM apruebe este plan y responda las preguntas P-27 a P-36 (`docs/preguntas.md`).
+> Estado: **aprobado por ITALARM el 05/10/2026**, en implementación. Preguntas P-27 a P-36 respondidas: de acuerdo con las propuestas (ver `docs/preguntas.md`).
 > Base: `docs/requerimientos.md`, secciones 3.4, 3.8, 3.9, 3.10, 3.12, 3.15, 4, 9.4 y 12.5, más las decisiones de `docs/preguntas.md`.
 > Alcance: solo el backend (**italarm-api**). Las pantallas se hacen en italarm-web a partir del contrato OpenAPI que deja esta fase.
 
