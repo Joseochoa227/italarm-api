@@ -7,8 +7,8 @@ import co.italarm.api.terceros.dominio.TipoDocumento;
 import java.time.LocalDate;
 
 /**
- * Cliente como lo ve el frontend. {@code cantidadMovimientos} y {@code fechaUltimoMovimiento} se
- * llenan cuando existan ventas, instalaciones y cotizaciones (fases 3 a 5).
+ * Cliente como lo ve el frontend. {@code cantidadMovimientos} cuenta sus ventas e instalaciones no
+ * anuladas y {@code fechaUltimoMovimiento} es la del último (RF-76, P-36).
  */
 public record ClienteVista(
     Long id,
@@ -26,7 +26,7 @@ public record ClienteVista(
     LocalDate fechaUltimoMovimiento,
     long version) {
 
-  static ClienteVista de(Cliente cliente) {
+  static ClienteVista de(Cliente cliente, MovimientosCliente.Resumen movimientos) {
     return new ClienteVista(
         cliente.getId(),
         cliente.getTipo(),
@@ -39,8 +39,8 @@ public record ClienteVista(
         cliente.getCorreo(),
         cliente.getDireccion(),
         cliente.getCiudad(),
-        0,
-        null,
+        movimientos == null ? 0 : movimientos.cantidad(),
+        movimientos == null ? null : movimientos.ultimo(),
         cliente.getVersion());
   }
 }

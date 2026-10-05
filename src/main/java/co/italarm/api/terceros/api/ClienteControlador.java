@@ -3,6 +3,7 @@ package co.italarm.api.terceros.api;
 import co.italarm.api.shared.api.Edicion;
 import co.italarm.api.shared.api.Pagina;
 import co.italarm.api.terceros.aplicacion.ClienteVista;
+import co.italarm.api.terceros.aplicacion.HistorialClienteVista;
 import co.italarm.api.terceros.aplicacion.ServicioClientes;
 import co.italarm.api.terceros.dominio.TipoCliente;
 import io.swagger.v3.oas.annotations.Operation;
@@ -51,6 +52,15 @@ public class ClienteControlador {
   @Operation(summary = "Detalle de un cliente")
   public ClienteVista detalle(@PathVariable Long id) {
     return servicio.detalle(id);
+  }
+
+  @GetMapping("/{id}/historial")
+  @Operation(
+      summary = "Historial del cliente",
+      description =
+          "Sus ventas (y desde la Fase 4, instalaciones), incluidas las anuladas (RF-77).")
+  public HistorialClienteVista historial(@PathVariable Long id) {
+    return servicio.historial(id);
   }
 
   @PostMapping

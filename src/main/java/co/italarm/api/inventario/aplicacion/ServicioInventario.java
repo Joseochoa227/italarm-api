@@ -288,7 +288,8 @@ public class ServicioInventario {
         new ProductoReferencia(producto.id(), producto.codigo(), producto.nombre()),
         serial.getFechaEntrada(),
         serial.getDocumentoEntrada(),
-        serial.getDocumentoSalida());
+        serial.getDocumentoSalida(),
+        serial.getVencimientoGarantia());
   }
 
   private static Dinero valorEnBodega(ProductoValorizado p) {

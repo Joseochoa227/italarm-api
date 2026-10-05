@@ -8,6 +8,7 @@ import java.time.LocalDate;
  *
  * @param estado EN_BODEGA, VENDIDO, INSTALADO, DADO_DE_BAJA o ANULADO
  * @param documentoSalida venta, instalación o ajuste con que salió; vacío si sigue en bodega
+ * @param vencimientoGarantia fin de la garantía del equipo si salió en una venta o instalación
  */
 public record SerialVista(
     Long id,
@@ -16,4 +17,5 @@ public record SerialVista(
     ProductoReferencia producto,
     LocalDate fechaEntrada,
     DocumentoRef documentoEntrada,
-    DocumentoRef documentoSalida) {}
+    DocumentoRef documentoSalida,
+    LocalDate vencimientoGarantia) {}
