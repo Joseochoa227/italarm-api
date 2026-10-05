@@ -88,4 +88,28 @@ class SerialTest {
     assertThat(Serial.validarLista(List.of(" a1", "b2 "), new BigDecimal("2"), "X"))
         .containsExactly("A1", "B2");
   }
+
+  @Test
+  void vender_dejaElSerialVendidoConGarantia_yAnularLaVentaLoDevuelve() {
+    DocumentoRef venta = new DocumentoRef(TipoDocumento.VENTA, 9L, "V-0001");
+    Serial serial = Serial.entrar(1L, "abc", COMPRA, java.time.LocalDate.of(2026, 10, 1));
+
+    serial.vender(venta, java.time.LocalDate.of(2027, 1, 15));
+
+    org.assertj.core.api.Assertions.assertThat(serial.getEstado()).isEqualTo(EstadoSerial.VENDIDO);
+    org.assertj.core.api.Assertions.assertThat(serial.getDocumentoSalida()).isEqualTo(venta);
+    org.assertj.core.api.Assertions.assertThat(serial.getVencimientoGarantia())
+        .isEqualTo(java.time.LocalDate.of(2027, 1, 15));
+    org.assertj.core.api.Assertions.assertThatThrownBy(
+            () -> serial.vender(venta, java.time.LocalDate.of(2027, 1, 15)))
+        .isInstanceOf(SerialNoDisponibleException.class);
+    org.assertj.core.api.Assertions.assertThatThrownBy(() -> serial.devolver(AJUSTE))
+        .isInstanceOf(SerialNoDisponibleException.class);
+
+    serial.devolver(venta);
+
+    org.assertj.core.api.Assertions.assertThat(serial.estaDisponible()).isTrue();
+    org.assertj.core.api.Assertions.assertThat(serial.getDocumentoSalida()).isNull();
+    org.assertj.core.api.Assertions.assertThat(serial.getVencimientoGarantia()).isNull();
+  }
 }
