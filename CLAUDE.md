@@ -47,6 +47,7 @@ compras/         compras a proveedores, vista previa, anulación y factura
 comercial/       (solo aplicacion) preparación del material y vista previa comunes a ventas, instalaciones y cotizaciones
 ventas/          ventas de material, utilidad, anulación, comprobante en PDF y enlace para WhatsApp
 instalaciones/   instalaciones, técnicos, fotos, garantías de mano de obra, anulación y comprobante en PDF
+cotizaciones/    cotizaciones, estados, versiones, vencimiento diario, PDF y datos para convertirlas
 garantias/       consulta de garantías (vista SQL `garantia`) y reclamos
 cargainicial/    plantilla y lectura del Excel de la carga inicial (usa catalogo, terceros e inventario)
 ```
@@ -108,7 +109,7 @@ Los módulos que falten se crean en la fase que los necesita.
 - **Creaciones idempotentes**: el servicio público no es transaccional y llama a `ServicioIdempotencia.ejecutar`; la transacción la abre un bean `Registro*` que reserva la clave al empezar y la asocia al documento al final.
 - **Pruebas de inventario**: heredan de `soporte.PruebaInventario` (reloj fijo el 01/10/2026, TRM 4.000, bolívar 50 y utilidades para productos, proveedores, clientes y compras).
 - **PDF**: los módulos arman un `DocumentoPdf` con los textos ya formateados (`FormatoDinero`) y lo pasan a `GeneradorPdf` (OpenPDF, paquete `org.openpdf`). Para servir un tipo de documento por enlace público, el módulo implementa `FuenteComprobantes`.
-- **Movimientos del cliente**: cada módulo con documentos de clientes implementa `terceros.aplicacion.MovimientosCliente`; así `terceros` no depende de `ventas` ni de `instalaciones`. Igual, `garantias` implementa `inventario.aplicacion.ReclamosSerial`.
+- **Movimientos del cliente**: cada módulo con documentos de clientes implementa `terceros.aplicacion.MovimientosCliente`; así `terceros` no depende de `ventas` ni de `instalaciones`. Igual, `garantias` implementa `inventario.aplicacion.ReclamosSerial` y `cotizaciones` implementa `comercial.aplicacion.OrigenCotizacion` (convertir y revertir dentro de la transacción de la venta o instalación).
 - **Documentos con material** (ventas, instalaciones y cotizaciones): reglas en `shared.dominio` (`PrecioSugerido`, `Descuento`, `CalculoDocumento`, `Garantia`) y preparación en `comercial.aplicacion` (`PreparacionMaterial`, `VistaPreviaMaterial`). No se duplican en cada módulo.
 - **Proxies de Spring**: un método que otro bean llama sobre un servicio con `@Transactional` debe ser `public`; un método de paquete se ejecuta sobre el proxy, con los campos vacíos.
 - **Limpieza en pruebas**: `soporte/LimpiezaDatos` deja la base como la dejan las migraciones antes de cada prueba de integración; al agregar tablas, agrégalas ahí.
@@ -153,3 +154,6 @@ Los módulos que falten se crean en la fase que los necesita.
 | Fotos en el almacenamiento (`instalaciones/{id}/{grupo}-…`), máximo 30 por grupo; el frontend las comprime. | P-42, BF-14. |
 | La consulta de garantías lee la vista SQL `garantia` (mano de obra de instalaciones y seriales vendidos o instalados de documentos no anulados) con `NamedParameterJdbcTemplate`. Estado: Por vencer con 30 días o menos; Vencida desde el día siguiente. | RF-123, P-43. |
 | Reclamos sobre una instalación o un serial; no se borran y quedan marcados si se registran fuera de garantía. | RF-125, P-45. |
+| Máquina de estados de la cotización en `Cotizacion` (dominio); Rechazada y Vencida no se reabren, se duplican. Vencen Borrador y En evaluación desde el día siguiente a `fecha + validez`, con una tarea a las 00:05 y al arrancar. | P-47, P-48, RN-13. |
+| Editar una cotización en evaluación sube su número de versión (COT-0001 v2) y guarda la anterior en `version_cotizacion` (JSONB). | RF-88, P-46. |
+| La conversión no es un `POST /cotizaciones/{id}/convertir`: `GET /conversion` precarga el formulario y la venta o instalación se guarda con `cotizacionId`, que bloquea y convierte la cotización en la misma transacción. Un índice único parcial impide dos documentos activos por cotización. | RF-93 a RF-96, RN-14; se aparta de RT-03 para que la cotización solo quede Convertida si el documento se guarda. |

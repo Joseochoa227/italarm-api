@@ -2,6 +2,24 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado semántico.
 
+## [Sin publicar] — Fase 5: Cotizaciones
+
+### Agregado
+- Cotizaciones de venta o de instalación (migración V11), con consecutivo COT-0001:
+  - vista previa con precio sugerido según el tipo de cliente, costo con las tasas de hoy y de la última compra (CP-09), cobro con utilidad estimada y vencimiento;
+  - registro en Borrador con validez de 8, 15 o 30 días, descuento, mano de obra y descripción (en las de instalación), tasas de hoy e `Idempotency-Key`; no aparta ni descuenta material (CP-26);
+  - estados Borrador, En evaluación, Aprobada, Convertida, Rechazada (con motivo y detalle opcionales) y Vencida, con las transiciones en el dominio (`TRANSICION_NO_PERMITIDA`);
+  - edición: en Borrador reemplaza; En evaluación guarda una nueva versión (COT-0001 v2) y conserva la anterior;
+  - duplicar con los precios cotizados y las tasas de hoy;
+  - listado con filtros por estado, cliente, tipo, fechas y `porVencer` (en evaluación con 3 días o menos), con días para vencer;
+  - tarea diaria a las 00:05 y al arrancar que vence las cotizaciones en Borrador o En evaluación (CP-21);
+  - PDF con "Válida hasta", mano de obra como una línea más y marca de agua "VENCIDA" o "RECHAZADA"; enlace público para WhatsApp (pasa a En evaluación) y mensaje de seguimiento.
+- Conversión (RF-93 a RF-96): `GET /cotizaciones/{id}/conversion` devuelve el formulario precargado y los avisos de precio, costo y stock; `POST /ventas` y `POST /instalaciones` aceptan `cotizacionId`, dejan la cotización Convertida y enlazada (CP-22) y no guardan nada si falta stock (CP-23). Al anular el documento generado, la cotización vuelve a Aprobada (CP-24).
+
+### Cambiado
+- El detalle de ventas e instalaciones trae `cotizacion` (id y consecutivo) cuando vienen de una cotización.
+- `PRODUCTO_INACTIVO` pasa a `shared` y también se aplica al cotizar.
+
 ## [Sin publicar] — Fase 4: Instalaciones, fotos y garantías
 
 ### Agregado

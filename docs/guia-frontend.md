@@ -230,7 +230,29 @@ Formulario en 4 pasos con el panel de Cobro (el backend calcula todo en la vista
 - **Reclamo:** `POST /garantias/reclamos` con `{ instalacionId o serialId, fecha, problema, solucion }`. Si la garantía ya venció, se registra con `enGarantia: false` (P-45). La solución se escribe después con `PUT /garantias/reclamos/{id}` `{ solucion, version }`. Los reclamos no se borran.
 - `GET /garantias/reclamos?instalacionId=&serialId=&clienteId=` lista los reclamos; el historial del serial (`GET /seriales/{id}`) también los trae.
 
-## 17. Cómo mantener el contrato al día
+## 17. Cotizaciones (sección 3.11)
+
+**Formulario (RF-83):** `tipo` (`VENTA` o `INSTALACION`), cliente, `validezDias` (8, 15 o 30; vacío = el de Configuración), `moneda`, `lineas` (`{ productoId, cantidad, precioUnitario }`, sin seriales), y en las de instalación `manoDeObra` y `descripcion` (obligatoria). Además `descuentoTipo`, `descuentoValor`, `observaciones` y `monedasComprobante`.
+
+- **Vista previa (RF-81, RF-85):** `POST /cotizaciones/vista-previa` con el mismo cuerpo. Devuelve `fecha`, `vence`, `lineas` (como en ventas: `costoUnitarioHoy` y `costoUnitarioUltimaCompra`, CP-09), `resumen` con la utilidad estimada, `tasas` y `avisos`. Con esos datos se dibuja la vista previa del PDF al lado del formulario en computador. El `avisoStock` es solo informativo: la cotización no aparta material (RF-86).
+- **Guardar:** `POST /cotizaciones` con `Idempotency-Key`. Queda en `BORRADOR`; la fecha es hoy (P-49).
+- **Estados:** `BORRADOR` → `EN_EVALUACION` → `APROBADA` → `CONVERTIDA`, más `RECHAZADA` y `VENCIDA`. Una acción no permitida responde 422 `TRANSICION_NO_PERMITIDA`.
+  - **Enviar por WhatsApp:** `POST /cotizaciones/{id}/enlace` (pasa a En evaluación) y abre `whatsappUrl`; en el celular, descarga el PDF, compártelo y llama a `POST /cotizaciones/{id}/enviar`.
+  - **Descargar PDF:** `GET /cotizaciones/{id}/comprobante` no cambia el estado; el botón Descargar PDF llama además a `/enviar` (P-50). La vista previa mientras se elabora no marca nada.
+  - **Cliente aprobó:** `POST /{id}/aprobar` (desde Borrador o En evaluación).
+  - **Rechazar:** `POST /{id}/rechazar` con `{ motivo: PRECIO | COMPETENCIA | OTRO, detalle }`, ambos opcionales.
+  - **Vencida:** la pone la tarea diaria desde el día siguiente a `vence` (P-47). Rechazada y Vencida no se reabren: se duplican.
+- **Editar:** `PUT /cotizaciones/{id}` con el cuerpo completo y `version`. En Borrador se reemplaza; En evaluación se guarda como nueva versión (`consecutivo` "COT-0001 v2") y la anterior queda en `versionesAnteriores` (RF-88). Fecha, tasas y vencimiento se recalculan desde hoy.
+- **Duplicar (RF-87):** `POST /cotizaciones/{id}/duplicar` con `Idempotency-Key`: nueva cotización en Borrador con los precios cotizados.
+- **Listado (RF-89 a RF-91):** `GET /cotizaciones?estado=&clienteId=&tipo=&desde=&hasta=&porVencer=`. Cada fila trae `diasParaVencer` (solo en Borrador o En evaluación) y `porVencer` para resaltarla; `porVencer=true` trae las en evaluación con 3 días o menos (bloque de Inicio, Fase 6). Las cotizaciones de un cliente se ven con `clienteId` (P-36).
+- **Seguimiento (RF-92):** `GET /cotizaciones/{id}/seguimiento` devuelve el `mensaje` y el `whatsappUrl`.
+- **Convertir (RF-93 a RF-96):** en una cotización Aprobada, el botón "Cliente aprobó · convertir":
+  1. `GET /cotizaciones/{id}/conversion` devuelve `tipo` (a qué formulario ir), cliente, `direccion`, moneda, `lineas` con el precio cotizado y el stock, `manoDeObra`, `descripcion`, descuento, y `avisos` (`PRECIO`, `COSTO`, `STOCK`, `INACTIVO`, `TASA`). Si `puedeGuardar` es `false`, hay que ajustar la cantidad (CP-23).
+  2. Abre el formulario de venta o de instalación precargado; el usuario completa los seriales y, en las instalaciones, técnicos, fecha, fotos y garantía. El cliente y el tipo no cambian (P-54).
+  3. Guarda con `POST /ventas` o `POST /instalaciones` agregando `cotizacionId`. La cotización queda `CONVERTIDA` con `documentoGenerado` (tipo, id y consecutivo), y el detalle de la venta o instalación trae `cotizacion` para volver a ella (RF-95). Errores: `COTIZACION_NO_CONVERTIBLE` (no está aprobada, ya fue convertida, es de otro tipo o de otro cliente) y `STOCK_INSUFICIENTE`.
+  4. Si se anula esa venta o instalación, la cotización vuelve a `APROBADA` (RF-74).
+
+## 18. Cómo mantener el contrato al día
 
 Cuando el backend cambia un endpoint:
 

@@ -23,7 +23,7 @@ Orden según AG-03: migración → dominio con pruebas → casos de uso → endp
 
 ### T1. Dominio de la cotización (puro, sin Spring, con TDD) — `feat:`
 
-- [ ] **Máquina de estados** (sección 3.11, BP-05). Transiciones permitidas; cualquier otra lanza `TRANSICION_NO_PERMITIDA` (422) con el estado actual en el mensaje:
+- [x] **Máquina de estados** (sección 3.11, BP-05). Transiciones permitidas; cualquier otra lanza `TRANSICION_NO_PERMITIDA` (422) con el estado actual en el mensaje:
 
   | Desde | Acción | Hacia |
   |---|---|---|
@@ -36,79 +36,79 @@ Orden según AG-03: migración → dominio con pruebas → casos de uso → endp
 
   - Una cotización Convertida no se vuelve a convertir (RN-14).
   - Rechazada y Vencida son finales: solo se pueden duplicar (P-48).
-- [ ] **Validez y vencimiento** (RF-83, RN-13): validez de 8, 15 o 30 días (por defecto, la de Configuración).
+- [x] **Validez y vencimiento** (RF-83, RN-13): validez de 8, 15 o 30 días (por defecto, la de Configuración).
   - Vence el día `fecha + validez`.
   - Pasa a Vencida desde el día siguiente (P-47). CP-21: creada el 1 de octubre con 15 días → vence el 16 → el 17 queda Vencida.
   - Días para vencer = vencimiento − hoy (RF-90). "Por vencer" = En evaluación con 3 días o menos (RF-91).
-- [ ] **Datos** (RF-80, RF-83):
+- [x] **Datos** (RF-80, RF-83):
   - tipo (Instalación o Venta de material), cliente, moneda y líneas de material (producto, cantidad, precio unitario; sin seriales);
   - si es de instalación: mano de obra y descripción del trabajo;
   - descuento (RF-82, mismas reglas que P-30 y P-40) y observaciones.
   - Una venta de material exige al menos una línea. Una instalación exige material o mano de obra mayor que 0, como en P-41.
-- [ ] **Edición** (RF-88, P-46):
+- [x] **Edición** (RF-88, P-46):
   - en Borrador se edita libremente;
   - en En evaluación, al editar se guarda una nueva versión (v2, v3…) y se conserva una copia de la anterior;
   - en los demás estados no se edita.
-- [ ] Cálculo con las reglas comunes de `shared.dominio` (`PrecioSugerido`, `Descuento`, `CalculoDocumento`), sin duplicarlas.
+- [x] Cálculo con las reglas comunes de `shared.dominio` (`PrecioSugerido`, `Descuento`, `CalculoDocumento`), sin duplicarlas.
 
 ### T2. Persistencia (migración V11) — `feat:`
 
-- [ ] Secuencia `seq_cotizacion` y el caso `COTIZACION` en `GeneradorConsecutivos` (COT-0001, RN-09).
-- [ ] Tablas `cotizacion`, `linea_cotizacion` y `version_cotizacion` (detalle en la sección 5).
-- [ ] Llaves foráneas de `venta.cotizacion_id` e `instalacion.cotizacion_id` hacia `cotizacion`, con índices.
+- [x] Secuencia `seq_cotizacion` y el caso `COTIZACION` en `GeneradorConsecutivos` (COT-0001, RN-09).
+- [x] Tablas `cotizacion`, `linea_cotizacion` y `version_cotizacion` (detalle en la sección 5).
+- [x] Llaves foráneas de `venta.cotizacion_id` e `instalacion.cotizacion_id` hacia `cotizacion`, con índices.
   - Índice único parcial: una cotización tiene como máximo un documento generado activo (segunda línea de defensa de RN-14).
 
 ### T3. Cotizaciones (nuevo módulo `cotizaciones`) — `feat:`
 
-- [ ] **Vista previa** (RF-81, RF-84, CP-09), sin guardar nada. Reutiliza `comercial.aplicacion` (`PreparacionMaterial`, `VistaPreviaMaterial`). Devuelve:
+- [x] **Vista previa** (RF-81, RF-84, CP-09), sin guardar nada. Reutiliza `comercial.aplicacion` (`PreparacionMaterial`, `VistaPreviaMaterial`). Devuelve:
   - por línea: precio sugerido según el tipo de cliente; disponibilidad solo informativa (RF-86: el stock no impide guardar la cotización); costo con las tasas de hoy y de la última compra; subtotal;
   - resumen: material, mano de obra, descuento, total, costo y utilidad estimada en las tres monedas;
   - fecha de vencimiento calculada y avisos de tasa.
-- [ ] **Registrar** en Borrador, con las tasas de hoy (P-49), el costo vigente de cada línea (para el aviso de RF-96) y `Idempotency-Key` (RT-07). No toca el inventario (RN-11, CP-26).
-- [ ] **Listado** (RF-89, RF-90):
+- [x] **Registrar** en Borrador, con las tasas de hoy (P-49), el costo vigente de cada línea (para el aviso de RF-96) y `Idempotency-Key` (RT-07). No toca el inventario (RN-11, CP-26).
+- [x] **Listado** (RF-89, RF-90):
   - filtros por estado, cliente, tipo, rango de fechas y `porVencer`;
   - cada fila trae consecutivo y versión, cliente, tipo, fecha, total, estado, vencimiento, días para vencer y si está por vencer.
-- [ ] **Detalle**:
+- [x] **Detalle**:
   - líneas, cobro, tasas, versiones anteriores, motivo de rechazo, usuario y fechas;
   - el documento generado (tipo, id y consecutivo) para ir de una a otra (RF-95).
-- [ ] **Editar** (`PUT`, con `version`): en Borrador, o como nueva versión en En evaluación (P-46).
-- [ ] **Acciones de estado**: `enviar`, `aprobar` y `rechazar` (`{ motivo, detalle }`, P-51).
-- [ ] **Duplicar** (RF-87): crea una cotización nueva en Borrador con hoy como fecha, las tasas de hoy y el mismo cliente, tipo, líneas, precios, mano de obra y descripción (P-52).
-- [ ] **Seguimiento por WhatsApp** (RF-92): enlace `wa.me` con el número del cliente y un mensaje de seguimiento (P-53).
-- [ ] **Tarea diaria de vencimiento** (RN-13, CP-21): todos los días a las 00:05 de Bogotá, y al arrancar la API. Pasa a Vencida las cotizaciones en Borrador o En evaluación cuyo vencimiento ya pasó (P-47). Usa el `Clock` inyectado, para probarla con `RelojPrueba`.
-- [ ] Movimientos del cliente: sus cotizaciones se consultan aparte con el filtro `clienteId` (P-36).
+- [x] **Editar** (`PUT`, con `version`): en Borrador, o como nueva versión en En evaluación (P-46).
+- [x] **Acciones de estado**: `enviar`, `aprobar` y `rechazar` (`{ motivo, detalle }`, P-51).
+- [x] **Duplicar** (RF-87): crea una cotización nueva en Borrador con hoy como fecha, las tasas de hoy y el mismo cliente, tipo, líneas, precios, mano de obra y descripción (P-52).
+- [x] **Seguimiento por WhatsApp** (RF-92): enlace `wa.me` con el número del cliente y un mensaje de seguimiento (P-53).
+- [x] **Tarea diaria de vencimiento** (RN-13, CP-21): todos los días a las 00:05 de Bogotá, y al arrancar la API. Pasa a Vencida las cotizaciones en Borrador o En evaluación cuyo vencimiento ya pasó (P-47). Usa el `Clock` inyectado, para probarla con `RelojPrueba`.
+- [x] Movimientos del cliente: sus cotizaciones se consultan aparte con el filtro `clienteId` (P-36).
 
 ### T4. Conversión en venta o instalación — `feat:`
 
-- [ ] **Datos para convertir** (RF-93, RF-94, RF-96, CP-22): `GET /cotizaciones/{id}/conversion`, solo para cotizaciones Aprobadas. Devuelve:
+- [x] **Datos para convertir** (RF-93, RF-94, RF-96, CP-22): `GET /cotizaciones/{id}/conversion`, solo para cotizaciones Aprobadas. Devuelve:
   - el formulario de venta o de instalación precargado: cliente, moneda, productos, cantidades, precios cotizados, descuento, mano de obra, descripción y la dirección del cliente;
   - los avisos de lo que cambió desde la cotización: precio sugerido distinto del cotizado, costo actual distinto del cotizado (con la utilidad que queda) y stock insuficiente ("quedan N").
   - El usuario completa en el frontend lo que falta: seriales, técnicos, fecha, fotos y garantía.
-- [ ] **Guardar la conversión** (RF-95, RF-96, CP-22, CP-23):
+- [x] **Guardar la conversión** (RF-95, RF-96, CP-22, CP-23):
   - `POST /ventas` y `POST /instalaciones` aceptan el campo opcional `cotizacionId`;
   - en la misma transacción se valida que la cotización esté Aprobada, que sea del mismo tipo y del mismo cliente (P-54), y se pasa a Convertida enlazada al documento;
   - si no hay stock, se responde `STOCK_INSUFICIENTE`, la cotización sigue Aprobada y nada se guarda (CP-23);
   - los precios que lleguen en la solicitud son los que se guardan: los cotizados, salvo que el usuario los cambie (P-54).
-- [ ] **Anulación del documento generado** (RF-74, CP-24): al anular la venta o instalación, la cotización vuelve a Aprobada en la misma transacción.
-- [ ] Para que `ventas` e `instalaciones` no dependan del dominio de `cotizaciones` (sección 10.1), la interfaz `comercial.aplicacion.OrigenCotizacion` (`convertir`, `revertir`) la implementa el módulo de cotizaciones, igual que `MovimientosCliente`.
-- [ ] Sobre RT-03: la acción "convertir" no guarda nada por sí sola, porque la cotización solo pasa a Convertida cuando se guarda la venta o la instalación. Por eso se expone como `GET /cotizaciones/{id}/conversion` más el `cotizacionId` en el registro, en lugar de un `POST /cotizaciones/{id}/convertir`.
+- [x] **Anulación del documento generado** (RF-74, CP-24): al anular la venta o instalación, la cotización vuelve a Aprobada en la misma transacción.
+- [x] Para que `ventas` e `instalaciones` no dependan del dominio de `cotizaciones` (sección 10.1), la interfaz `comercial.aplicacion.OrigenCotizacion` (`convertir`, `revertir`) la implementa el módulo de cotizaciones, igual que `MovimientosCliente`.
+- [x] Sobre RT-03: la acción "convertir" no guarda nada por sí sola, porque la cotización solo pasa a Convertida cuando se guarda la venta o la instalación. Por eso se expone como `GET /cotizaciones/{id}/conversion` más el `cotizacionId` en el registro, en lugar de un `POST /cotizaciones/{id}/convertir`.
 
 ### T5. PDF de la cotización y enlace — `feat:`
 
-- [ ] PDF "Cotización" (RF-126 a RF-131):
+- [x] PDF "Cotización" (RF-126 a RF-131):
   - encabezado con COT-0001 (y la versión si es v2 o más), fecha y "Válida hasta";
   - datos del cliente; ítems con la mano de obra como una línea más; descuento y totales;
   - otras monedas elegidas por el usuario, con la tasa y su fecha (como P-34);
   - condiciones de Configuración y el pie;
   - marca de agua "VENCIDA" o "RECHAZADA" cuando corresponda.
-- [ ] Descargar el PDF (`GET`) no cambia el estado.
+- [x] Descargar el PDF (`GET`) no cambia el estado.
   - Crear el enlace para WhatsApp (`POST /enlace`) pasa la cotización de Borrador a En evaluación (sección 3.11).
   - Si el usuario solo descarga el PDF para enviarlo por su cuenta, el frontend llama a `POST /enviar` (P-50).
-- [ ] El enlace público `GET /api/v1/comprobantes/{token}` sirve también cotizaciones (`FuenteComprobantes`), con vencimiento de 30 días (P-33).
+- [x] El enlace público `GET /api/v1/comprobantes/{token}` sirve también cotizaciones (`FuenteComprobantes`), con vencimiento de 30 días (P-33).
 
 ### T6. Documentación — `docs:`
 
-- [ ] Contrato `contrato/openapi.json` regenerado, guía del frontend (sección de cotizaciones y conversión), CHANGELOG.md y CLAUDE.md.
+- [x] Contrato `contrato/openapi.json` regenerado, guía del frontend (sección de cotizaciones y conversión), CHANGELOG.md y CLAUDE.md.
 
 ## 4. Endpoints
 
