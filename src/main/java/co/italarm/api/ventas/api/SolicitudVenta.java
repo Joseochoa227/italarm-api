@@ -1,8 +1,8 @@
 package co.italarm.api.ventas.api;
 
 import co.italarm.api.shared.dominio.Moneda;
+import co.italarm.api.shared.dominio.TipoDescuento;
 import co.italarm.api.ventas.aplicacion.DatosVenta;
-import co.italarm.api.ventas.dominio.TipoDescuento;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotEmpty;

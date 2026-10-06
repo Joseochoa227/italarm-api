@@ -2,8 +2,8 @@ package co.italarm.api.ventas.infraestructura;
 
 import co.italarm.api.shared.api.RestriccionConocida;
 import co.italarm.api.shared.api.RestriccionesModulo;
+import co.italarm.api.shared.dominio.DescuentoInvalidoException;
 import co.italarm.api.shared.dominio.TipoError;
-import co.italarm.api.ventas.dominio.DescuentoInvalidoException;
 import co.italarm.api.ventas.dominio.VentaInvalidaException;
 import java.util.List;
 import org.springframework.stereotype.Component;

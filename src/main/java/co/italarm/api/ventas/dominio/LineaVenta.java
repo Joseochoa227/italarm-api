@@ -1,5 +1,6 @@
 package co.italarm.api.ventas.dominio;
 
+import co.italarm.api.shared.dominio.CalculoDocumento;
 import co.italarm.api.shared.dominio.Redondeo;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -71,7 +72,7 @@ public class LineaVenta {
       BigDecimal precioUnitario,
       BigDecimal precioSugerido,
       BigDecimal costoUnitarioUsd) {
-    CalculoVenta.exigirPrecio(precioUnitario);
+    CalculoDocumento.exigirPrecio(precioUnitario);
     this.productoId = productoId;
     this.codigo = codigo;
     this.descripcion = descripcion;

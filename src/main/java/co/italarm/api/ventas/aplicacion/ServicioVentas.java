@@ -12,13 +12,16 @@ import co.italarm.api.inventario.aplicacion.SerialSalida;
 import co.italarm.api.inventario.aplicacion.ServicioMovimientos;
 import co.italarm.api.shared.api.Pagina;
 import co.italarm.api.shared.aplicacion.ServicioIdempotencia;
+import co.italarm.api.shared.dominio.CalculoDocumento;
 import co.italarm.api.shared.dominio.ClaveIdempotencia;
+import co.italarm.api.shared.dominio.Descuento;
 import co.italarm.api.shared.dominio.Dinero;
 import co.italarm.api.shared.dominio.DocumentoRef;
 import co.italarm.api.shared.dominio.FechaNegocio;
 import co.italarm.api.shared.dominio.Moneda;
 import co.italarm.api.shared.dominio.RecursoNoEncontradoException;
 import co.italarm.api.shared.dominio.Redondeo;
+import co.italarm.api.shared.dominio.ResumenDocumento;
 import co.italarm.api.shared.dominio.Tasas;
 import co.italarm.api.shared.dominio.TipoDocumento;
 import co.italarm.api.tasas.aplicacion.ServicioTasas;
@@ -26,12 +29,9 @@ import co.italarm.api.tasas.aplicacion.TasasAplicables;
 import co.italarm.api.terceros.aplicacion.ClienteDocumento;
 import co.italarm.api.terceros.aplicacion.ConsultaClientes;
 import co.italarm.api.usuarios.aplicacion.ConsultaUsuarios;
-import co.italarm.api.ventas.dominio.CalculoVenta;
 import co.italarm.api.ventas.dominio.ClienteNoExisteException;
 import co.italarm.api.ventas.dominio.DatosClienteVenta;
-import co.italarm.api.ventas.dominio.Descuento;
 import co.italarm.api.ventas.dominio.LineaVenta;
-import co.italarm.api.ventas.dominio.ResumenVenta;
 import co.italarm.api.ventas.dominio.Venta;
 import co.italarm.api.ventas.infraestructura.EspecificacionesVentas;
 import co.italarm.api.ventas.infraestructura.LineaVentaRepositorio;
@@ -129,8 +129,8 @@ public class ServicioVentas {
     List<PreparacionVenta.Linea> preparadas =
         PreparacionVenta.lineas(
             datos.lineas(), valorizados, costos, cliente.precioInstalador(), moneda, conversion);
-    ResumenVenta resumen =
-        CalculoVenta.calcular(
+    ResumenDocumento resumen =
+        CalculoDocumento.calcular(
             preparadas.stream().map(PreparacionVenta.Linea::calculo).toList(),
             descuento,
             moneda,
@@ -272,8 +272,10 @@ public class ServicioVentas {
                 .collect(Collectors.toSet()));
     Moneda moneda = venta.getMoneda();
     Tasas conversion = new Tasas(venta.getTasas().trm(), venta.getTasas().tasaVes());
-    ResumenVenta resumen =
-        new ResumenVenta(
+    ResumenDocumento resumen =
+        new ResumenDocumento(
+            venta.getSubtotal(),
+            BigDecimal.ZERO,
             venta.getSubtotal(),
             venta.getDescuento(),
             venta.getTotal(),
@@ -455,7 +457,7 @@ public class ServicioVentas {
   }
 
   private static ResumenVentaVista resumenVista(
-      ResumenVenta resumen, Moneda moneda, Tasas conversion) {
+      ResumenDocumento resumen, Moneda moneda, Tasas conversion) {
     return new ResumenVentaVista(
         conversion.equivalentes(new Dinero(resumen.subtotal(), moneda)),
         conversion.equivalentes(new Dinero(resumen.descuento(), moneda)),

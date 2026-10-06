@@ -1,4 +1,4 @@
-package co.italarm.api.ventas.dominio;
+package co.italarm.api.shared.dominio;
 
 /** El descuento se escribe como porcentaje del subtotal o como valor (RN-12). */
 public enum TipoDescuento {

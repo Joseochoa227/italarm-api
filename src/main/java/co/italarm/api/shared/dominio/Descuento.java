@@ -1,6 +1,5 @@
-package co.italarm.api.ventas.dominio;
+package co.italarm.api.shared.dominio;
 
-import co.italarm.api.shared.dominio.Redondeo;
 import java.math.BigDecimal;
 
 /**

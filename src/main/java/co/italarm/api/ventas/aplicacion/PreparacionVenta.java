@@ -1,14 +1,14 @@
 package co.italarm.api.ventas.aplicacion;
 
 import co.italarm.api.catalogo.aplicacion.ProductoValorizado;
+import co.italarm.api.shared.dominio.CalculoDocumento;
 import co.italarm.api.shared.dominio.CantidadInvalidaException;
 import co.italarm.api.shared.dominio.Moneda;
+import co.italarm.api.shared.dominio.PrecioSugerido;
 import co.italarm.api.shared.dominio.Tasas;
 import co.italarm.api.tasas.aplicacion.TasasAplicables;
 import co.italarm.api.terceros.aplicacion.ClienteDocumento;
-import co.italarm.api.ventas.dominio.CalculoVenta;
 import co.italarm.api.ventas.dominio.DatosClienteVenta;
-import co.italarm.api.ventas.dominio.PrecioSugerido;
 import co.italarm.api.ventas.dominio.VentaInvalidaException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -35,8 +35,8 @@ final class PreparacionVenta {
       BigDecimal precioUnitario,
       BigDecimal costoUnitarioUsd) {
 
-    CalculoVenta.Linea calculo() {
-      return new CalculoVenta.Linea(cantidad, precioUnitario, costoUnitarioUsd);
+    CalculoDocumento.Linea calculo() {
+      return new CalculoDocumento.Linea(cantidad, precioUnitario, costoUnitarioUsd);
     }
   }
 
@@ -83,7 +83,7 @@ final class PreparacionVenta {
               moneda,
               tasas);
       BigDecimal precio = linea.precioUnitario() != null ? linea.precioUnitario() : sugerido;
-      CalculoVenta.exigirPrecio(precio);
+      CalculoDocumento.exigirPrecio(precio);
       resultado.add(
           new Linea(
               producto,

@@ -1,8 +1,11 @@
 package co.italarm.api.ventas.dominio;
 
+import co.italarm.api.shared.dominio.Descuento;
 import co.italarm.api.shared.dominio.EntidadMaestra;
 import co.italarm.api.shared.dominio.Moneda;
+import co.italarm.api.shared.dominio.ResumenDocumento;
 import co.italarm.api.shared.dominio.Textos;
+import co.italarm.api.shared.dominio.TipoDescuento;
 import co.italarm.api.shared.dominio.TipoDocumento;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -154,7 +157,7 @@ public class Venta extends EntidadMaestra {
       Moneda moneda,
       TasasVenta tasas,
       Descuento descuento,
-      ResumenVenta resumen,
+      ResumenDocumento resumen,
       String observaciones,
       Set<Moneda> monedasComprobante,
       List<LineaVenta> lineas) {

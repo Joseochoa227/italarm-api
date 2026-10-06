@@ -7,10 +7,13 @@ import co.italarm.api.inventario.aplicacion.ExistenciaProducto;
 import co.italarm.api.inventario.aplicacion.LineaSalida;
 import co.italarm.api.inventario.aplicacion.ServicioMovimientos;
 import co.italarm.api.shared.aplicacion.ServicioIdempotencia;
+import co.italarm.api.shared.dominio.CalculoDocumento;
 import co.italarm.api.shared.dominio.ClaveIdempotencia;
+import co.italarm.api.shared.dominio.Descuento;
 import co.italarm.api.shared.dominio.DocumentoRef;
 import co.italarm.api.shared.dominio.FechaNegocio;
 import co.italarm.api.shared.dominio.Garantia;
+import co.italarm.api.shared.dominio.ResumenDocumento;
 import co.italarm.api.shared.dominio.Tasas;
 import co.italarm.api.shared.dominio.TipoDocumento;
 import co.italarm.api.shared.infraestructura.GeneradorConsecutivos;
@@ -18,11 +21,8 @@ import co.italarm.api.tasas.aplicacion.ServicioTasas;
 import co.italarm.api.tasas.aplicacion.TasasAplicables;
 import co.italarm.api.terceros.aplicacion.ClienteDocumento;
 import co.italarm.api.terceros.aplicacion.ConsultaClientes;
-import co.italarm.api.ventas.dominio.CalculoVenta;
 import co.italarm.api.ventas.dominio.ClienteNoExisteException;
-import co.italarm.api.ventas.dominio.Descuento;
 import co.italarm.api.ventas.dominio.LineaVenta;
-import co.italarm.api.ventas.dominio.ResumenVenta;
 import co.italarm.api.ventas.dominio.Venta;
 import co.italarm.api.ventas.infraestructura.VentaRepositorio;
 import java.math.BigDecimal;
@@ -98,8 +98,8 @@ public class RegistroVentas {
             cliente.precioInstalador(),
             datos.moneda(),
             conversion);
-    ResumenVenta resumen =
-        CalculoVenta.calcular(
+    ResumenDocumento resumen =
+        CalculoDocumento.calcular(
             lineas.stream().map(PreparacionVenta.Linea::calculo).toList(),
             descuento,
             datos.moneda(),

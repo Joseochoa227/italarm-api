@@ -1,27 +1,25 @@
-package co.italarm.api.ventas.dominio;
+package co.italarm.api.shared.dominio;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import co.italarm.api.shared.dominio.Moneda;
-import co.italarm.api.shared.dominio.Tasas;
 import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-class CalculoVentaTest {
+class CalculoDocumentoTest {
 
   private static final Tasas TASAS = new Tasas(new BigDecimal("4000"), new BigDecimal("50"));
 
-  private static CalculoVenta.Linea linea(String cantidad, String precio, String costoUsd) {
-    return new CalculoVenta.Linea(
+  private static CalculoDocumento.Linea linea(String cantidad, String precio, String costoUsd) {
+    return new CalculoDocumento.Linea(
         new BigDecimal(cantidad), new BigDecimal(precio), new BigDecimal(costoUsd));
   }
 
   @Test
   void cp27_ventaDe100ConDescuentoDe7_total93YUtilidadSobre93() {
-    ResumenVenta resumen =
-        CalculoVenta.calcular(
+    ResumenDocumento resumen =
+        CalculoDocumento.calcular(
             List.of(linea("2", "50", "30")),
             Descuento.de(TipoDescuento.VALOR, new BigDecimal("7")),
             Moneda.USD,
@@ -39,8 +37,8 @@ class CalculoVentaTest {
 
   @Test
   void ventaEnCop_conviertePrimeroElCostoEnUsdConLaTrm() {
-    ResumenVenta resumen =
-        CalculoVenta.calcular(
+    ResumenDocumento resumen =
+        CalculoDocumento.calcular(
             List.of(linea("1", "100000", "19.50")),
             Descuento.de(TipoDescuento.PORCENTAJE, new BigDecimal("10")),
             Moneda.COP,
@@ -55,8 +53,8 @@ class CalculoVentaTest {
 
   @Test
   void sinDescuento_yPrecioPorDebajoDelCosto_daUtilidadNegativa() {
-    ResumenVenta resumen =
-        CalculoVenta.calcular(
+    ResumenDocumento resumen =
+        CalculoDocumento.calcular(
             List.of(linea("3", "10", "12"), linea("1.5", "2", "1")),
             Descuento.ninguno(),
             Moneda.USD,
@@ -70,8 +68,8 @@ class CalculoVentaTest {
 
   @Test
   void totalCero_noTienePorcentajeDeUtilidad() {
-    ResumenVenta resumen =
-        CalculoVenta.calcular(
+    ResumenDocumento resumen =
+        CalculoDocumento.calcular(
             List.of(linea("1", "0", "5")), Descuento.ninguno(), Moneda.USD, TASAS);
 
     assertThat(resumen.total()).isEqualByComparingTo("0");
@@ -82,7 +80,7 @@ class CalculoVentaTest {
   void descuentoMayorQueElSubtotal_seRechaza() {
     assertThatThrownBy(
             () ->
-                CalculoVenta.calcular(
+                CalculoDocumento.calcular(
                     List.of(linea("1", "10", "5")),
                     Descuento.de(TipoDescuento.VALOR, new BigDecimal("11")),
                     Moneda.USD,
@@ -103,10 +101,44 @@ class CalculoVentaTest {
   void precioNegativo_seRechaza() {
     assertThatThrownBy(
             () ->
-                CalculoVenta.calcular(
+                CalculoDocumento.calcular(
                     List.of(linea("1", "-1", "5")), Descuento.ninguno(), Moneda.USD, TASAS))
-        .isInstanceOf(VentaInvalidaException.class)
+        .isInstanceOf(PrecioInvalidoException.class)
         .extracting("codigo")
-        .isEqualTo(VentaInvalidaException.PRECIO_INVALIDO);
+        .isEqualTo("PRECIO_INVALIDO");
+  }
+
+  @Test
+  void instalacion_sumaLaManoDeObraALaUtilidad() {
+    ResumenDocumento resumen =
+        CalculoDocumento.calcular(
+            List.of(linea("2", "50", "30")),
+            new BigDecimal("50"),
+            Descuento.de(TipoDescuento.VALOR, new BigDecimal("10")),
+            Moneda.USD,
+            TASAS);
+
+    assertThat(resumen.material()).isEqualByComparingTo("100");
+    assertThat(resumen.manoDeObra()).isEqualByComparingTo("50");
+    assertThat(resumen.subtotal()).isEqualByComparingTo("150");
+    assertThat(resumen.total()).isEqualByComparingTo("140");
+    assertThat(resumen.costo()).isEqualByComparingTo("60");
+    assertThat(resumen.utilidad()).isEqualByComparingTo("80");
+  }
+
+  @Test
+  void soloManoDeObra_yManoDeObraNegativaSeRechaza() {
+    ResumenDocumento resumen =
+        CalculoDocumento.calcular(
+            List.of(), new BigDecimal("80000"), Descuento.ninguno(), Moneda.COP, TASAS);
+    assertThat(resumen.total()).isEqualByComparingTo("80000");
+    assertThat(resumen.costo()).isEqualByComparingTo("0");
+    assertThat(resumen.totalUsd()).isEqualByComparingTo("20");
+
+    assertThatThrownBy(
+            () ->
+                CalculoDocumento.calcular(
+                    List.of(), new BigDecimal("-1"), Descuento.ninguno(), Moneda.USD, TASAS))
+        .isInstanceOf(PrecioInvalidoException.class);
   }
 }

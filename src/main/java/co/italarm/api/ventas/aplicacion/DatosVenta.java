@@ -1,7 +1,7 @@
 package co.italarm.api.ventas.aplicacion;
 
 import co.italarm.api.shared.dominio.Moneda;
-import co.italarm.api.ventas.dominio.TipoDescuento;
+import co.italarm.api.shared.dominio.TipoDescuento;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;

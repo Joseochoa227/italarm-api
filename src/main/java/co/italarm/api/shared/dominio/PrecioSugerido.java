@@ -1,8 +1,5 @@
-package co.italarm.api.ventas.dominio;
+package co.italarm.api.shared.dominio;
 
-import co.italarm.api.shared.dominio.Dinero;
-import co.italarm.api.shared.dominio.Moneda;
-import co.italarm.api.shared.dominio.Tasas;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 

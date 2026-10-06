@@ -66,7 +66,7 @@ public class VentaControlador {
       description =
           "La fecha es hoy. Con la misma Idempotency-Key devuelve la venta ya creada. Errores"
               + " (400): CANTIDAD_INVALIDA, SERIALES_NO_COINCIDEN, DESCUENTO_INVALIDO,"
-              + " VENTA_PRODUCTO_REPETIDO, VENTA_PRECIO_INVALIDO, CLIENTE_NO_EXISTE,"
+              + " VENTA_PRODUCTO_REPETIDO, PRECIO_INVALIDO, CLIENTE_NO_EXISTE,"
               + " PRODUCTO_NO_EXISTE; (422) STOCK_INSUFICIENTE, SERIAL_NO_DISPONIBLE,"
               + " PRODUCTO_INACTIVO, TASA_NO_DISPONIBLE.")
   public VentaVista registrar(

@@ -1,7 +1,4 @@
-package co.italarm.api.ventas.dominio;
-
-import co.italarm.api.shared.dominio.NegocioException;
-import co.italarm.api.shared.dominio.TipoError;
+package co.italarm.api.shared.dominio;
 
 /** Descuento negativo, de más del 100 % o mayor que el subtotal (P-30). */
 public class DescuentoInvalidoException extends NegocioException {

@@ -3,8 +3,12 @@ package co.italarm.api.ventas.dominio;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import co.italarm.api.shared.dominio.CalculoDocumento;
+import co.italarm.api.shared.dominio.Descuento;
 import co.italarm.api.shared.dominio.Moneda;
+import co.italarm.api.shared.dominio.ResumenDocumento;
 import co.italarm.api.shared.dominio.Tasas;
+import co.italarm.api.shared.dominio.TipoDescuento;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -27,10 +31,10 @@ class VentaTest {
             new BigDecimal("50"),
             new BigDecimal("55"),
             new BigDecimal("30"));
-    ResumenVenta resumen =
-        CalculoVenta.calcular(
+    ResumenDocumento resumen =
+        CalculoDocumento.calcular(
             List.of(
-                new CalculoVenta.Linea(
+                new CalculoDocumento.Linea(
                     new BigDecimal("2"), new BigDecimal("50"), new BigDecimal("30"))),
             Descuento.de(TipoDescuento.VALOR, new BigDecimal("7")),
             Moneda.USD,
@@ -116,6 +120,6 @@ class VentaTest {
                     new BigDecimal("-1"),
                     BigDecimal.ONE,
                     null))
-        .isInstanceOf(VentaInvalidaException.class);
+        .isInstanceOf(co.italarm.api.shared.dominio.PrecioInvalidoException.class);
   }
 }

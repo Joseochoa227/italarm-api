@@ -1,10 +1,7 @@
-package co.italarm.api.ventas.dominio;
+package co.italarm.api.shared.dominio;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import co.italarm.api.shared.dominio.Dinero;
-import co.italarm.api.shared.dominio.Moneda;
-import co.italarm.api.shared.dominio.Tasas;
 import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
 
