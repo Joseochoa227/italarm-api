@@ -1,7 +1,4 @@
-package co.italarm.api.inventario.dominio;
-
-import co.italarm.api.shared.dominio.NegocioException;
-import co.italarm.api.shared.dominio.TipoError;
+package co.italarm.api.shared.dominio;
 
 /** Un documento menciona un producto que no existe. */
 public class ProductoNoExisteException extends NegocioException {

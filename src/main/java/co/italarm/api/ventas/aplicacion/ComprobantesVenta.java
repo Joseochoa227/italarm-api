@@ -1,5 +1,6 @@
 package co.italarm.api.ventas.aplicacion;
 
+import co.italarm.api.comercial.aplicacion.PreparacionMaterial;
 import co.italarm.api.configuracion.aplicacion.EmpresaDocumentos;
 import co.italarm.api.configuracion.aplicacion.ServicioConfiguracion;
 import co.italarm.api.documentos.aplicacion.ArchivoGenerado;
@@ -204,6 +205,6 @@ public class ComprobantesVenta implements FuenteComprobantes {
 
   /** "12,5"; "3". */
   private static String cantidad(BigDecimal valor) {
-    return PreparacionVenta.cantidadVista(valor).toPlainString().replace('.', ',');
+    return PreparacionMaterial.cantidadVista(valor).toPlainString().replace('.', ',');
   }
 }

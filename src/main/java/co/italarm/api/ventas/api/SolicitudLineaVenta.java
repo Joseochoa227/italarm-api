@@ -1,6 +1,6 @@
 package co.italarm.api.ventas.api;
 
-import co.italarm.api.ventas.aplicacion.DatosVenta;
+import co.italarm.api.comercial.aplicacion.LineaMaterial;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -31,7 +31,7 @@ public record SolicitudLineaVenta(
         @Digits(integer = 15, fraction = 4, message = "El precio admite máximo 4 decimales.")
         BigDecimal precioUnitario) {
 
-  DatosVenta.Linea aDatos() {
-    return new DatosVenta.Linea(productoId, cantidad, seriales, precioUnitario);
+  LineaMaterial aDatos() {
+    return new LineaMaterial(productoId, cantidad, seriales, precioUnitario);
   }
 }

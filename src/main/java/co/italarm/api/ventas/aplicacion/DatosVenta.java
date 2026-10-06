@@ -1,5 +1,6 @@
 package co.italarm.api.ventas.aplicacion;
 
+import co.italarm.api.comercial.aplicacion.LineaMaterial;
 import co.italarm.api.shared.dominio.Moneda;
 import co.italarm.api.shared.dominio.TipoDescuento;
 import java.math.BigDecimal;
@@ -14,19 +15,8 @@ import java.util.Set;
 public record DatosVenta(
     Long clienteId,
     Moneda moneda,
-    List<Linea> lineas,
+    List<LineaMaterial> lineas,
     TipoDescuento descuentoTipo,
     BigDecimal descuentoValor,
     String observaciones,
-    Set<Moneda> monedasComprobante) {
-
-  /**
-   * Producto vendido.
-   *
-   * @param cantidad si el producto controla serial y viene vacía, es la cantidad de seriales
-   *     (RF-21)
-   * @param precioUnitario vacío = el precio sugerido según el tipo de cliente (RN-01)
-   */
-  public record Linea(
-      Long productoId, BigDecimal cantidad, List<String> seriales, BigDecimal precioUnitario) {}
-}
+    Set<Moneda> monedasComprobante) {}

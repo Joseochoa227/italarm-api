@@ -2,6 +2,9 @@ package co.italarm.api.ventas.aplicacion;
 
 import co.italarm.api.catalogo.aplicacion.ConsultaProductos;
 import co.italarm.api.catalogo.aplicacion.ProductoValorizado;
+import co.italarm.api.comercial.aplicacion.LineaMaterial;
+import co.italarm.api.comercial.aplicacion.MaterialPreparado;
+import co.italarm.api.comercial.aplicacion.PreparacionMaterial;
 import co.italarm.api.configuracion.aplicacion.ServicioConfiguracion;
 import co.italarm.api.inventario.aplicacion.ExistenciaProducto;
 import co.italarm.api.inventario.aplicacion.LineaSalida;
@@ -24,6 +27,7 @@ import co.italarm.api.terceros.aplicacion.ConsultaClientes;
 import co.italarm.api.ventas.dominio.ClienteNoExisteException;
 import co.italarm.api.ventas.dominio.LineaVenta;
 import co.italarm.api.ventas.dominio.Venta;
+import co.italarm.api.ventas.dominio.VentaInvalidaException;
 import co.italarm.api.ventas.infraestructura.VentaRepositorio;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -75,23 +79,23 @@ public class RegistroVentas {
   /** Registra la venta y devuelve su id. */
   @Transactional
   public Long registrar(DatosVenta datos, Long usuarioId, ClaveIdempotencia clave) {
-    PreparacionVenta.exigirSinRepetidos(datos.lineas());
+    validarLineas(datos.lineas());
     ClienteDocumento cliente =
         clientes.porId(datos.clienteId()).orElseThrow(ClienteNoExisteException::new);
     Descuento descuento = Descuento.de(datos.descuentoTipo(), datos.descuentoValor());
     LocalDate hoy = fechas.hoy();
     TasasAplicables aplicables = tasas.tasasPara(hoy);
-    Tasas conversion = PreparacionVenta.conversion(aplicables);
+    Tasas conversion = PreparacionMaterial.conversion(aplicables);
     conversion.aUsd(BigDecimal.ONE, datos.moneda());
     idempotencia.reservar(clave);
 
-    List<Long> ids = datos.lineas().stream().map(DatosVenta.Linea::productoId).toList();
+    List<Long> ids = datos.lineas().stream().map(LineaMaterial::productoId).toList();
     Map<Long, ExistenciaProducto> existencias = movimientos.bloquearParaSalida(ids);
     Map<Long, ProductoValorizado> valorizados = productos.valorizadosPorId(ids);
     Map<Long, BigDecimal> costos = new HashMap<>();
     existencias.forEach((id, existencia) -> costos.put(id, existencia.costoActualUsd()));
-    List<PreparacionVenta.Linea> lineas =
-        PreparacionVenta.lineas(
+    List<MaterialPreparado> lineas =
+        PreparacionMaterial.lineas(
             datos.lineas(),
             valorizados,
             costos,
@@ -100,7 +104,7 @@ public class RegistroVentas {
             conversion);
     ResumenDocumento resumen =
         CalculoDocumento.calcular(
-            lineas.stream().map(PreparacionVenta.Linea::calculo).toList(),
+            lineas.stream().map(MaterialPreparado::calculo).toList(),
             descuento,
             datos.moneda(),
             conversion);
@@ -110,7 +114,7 @@ public class RegistroVentas {
             Venta.registrar(
                 consecutivos.siguiente(TipoDocumento.VENTA),
                 hoy,
-                PreparacionVenta.cliente(cliente),
+                PreparacionMaterial.copia(cliente),
                 datos.moneda(),
                 new Venta.TasasVenta(
                     aplicables.trm(),
@@ -148,5 +152,18 @@ public class RegistroVentas {
     ventas.flush();
     idempotencia.asociar(clave, venta.getId());
     return venta.getId();
+  }
+
+  /** Al menos un producto y una línea por producto (como en las compras, P-20). */
+  static void validarLineas(List<LineaMaterial> lineas) {
+    if (lineas == null || lineas.isEmpty()) {
+      throw new VentaInvalidaException(
+          VentaInvalidaException.SIN_LINEAS, "La venta debe tener al menos un producto.");
+    }
+    if (PreparacionMaterial.hayRepetidos(lineas)) {
+      throw new VentaInvalidaException(
+          VentaInvalidaException.PRODUCTO_REPETIDO,
+          "Un producto aparece dos veces en la venta. Súmalo en una sola línea.");
+    }
   }
 }

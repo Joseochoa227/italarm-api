@@ -1,5 +1,8 @@
 package co.italarm.api.ventas.aplicacion;
 
+import co.italarm.api.comercial.aplicacion.ClienteDocumentoVista;
+import co.italarm.api.comercial.aplicacion.ResumenCobroVista;
+import co.italarm.api.comercial.aplicacion.TasasDocumentoVista;
 import co.italarm.api.shared.dominio.Dinero;
 import co.italarm.api.shared.dominio.Moneda;
 import java.math.BigDecimal;
@@ -20,13 +23,13 @@ public record VentaVista(
     Long id,
     String consecutivo,
     LocalDate fecha,
-    ClienteVentaVista cliente,
+    ClienteDocumentoVista cliente,
     Moneda moneda,
-    TasasVentaVista tasas,
+    TasasDocumentoVista tasas,
     List<Linea> lineas,
     String descuentoTipo,
     BigDecimal descuentoValor,
-    ResumenVentaVista resumen,
+    ResumenCobroVista resumen,
     Dinero total,
     Dinero utilidad,
     BigDecimal porcentajeUtilidad,

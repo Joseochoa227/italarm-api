@@ -2,8 +2,11 @@ package co.italarm.api.ventas.aplicacion;
 
 import co.italarm.api.catalogo.aplicacion.ConsultaProductos;
 import co.italarm.api.catalogo.aplicacion.ProductoValorizado;
-import co.italarm.api.compras.aplicacion.ConsultaCompras;
-import co.italarm.api.compras.aplicacion.TasasUltimaCompra;
+import co.italarm.api.comercial.aplicacion.LineaMaterial;
+import co.italarm.api.comercial.aplicacion.MaterialPreparado;
+import co.italarm.api.comercial.aplicacion.PreparacionMaterial;
+import co.italarm.api.comercial.aplicacion.TasasDocumentoVista;
+import co.italarm.api.comercial.aplicacion.VistaPreviaMaterial;
 import co.italarm.api.documentos.aplicacion.ArchivoGenerado;
 import co.italarm.api.documentos.aplicacion.EnlaceCreado;
 import co.italarm.api.documentos.aplicacion.ServicioEnlacesComprobante;
@@ -21,7 +24,6 @@ import co.italarm.api.shared.dominio.DocumentoRef;
 import co.italarm.api.shared.dominio.FechaNegocio;
 import co.italarm.api.shared.dominio.Moneda;
 import co.italarm.api.shared.dominio.RecursoNoEncontradoException;
-import co.italarm.api.shared.dominio.Redondeo;
 import co.italarm.api.shared.dominio.ResumenDocumento;
 import co.italarm.api.shared.dominio.Tasas;
 import co.italarm.api.shared.dominio.TipoDocumento;
@@ -42,7 +44,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,7 +67,7 @@ public class ServicioVentas {
   private final ServicioMovimientos movimientos;
   private final ConsultaProductos productos;
   private final ConsultaClientes clientes;
-  private final ConsultaCompras compras;
+  private final VistaPreviaMaterial vistaPreviaMaterial;
   private final ServicioTasas tasas;
   private final ServicioIdempotencia idempotencia;
   private final ConsultaUsuarios usuarios;
@@ -82,7 +83,7 @@ public class ServicioVentas {
       ServicioMovimientos movimientos,
       ConsultaProductos productos,
       ConsultaClientes clientes,
-      ConsultaCompras compras,
+      VistaPreviaMaterial vistaPreviaMaterial,
       ServicioTasas tasas,
       ServicioIdempotencia idempotencia,
       ConsultaUsuarios usuarios,
@@ -96,7 +97,7 @@ public class ServicioVentas {
     this.movimientos = movimientos;
     this.productos = productos;
     this.clientes = clientes;
-    this.compras = compras;
+    this.vistaPreviaMaterial = vistaPreviaMaterial;
     this.tasas = tasas;
     this.idempotencia = idempotencia;
     this.usuarios = usuarios;
@@ -111,80 +112,40 @@ public class ServicioVentas {
    */
   @Transactional(readOnly = true)
   public VistaPreviaVentaVista vistaPrevia(DatosVenta datos) {
-    PreparacionVenta.exigirSinRepetidos(datos.lineas());
+    RegistroVentas.validarLineas(datos.lineas());
     ClienteDocumento cliente =
         clientes.porId(datos.clienteId()).orElseThrow(ClienteNoExisteException::new);
     Descuento descuento = Descuento.de(datos.descuentoTipo(), datos.descuentoValor());
     LocalDate hoy = fechas.hoy();
     TasasAplicables aplicables = tasas.tasasPara(hoy);
-    Tasas conversion = PreparacionVenta.conversion(aplicables);
+    Tasas conversion = PreparacionMaterial.conversion(aplicables);
     Moneda moneda = datos.moneda();
     conversion.aUsd(BigDecimal.ONE, moneda);
 
-    List<Long> ids = datos.lineas().stream().map(DatosVenta.Linea::productoId).toList();
+    List<Long> ids = datos.lineas().stream().map(LineaMaterial::productoId).toList();
     Map<Long, ProductoValorizado> valorizados = productos.valorizadosPorId(ids);
     Map<Long, BigDecimal> costos = new HashMap<>();
     valorizados.forEach((id, p) -> costos.put(id, p.costoActualUsd()));
-    Map<Long, TasasUltimaCompra> ultimas = compras.tasasUltimaCompra(ids);
-    List<PreparacionVenta.Linea> preparadas =
-        PreparacionVenta.lineas(
+    List<MaterialPreparado> preparadas =
+        PreparacionMaterial.lineas(
             datos.lineas(), valorizados, costos, cliente.precioInstalador(), moneda, conversion);
     ResumenDocumento resumen =
         CalculoDocumento.calcular(
-            preparadas.stream().map(PreparacionVenta.Linea::calculo).toList(),
+            preparadas.stream().map(MaterialPreparado::calculo).toList(),
             descuento,
             moneda,
             conversion);
-
-    boolean puedeGuardar = true;
-    List<VistaPreviaVentaVista.Linea> vistas = new ArrayList<>();
-    for (PreparacionVenta.Linea linea : preparadas) {
-      ProductoValorizado p = linea.producto();
-      String avisoStock = null;
-      if (linea.cantidad().compareTo(p.stock()) > 0) {
-        avisoStock =
-            "Stock insuficiente · quedan " + p.stock().toPlainString() + " " + p.abreviatura();
-        puedeGuardar = false;
-      }
-      BigDecimal costoUsd = p.costoActualUsd() == null ? BigDecimal.ZERO : p.costoActualUsd();
-      Dinero costoEnUsd = new Dinero(costoUsd, Moneda.USD);
-      TasasUltimaCompra ultima = ultimas.get(p.id());
-      BigDecimal costoEnMoneda = conversion.desdeUsd(costoUsd, moneda);
-      vistas.add(
-          new VistaPreviaVentaVista.Linea(
-              p.id(),
-              p.codigo(),
-              p.nombre(),
-              p.abreviatura(),
-              p.controlaSerial(),
-              PreparacionVenta.cantidadVista(linea.cantidad()),
-              p.stock(),
-              avisoStock,
-              new Dinero(linea.precioSugerido(), moneda),
-              new Dinero(linea.precioUnitario(), moneda),
-              conversion.equivalentes(
-                  new Dinero(Redondeo.paraAlmacenar(linea.calculo().subtotal()), moneda)),
-              conversion.equivalentes(costoEnUsd),
-              ultima == null
-                  ? null
-                  : new Tasas(ultima.trm(), ultima.tasaVes()).equivalentes(costoEnUsd),
-              ultima == null
-                  ? null
-                  : new VistaPreviaVentaVista.UltimaCompra(
-                      ultima.consecutivo(), ultima.fecha(), ultima.trm(), ultima.tasaVes()),
-              linea.precioUnitario().compareTo(costoEnMoneda) < 0
-                  ? "El precio queda por debajo del costo."
-                  : null));
-    }
+    VistaPreviaMaterial.Resultado material =
+        vistaPreviaMaterial.construir(preparadas, moneda, conversion);
     return new VistaPreviaVentaVista(
         hoy,
-        clienteVista(cliente),
+        PreparacionMaterial.clienteVista(cliente),
         moneda,
-        PreparacionVenta.tasasVista(aplicables),
-        PreparacionVenta.avisos(hoy, aplicables),
-        vistas,
-        resumenVista(resumen, moneda, conversion),
-        puedeGuardar);
+        PreparacionMaterial.tasasVista(aplicables),
+        PreparacionMaterial.avisos(hoy, aplicables),
+        material.lineas(),
+        PreparacionMaterial.resumenVista(resumen, moneda, conversion),
+        material.puedeGuardar());
   }
 
   /**
@@ -290,17 +251,9 @@ public class ServicioVentas {
         venta.getId(),
         venta.consecutivo(),
         venta.getFecha(),
-        new ClienteVentaVista(
-            cliente.id(),
-            cliente.tipo(),
-            cliente.nombre(),
-            cliente.documento(),
-            cliente.telefono(),
-            cliente.direccion(),
-            cliente.ciudad(),
-            null),
+        PreparacionMaterial.clienteVista(cliente),
         moneda,
-        new TasasVentaVista(
+        new TasasDocumentoVista(
             venta.getTasas().trm(),
             venta.getTasas().fechaTrm(),
             venta.getTasas().tasaVes(),
@@ -313,7 +266,7 @@ public class ServicioVentas {
                         l.getCodigo(),
                         l.getDescripcion(),
                         l.getUnidad(),
-                        PreparacionVenta.cantidadVista(l.getCantidad()),
+                        PreparacionMaterial.cantidadVista(l.getCantidad()),
                         new Dinero(l.getPrecioUnitario(), moneda),
                         new Dinero(l.getPrecioSugerido(), moneda),
                         new Dinero(l.getSubtotal(), moneda),
@@ -327,7 +280,7 @@ public class ServicioVentas {
             .toList(),
         venta.getDescuentoTipo().name(),
         venta.getDescuentoValor(),
-        resumenVista(resumen, moneda, conversion),
+        PreparacionMaterial.resumenVista(resumen, moneda, conversion),
         new Dinero(venta.getTotal(), moneda),
         new Dinero(venta.getUtilidad(), moneda),
         venta.getPorcentajeUtilidad(),
@@ -428,43 +381,17 @@ public class ServicioVentas {
   }
 
   static String resumenProductos(List<LineaVenta> lineasVenta) {
-    return PreparacionVenta.resumen(
+    return PreparacionMaterial.resumenTexto(
         lineasVenta.stream()
             .map(
                 l ->
-                    l.getDescripcion()
-                        + " × "
-                        + PreparacionVenta.cantidadVista(l.getCantidad()).toPlainString()
-                        + " "
-                        + l.getUnidad())
+                    PreparacionMaterial.textoLinea(
+                        l.getDescripcion(), l.getCantidad(), l.getUnidad()))
             .toList());
   }
 
   static DocumentoRef documento(Venta venta) {
     return new DocumentoRef(TipoDocumento.VENTA, venta.getId(), venta.consecutivo());
-  }
-
-  private static ClienteVentaVista clienteVista(ClienteDocumento cliente) {
-    return new ClienteVentaVista(
-        cliente.id(),
-        cliente.tipo(),
-        cliente.nombre(),
-        cliente.documento(),
-        cliente.telefono(),
-        cliente.direccion(),
-        cliente.ciudad(),
-        cliente.precioAplicadoDescripcion());
-  }
-
-  private static ResumenVentaVista resumenVista(
-      ResumenDocumento resumen, Moneda moneda, Tasas conversion) {
-    return new ResumenVentaVista(
-        conversion.equivalentes(new Dinero(resumen.subtotal(), moneda)),
-        conversion.equivalentes(new Dinero(resumen.descuento(), moneda)),
-        conversion.equivalentes(new Dinero(resumen.total(), moneda)),
-        conversion.equivalentes(new Dinero(resumen.costo(), moneda)),
-        conversion.equivalentes(new Dinero(resumen.utilidad(), moneda)),
-        resumen.porcentajeUtilidad());
   }
 
   private static BigDecimal sumar(List<BigDecimal> valores) {
