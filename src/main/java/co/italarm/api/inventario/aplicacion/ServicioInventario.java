@@ -51,6 +51,7 @@ public class ServicioInventario {
   private final MovimientoSerialRepositorio movimientosSerial;
   private final ServicioTasas tasas;
   private final ConsultaUsuarios usuarios;
+  private final List<ReclamosSerial> reclamos;
   private final FechaNegocio fechas;
 
   public ServicioInventario(
@@ -61,6 +62,7 @@ public class ServicioInventario {
       MovimientoSerialRepositorio movimientosSerial,
       ServicioTasas tasas,
       ConsultaUsuarios usuarios,
+      List<ReclamosSerial> reclamos,
       FechaNegocio fechas) {
     this.productos = productos;
     this.kardex = kardex;
@@ -69,6 +71,7 @@ public class ServicioInventario {
     this.movimientosSerial = movimientosSerial;
     this.tasas = tasas;
     this.usuarios = usuarios;
+    this.reclamos = reclamos;
     this.fechas = fechas;
   }
 
@@ -249,7 +252,8 @@ public class ServicioInventario {
                         m.getDetalle(),
                         nombres.get(m.getUsuarioId()),
                         m.getRegistradoEn()))
-            .toList());
+            .toList(),
+        reclamos.stream().flatMap(r -> r.deSerial(serialId).stream()).toList());
   }
 
   private List<Long> productosConSerial(String buscar) {

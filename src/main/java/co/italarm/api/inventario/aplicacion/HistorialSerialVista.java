@@ -5,8 +5,9 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 
-/** Un serial y todo lo que le ha pasado (RF-24). */
-public record HistorialSerialVista(SerialVista serial, List<Movimiento> movimientos) {
+/** Un serial, todo lo que le ha pasado y sus reclamos de garantía (RF-24, RF-125). */
+public record HistorialSerialVista(
+    SerialVista serial, List<Movimiento> movimientos, List<ReclamosSerial.Reclamo> reclamos) {
 
   /**
    * @param tipo ENTRADA, BAJA o ANULACION (las fases siguientes agregan venta e instalación)
