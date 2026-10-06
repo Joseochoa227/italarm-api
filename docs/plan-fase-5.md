@@ -1,6 +1,6 @@
 # Plan de la Fase 5 — Cotizaciones (italarm-api)
 
-> Estado: **borrador, pendiente de la aprobación de ITALARM**. Antes de implementar hay que responder las preguntas P-46 a P-55 de `docs/preguntas.md`.
+> Estado: **aprobado por ITALARM el 06/10/2026**, en implementación. Preguntas P-46 a P-55 respondidas: de acuerdo con las propuestas (ver `docs/preguntas.md`).
 > Base: `docs/requerimientos.md`, secciones 3.8, 3.9, 3.11, 3.15, 4 (RN-11, RN-13, RN-14) y 12.7, más las decisiones de `docs/preguntas.md`.
 > Alcance: solo el backend (**italarm-api**). Las pantallas se hacen en italarm-web a partir del contrato OpenAPI que deja esta fase.
 
