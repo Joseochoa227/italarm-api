@@ -1,6 +1,6 @@
 # Plan de la Fase 5 — Cotizaciones (italarm-api)
 
-> Estado: **aprobado por ITALARM el 06/10/2026**, en implementación. Preguntas P-46 a P-55 respondidas: de acuerdo con las propuestas (ver `docs/preguntas.md`).
+> Estado: **aprobado por ITALARM el 06/10/2026**, implementado; pendiente de la prueba de ITALARM (lista de la sección 7). Preguntas P-46 a P-55 respondidas: de acuerdo con las propuestas (ver `docs/preguntas.md`).
 > Base: `docs/requerimientos.md`, secciones 3.8, 3.9, 3.11, 3.15, 4 (RN-11, RN-13, RN-14) y 12.7, más las decisiones de `docs/preguntas.md`.
 > Alcance: solo el backend (**italarm-api**). Las pantallas se hacen en italarm-web a partir del contrato OpenAPI que deja esta fase.
 
@@ -172,10 +172,10 @@ Cobertura mínima de 80 % en dominio y aplicación; ninguna prueba se desactiva 
 
 ## 7. Definición de terminado (12.1)
 
-- [ ] Verificación completa en verde en local y en la CI de GitHub.
-- [ ] CP-09, CP-21, CP-22, CP-23, CP-24 y CP-26 automatizados y pasando, más las pruebas de transiciones no permitidas.
-- [ ] Migración V11 aplicada sin errores sobre la base de la Fase 4.
-- [ ] Contrato y guía del frontend actualizados; CHANGELOG.md actualizado.
+- [x] Verificación completa en verde en local (489 pruebas); falta confirmarla en la CI de GitHub.
+- [x] CP-09, CP-21, CP-22, CP-23, CP-24 y CP-26 automatizados y pasando, más las pruebas de transiciones no permitidas.
+- [x] Migración V11 aplicada sin errores sobre la base de la Fase 4.
+- [x] Contrato y guía del frontend actualizados; CHANGELOG.md actualizado.
 - [ ] Lista de verificación para ITALARM en Swagger:
   1. Hacer la vista previa de una cotización de instalación con cámaras, cable y mano de obra, y ver los costos a la tasa de hoy y a la de compra.
   2. Guardarla, descargar el PDF y crear el enlace de WhatsApp: queda En evaluación.

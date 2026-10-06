@@ -15,6 +15,9 @@
     "description" : "Consulta de garantías y reclamos (sección 3.14)",
     "name" : "Garantías"
   }, {
+    "description" : "Cotizaciones, seguimiento y conversión en venta o instalación (sección 3.11)",
+    "name" : "Cotizaciones"
+  }, {
     "description" : "Búsqueda e historial de números de serie (RF-24)",
     "name" : "Seriales"
   }, {
@@ -73,7 +76,7 @@
     "/api/v1/ajustes" : {
       "get" : {
         "description" : "Orden por defecto: más recientes primero.",
-        "operationId" : "listar_7",
+        "operationId" : "listar_8",
         "parameters" : [ {
           "in" : "query",
           "name" : "productoId",
@@ -147,7 +150,7 @@
       },
       "post" : {
         "description" : "La entrada entra al costo vigente; si el producto nunca tuvo costo, exige costoUnitarioUsd. Con la misma Idempotency-Key devuelve el ajuste ya creado. Errores (400): AJUSTE_INVALIDO, COSTO_REQUERIDO, CANTIDAD_INVALIDA, SERIALES_NO_COINCIDEN, PRODUCTO_NO_EXISTE; (409) SERIAL_DUPLICADO; (422) STOCK_INSUFICIENTE, SERIAL_NO_DISPONIBLE.",
-        "operationId" : "registrar_4",
+        "operationId" : "registrar_5",
         "parameters" : [ {
           "description" : "Clave única por intento de guardar (RT-07)",
           "in" : "header",
@@ -185,7 +188,7 @@
     },
     "/api/v1/ajustes/{id}" : {
       "get" : {
-        "operationId" : "detalle_8",
+        "operationId" : "detalle_9",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -257,7 +260,7 @@
     },
     "/api/v1/carga-inicial" : {
       "get" : {
-        "operationId" : "listar_6",
+        "operationId" : "listar_7",
         "responses" : {
           "200" : {
             "content" : {
@@ -378,7 +381,7 @@
     },
     "/api/v1/categorias" : {
       "get" : {
-        "operationId" : "listar_5",
+        "operationId" : "listar_6",
         "responses" : {
           "200" : {
             "content" : {
@@ -583,7 +586,7 @@
     },
     "/api/v1/clientes/{id}" : {
       "get" : {
-        "operationId" : "detalle_4",
+        "operationId" : "detalle_5",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -678,7 +681,7 @@
     "/api/v1/compras" : {
       "get" : {
         "description" : "Sin fechas, el mes en curso. Los totales no incluyen las anuladas. Orden por defecto: más recientes primero.",
-        "operationId" : "listar_4",
+        "operationId" : "listar_5",
         "parameters" : [ {
           "in" : "query",
           "name" : "proveedorId",
@@ -768,7 +771,7 @@
       },
       "post" : {
         "description" : "Con la misma Idempotency-Key devuelve la compra ya creada. Errores (400): SERIALES_NO_COINCIDEN, CANTIDAD_INVALIDA, COMPRA_PRODUCTO_REPETIDO, COMPRA_FECHA_FUTURA, COMPRA_COSTO_INVALIDO, PROVEEDOR_NO_EXISTE, PRODUCTO_NO_EXISTE; (409) SERIAL_DUPLICADO; (422) TASA_NO_DISPONIBLE, PRODUCTO_INACTIVO.",
-        "operationId" : "registrar_3",
+        "operationId" : "registrar_4",
         "parameters" : [ {
           "description" : "Clave única por intento de guardar (RT-07)",
           "in" : "header",
@@ -807,7 +810,7 @@
     "/api/v1/compras/vista-previa" : {
       "post" : {
         "description" : "Es el valor oficial que muestra el frontend (BF-06). Errores: TASA_NO_DISPONIBLE, COMPRA_PRODUCTO_REPETIDO, COMPRA_FECHA_FUTURA, PRODUCTO_NO_EXISTE.",
-        "operationId" : "vistaPrevia_3",
+        "operationId" : "vistaPrevia_4",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -836,7 +839,7 @@
     },
     "/api/v1/compras/{id}" : {
       "get" : {
-        "operationId" : "detalle_7",
+        "operationId" : "detalle_8",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1100,6 +1103,486 @@
         },
         "summary" : "Subir o reemplazar el logo (JPEG, PNG o WebP; máximo 5 MB)",
         "tags" : [ "Configuración" ]
+      }
+    },
+    "/api/v1/cotizaciones" : {
+      "get" : {
+        "description" : "Filtros opcionales. porVencer=true trae solo las En evaluación que vencen en 3 días o menos (RF-91). Orden por defecto: más recientes primero.",
+        "operationId" : "listar_4",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "estado",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "BORRADOR", "EN_EVALUACION", "APROBADA", "CONVERTIDA", "RECHAZADA", "VENCIDA" ]
+          }
+        }, {
+          "in" : "query",
+          "name" : "clienteId",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tipo",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "VENTA", "INSTALACION" ]
+          }
+        }, {
+          "in" : "query",
+          "name" : "desde",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "in" : "query",
+          "name" : "hasta",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "in" : "query",
+          "name" : "porVencer",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "description" : "Zero-based page index (0..N)",
+          "in" : "query",
+          "name" : "page",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "default" : 0,
+            "minimum" : 0
+          }
+        }, {
+          "description" : "The size of the page to be returned",
+          "in" : "query",
+          "name" : "size",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "default" : 20,
+            "minimum" : 1
+          }
+        }, {
+          "description" : "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+          "in" : "query",
+          "name" : "sort",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaginaCotizacionResumenVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Listado paginado de cotizaciones",
+        "tags" : [ "Cotizaciones" ]
+      },
+      "post" : {
+        "description" : "La fecha es hoy y no toca el inventario (RN-11). Con la misma Idempotency-Key devuelve la cotización ya creada. Errores (400): COTIZACION_SIN_LINEAS, COTIZACION_VACIA, COTIZACION_SIN_DESCRIPCION, COTIZACION_MANO_OBRA_EN_VENTA, COTIZACION_VALIDEZ_INVALIDA, COTIZACION_PRODUCTO_REPETIDO, DESCUENTO_INVALIDO, PRECIO_INVALIDO, CLIENTE_NO_EXISTE, PRODUCTO_NO_EXISTE; (422) PRODUCTO_INACTIVO, TASA_NO_DISPONIBLE.",
+        "operationId" : "registrar_3",
+        "parameters" : [ {
+          "description" : "Clave única por intento de guardar (RT-07)",
+          "in" : "header",
+          "name" : "Idempotency-Key",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudCotizacion"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CotizacionVista"
+                }
+              }
+            },
+            "description" : "Created"
+          }
+        },
+        "summary" : "Registrar una cotización en Borrador",
+        "tags" : [ "Cotizaciones" ]
+      }
+    },
+    "/api/v1/cotizaciones/vista-previa" : {
+      "post" : {
+        "description" : "No guarda nada. Es el valor oficial que muestra el frontend y con el que dibuja la vista previa del PDF (RF-85). El stock es solo informativo (RF-86). Errores: TASA_NO_DISPONIBLE, PRODUCTO_INACTIVO (422); DESCUENTO_INVALIDO, COTIZACION_* , CLIENTE_NO_EXISTE (400).",
+        "operationId" : "vistaPrevia_3",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudCotizacion"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/VistaPreviaCotizacionVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Vista previa: precios, costos con las tasas de hoy y de compra, y utilidad",
+        "tags" : [ "Cotizaciones" ]
+      }
+    },
+    "/api/v1/cotizaciones/{id}" : {
+      "get" : {
+        "operationId" : "detalle_4",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CotizacionVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Detalle de una cotización con sus versiones anteriores",
+        "tags" : [ "Cotizaciones" ]
+      },
+      "put" : {
+        "description" : "En Borrador se reemplaza; En evaluación se guarda como nueva versión (COT-0001 v2) y se conserva la anterior (RF-88). La fecha y el vencimiento se recalculan desde hoy. Errores: TRANSICION_NO_PERMITIDA (422), MODIFICADO_POR_OTRO_USUARIO (409).",
+        "operationId" : "editar",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudCotizacion"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CotizacionVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Editar una cotización",
+        "tags" : [ "Cotizaciones" ]
+      }
+    },
+    "/api/v1/cotizaciones/{id}/aprobar" : {
+      "post" : {
+        "description" : "Desde Borrador o En evaluación (P-48). Error: TRANSICION_NO_PERMITIDA (422).",
+        "operationId" : "aprobar",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CotizacionVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Cliente aprobó",
+        "tags" : [ "Cotizaciones" ]
+      }
+    },
+    "/api/v1/cotizaciones/{id}/comprobante" : {
+      "get" : {
+        "description" : "No cambia el estado: para marcarla enviada, llamar a /enviar (P-50).",
+        "operationId" : "comprobante_2",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/pdf" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Descargar la cotización en PDF (RF-133)",
+        "tags" : [ "Cotizaciones" ]
+      }
+    },
+    "/api/v1/cotizaciones/{id}/conversion" : {
+      "get" : {
+        "description" : "Devuelve el formulario precargado y los avisos de precio, costo y stock cambiados (RF-94, RF-96). La conversión se guarda con POST /ventas o POST /instalaciones enviando cotizacionId. Error: COTIZACION_NO_CONVERTIBLE (422).",
+        "operationId" : "conversion",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConversionCotizacionVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Datos para convertir una cotización aprobada en venta o instalación",
+        "tags" : [ "Cotizaciones" ]
+      }
+    },
+    "/api/v1/cotizaciones/{id}/duplicar" : {
+      "post" : {
+        "description" : "Copia productos, cantidades, precios cotizados, mano de obra y descripción, con fecha y tasas de hoy (RF-87, P-52). Errores: PRODUCTO_INACTIVO, TASA_NO_DISPONIBLE (422).",
+        "operationId" : "duplicar",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "Clave única por intento de duplicar (RT-07)",
+          "in" : "header",
+          "name" : "Idempotency-Key",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "201" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CotizacionVista"
+                }
+              }
+            },
+            "description" : "Created"
+          }
+        },
+        "summary" : "Duplicar en una cotización nueva en Borrador",
+        "tags" : [ "Cotizaciones" ]
+      }
+    },
+    "/api/v1/cotizaciones/{id}/enlace" : {
+      "post" : {
+        "description" : "Vence a los 30 días (P-33). Si la cotización estaba en Borrador, queda En evaluación (P-50).",
+        "operationId" : "enlace_2",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EnlaceCotizacionVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Crear el enlace público del PDF para WhatsApp",
+        "tags" : [ "Cotizaciones" ]
+      }
+    },
+    "/api/v1/cotizaciones/{id}/enviar" : {
+      "post" : {
+        "description" : "El frontend la llama también al pulsar Descargar PDF (P-50). Reenviar una En evaluación solo actualiza la fecha de envío. Error: TRANSICION_NO_PERMITIDA (422).",
+        "operationId" : "enviar",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CotizacionVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Marcar como enviada (pasa a En evaluación)",
+        "tags" : [ "Cotizaciones" ]
+      }
+    },
+    "/api/v1/cotizaciones/{id}/rechazar" : {
+      "post" : {
+        "description" : "Desde Borrador, En evaluación o Aprobada. Error: TRANSICION_NO_PERMITIDA (422).",
+        "operationId" : "rechazar",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudRechazo"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CotizacionVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Marcar como rechazada, con motivo opcional",
+        "tags" : [ "Cotizaciones" ]
+      }
+    },
+    "/api/v1/cotizaciones/{id}/seguimiento" : {
+      "get" : {
+        "operationId" : "seguimiento",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SeguimientoCotizacionVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Mensaje de seguimiento por WhatsApp (RF-92)",
+        "tags" : [ "Cotizaciones" ]
       }
     },
     "/api/v1/garantias" : {
@@ -1722,7 +2205,7 @@
     "/api/v1/inventario" : {
       "get" : {
         "description" : "Busca por nombre, código, marca o número de serie. Valores en USD, COP y VES con las tasas vigentes. Orden por defecto: nombre.",
-        "operationId" : "listar_8",
+        "operationId" : "listar_9",
         "parameters" : [ {
           "in" : "query",
           "name" : "categoriaId",
@@ -1797,7 +2280,7 @@
     },
     "/api/v1/inventario/productos/{id}" : {
       "get" : {
-        "operationId" : "detalle_6",
+        "operationId" : "detalle_7",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -2784,7 +3267,7 @@
     },
     "/api/v1/tasas/{id}" : {
       "get" : {
-        "operationId" : "detalle_5",
+        "operationId" : "detalle_6",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -3567,6 +4050,21 @@
           }
         }
       },
+      "Aviso" : {
+        "type" : "object",
+        "properties" : {
+          "mensaje" : {
+            "type" : "string"
+          },
+          "productoId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "tipo" : {
+            "type" : "string"
+          }
+        }
+      },
       "CambioCostoVista" : {
         "type" : "object",
         "properties" : {
@@ -3928,6 +4426,80 @@
           }
         }
       },
+      "ConversionCotizacionVista" : {
+        "type" : "object",
+        "properties" : {
+          "avisos" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Aviso"
+            }
+          },
+          "cliente" : {
+            "type" : "string"
+          },
+          "clienteId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "consecutivo" : {
+            "type" : "string"
+          },
+          "cotizacionId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "descripcion" : {
+            "type" : "string"
+          },
+          "descuentoTipo" : {
+            "type" : "string",
+            "enum" : [ "PORCENTAJE", "VALOR" ]
+          },
+          "descuentoValor" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "direccion" : {
+            "type" : "string"
+          },
+          "lineas" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Linea"
+            }
+          },
+          "manoDeObra" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "moneda" : {
+            "type" : "string",
+            "enum" : [ "USD", "COP", "VES" ]
+          },
+          "monedasComprobante" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "USD", "COP", "VES" ]
+            },
+            "uniqueItems" : true
+          },
+          "observaciones" : {
+            "type" : "string"
+          },
+          "puedeGuardar" : {
+            "type" : "boolean"
+          },
+          "tipo" : {
+            "type" : "string"
+          }
+        }
+      },
       "CorreccionVista" : {
         "type" : "object",
         "properties" : {
@@ -3958,6 +4530,208 @@
           }
         }
       },
+      "CotizacionOrigenVista" : {
+        "type" : "object",
+        "properties" : {
+          "consecutivo" : {
+            "type" : "string"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "CotizacionResumenVista" : {
+        "type" : "object",
+        "properties" : {
+          "cliente" : {
+            "type" : "string"
+          },
+          "clienteId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "consecutivo" : {
+            "type" : "string"
+          },
+          "diasParaVencer" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "documentoGenerado" : {
+            "type" : "string"
+          },
+          "estado" : {
+            "type" : "string"
+          },
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "moneda" : {
+            "type" : "string",
+            "enum" : [ "USD", "COP", "VES" ]
+          },
+          "porVencer" : {
+            "type" : "boolean"
+          },
+          "registradaEn" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "registradaPor" : {
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "total" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "totalUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "vence" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }
+      },
+      "CotizacionVista" : {
+        "type" : "object",
+        "properties" : {
+          "aprobadaEn" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "cliente" : {
+            "$ref" : "#/components/schemas/ClienteDocumentoVista"
+          },
+          "consecutivo" : {
+            "type" : "string"
+          },
+          "descripcion" : {
+            "type" : "string"
+          },
+          "descuentoTipo" : {
+            "type" : "string"
+          },
+          "descuentoValor" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "diasParaVencer" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "documentoGenerado" : {
+            "$ref" : "#/components/schemas/DocumentoGenerado"
+          },
+          "enviadaEn" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "estado" : {
+            "type" : "string"
+          },
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "lineas" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Linea"
+            }
+          },
+          "moneda" : {
+            "type" : "string",
+            "enum" : [ "USD", "COP", "VES" ]
+          },
+          "monedasComprobante" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "USD", "COP", "VES" ]
+            },
+            "uniqueItems" : true
+          },
+          "numeroVersion" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "observaciones" : {
+            "type" : "string"
+          },
+          "porVencer" : {
+            "type" : "boolean"
+          },
+          "porcentajeUtilidad" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "rechazo" : {
+            "$ref" : "#/components/schemas/Rechazo"
+          },
+          "registradaEn" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "registradaPor" : {
+            "type" : "string"
+          },
+          "resumen" : {
+            "$ref" : "#/components/schemas/ResumenCobroVista"
+          },
+          "tasas" : {
+            "$ref" : "#/components/schemas/TasasDocumentoVista"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "total" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "utilidad" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "validezDias" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "vence" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "vencidaEl" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "versionesAnteriores" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/VersionAnterior"
+            }
+          }
+        }
+      },
       "Dinero" : {
         "type" : "object",
         "properties" : {
@@ -3970,6 +4744,25 @@
             "format" : "decimal",
             "example" : "19.5000",
             "pattern" : "^-?\\d+(\\.\\d+)?$"
+          }
+        }
+      },
+      "DocumentoGenerado" : {
+        "type" : "object",
+        "properties" : {
+          "consecutivo" : {
+            "type" : "string"
+          },
+          "fecha" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "tipo" : {
+            "type" : "string"
           }
         }
       },
@@ -4010,6 +4803,27 @@
       "EnlaceComprobanteVista" : {
         "type" : "object",
         "properties" : {
+          "mensaje" : {
+            "type" : "string"
+          },
+          "url" : {
+            "type" : "string"
+          },
+          "venceEn" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "whatsappUrl" : {
+            "type" : "string"
+          }
+        }
+      },
+      "EnlaceCotizacionVista" : {
+        "type" : "object",
+        "properties" : {
+          "estado" : {
+            "type" : "string"
+          },
           "mensaje" : {
             "type" : "string"
           },
@@ -4272,6 +5086,9 @@
           "consecutivo" : {
             "type" : "string"
           },
+          "cotizacion" : {
+            "$ref" : "#/components/schemas/CotizacionOrigenVista"
+          },
           "descripcion" : {
             "type" : "string"
           },
@@ -4416,6 +5233,36 @@
             "items" : {
               "$ref" : "#/components/schemas/SerialVendido"
             }
+          },
+          "subtotal" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "unidad" : {
+            "type" : "string"
+          }
+        }
+      },
+      "LineaAnterior" : {
+        "type" : "object",
+        "properties" : {
+          "cantidad" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "codigo" : {
+            "type" : "string"
+          },
+          "descripcion" : {
+            "type" : "string"
+          },
+          "precioUnitario" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "productoId" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "subtotal" : {
             "$ref" : "#/components/schemas/Dinero"
@@ -4716,6 +5563,33 @@
             "type" : "array",
             "items" : {
               "$ref" : "#/components/schemas/CompraResumenVista"
+            }
+          },
+          "pagina" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "tamano" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElementos" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPaginas" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "PaginaCotizacionResumenVista" : {
+        "type" : "object",
+        "properties" : {
+          "contenido" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CotizacionResumenVista"
             }
           },
           "pagina" : {
@@ -5219,6 +6093,21 @@
           }
         }
       },
+      "Rechazo" : {
+        "type" : "object",
+        "properties" : {
+          "detalle" : {
+            "type" : "string"
+          },
+          "fecha" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "motivo" : {
+            "type" : "string"
+          }
+        }
+      },
       "Reclamo" : {
         "type" : "object",
         "properties" : {
@@ -5418,6 +6307,17 @@
           },
           "utilidad" : {
             "$ref" : "#/components/schemas/MontoEnMonedas"
+          }
+        }
+      },
+      "SeguimientoCotizacionVista" : {
+        "type" : "object",
+        "properties" : {
+          "mensaje" : {
+            "type" : "string"
+          },
+          "whatsappUrl" : {
+            "type" : "string"
           }
         }
       },
@@ -5780,6 +6680,74 @@
         },
         "required" : [ "confirmacion", "valor" ]
       },
+      "SolicitudCotizacion" : {
+        "type" : "object",
+        "properties" : {
+          "clienteId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "descripcion" : {
+            "type" : "string",
+            "maxLength" : 2000,
+            "minLength" : 0
+          },
+          "descuentoTipo" : {
+            "type" : "string",
+            "enum" : [ "PORCENTAJE", "VALOR" ]
+          },
+          "descuentoValor" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "lineas" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SolicitudLineaCotizacion"
+            },
+            "maxItems" : 200,
+            "minItems" : 0
+          },
+          "manoDeObra" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "moneda" : {
+            "type" : "string",
+            "enum" : [ "USD", "COP", "VES" ]
+          },
+          "monedasComprobante" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "USD", "COP", "VES" ]
+            },
+            "uniqueItems" : true
+          },
+          "observaciones" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          },
+          "tipo" : {
+            "type" : "string",
+            "enum" : [ "VENTA", "INSTALACION" ]
+          },
+          "validezDias" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "clienteId", "moneda", "tipo", "version" ]
+      },
       "SolicitudEdicionInstalacion" : {
         "type" : "object",
         "properties" : {
@@ -5878,6 +6846,10 @@
             "type" : "string",
             "maxLength" : 2000,
             "minLength" : 0
+          },
+          "cotizacionId" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "descripcion" : {
             "type" : "string",
@@ -5983,6 +6955,28 @@
           }
         },
         "required" : [ "cantidad", "costoUnitario", "productoId" ]
+      },
+      "SolicitudLineaCotizacion" : {
+        "type" : "object",
+        "properties" : {
+          "cantidad" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "precioUnitario" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "productoId" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "cantidad", "productoId" ]
       },
       "SolicitudLineaMaterial" : {
         "type" : "object",
@@ -6185,6 +7179,20 @@
         },
         "required" : [ "monedaHabitual", "nombre", "version" ]
       },
+      "SolicitudRechazo" : {
+        "type" : "object",
+        "properties" : {
+          "detalle" : {
+            "type" : "string",
+            "maxLength" : 300,
+            "minLength" : 0
+          },
+          "motivo" : {
+            "type" : "string",
+            "enum" : [ "PRECIO", "COMPETENCIA", "OTRO" ]
+          }
+        }
+      },
       "SolicitudReclamo" : {
         "type" : "object",
         "properties" : {
@@ -6292,6 +7300,10 @@
         "type" : "object",
         "properties" : {
           "clienteId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "cotizacionId" : {
             "type" : "integer",
             "format" : "int64"
           },
@@ -6729,6 +7741,9 @@
           "consecutivo" : {
             "type" : "string"
           },
+          "cotizacion" : {
+            "$ref" : "#/components/schemas/CotizacionOrigenVista"
+          },
           "descuentoTipo" : {
             "type" : "string"
           },
@@ -6801,6 +7816,48 @@
           }
         }
       },
+      "VersionAnterior" : {
+        "type" : "object",
+        "properties" : {
+          "descripcion" : {
+            "type" : "string"
+          },
+          "descuento" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "lineas" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/LineaAnterior"
+            }
+          },
+          "manoDeObra" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "numeroVersion" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "reemplazadaEn" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "reemplazadaPor" : {
+            "type" : "string"
+          },
+          "total" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "vence" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }
+      },
       "VistaPreviaCompraVista" : {
         "type" : "object",
         "properties" : {
@@ -6829,6 +7886,51 @@
           },
           "total" : {
             "$ref" : "#/components/schemas/MontoEnMonedas"
+          }
+        }
+      },
+      "VistaPreviaCotizacionVista" : {
+        "type" : "object",
+        "properties" : {
+          "avisos" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "cliente" : {
+            "$ref" : "#/components/schemas/ClienteDocumentoVista"
+          },
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "lineas" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/LineaVistaPrevia"
+            }
+          },
+          "moneda" : {
+            "type" : "string",
+            "enum" : [ "USD", "COP", "VES" ]
+          },
+          "resumen" : {
+            "$ref" : "#/components/schemas/ResumenCobroVista"
+          },
+          "tasas" : {
+            "$ref" : "#/components/schemas/TasasDocumentoVista"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "validezDias" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "vence" : {
+            "type" : "string",
+            "format" : "date"
           }
         }
       },
