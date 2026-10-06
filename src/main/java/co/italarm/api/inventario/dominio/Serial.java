@@ -143,11 +143,23 @@ public class Serial extends EntidadMaestra {
     this.vencimientoGarantia = vencimiento;
   }
 
-  /** Vuelve a bodega porque se anuló la venta con que salió (RF-72); pierde la garantía. */
-  public void devolver(DocumentoRef venta) {
-    if (estado != EstadoSerial.VENDIDO || !venta.equals(documentoSalida)) {
+  /** Sale instalado (RF-22), con la garantía del equipo hasta {@code vencimiento} (RF-114). */
+  public void instalar(DocumentoRef instalacion, LocalDate vencimiento) {
+    exigirDisponible();
+    this.estado = EstadoSerial.INSTALADO;
+    this.documentoSalida = instalacion;
+    this.vencimientoGarantia = vencimiento;
+  }
+
+  /**
+   * Vuelve a bodega porque se anuló la venta o la instalación con que salió (RF-72); pierde la
+   * garantía.
+   */
+  public void devolver(DocumentoRef documento) {
+    boolean salio = estado == EstadoSerial.VENDIDO || estado == EstadoSerial.INSTALADO;
+    if (!salio || !documento.equals(documentoSalida)) {
       throw new SerialNoDisponibleException(
-          "El serial " + numero + " no salió con " + venta.consecutivo() + ".");
+          "El serial " + numero + " no salió con " + documento.consecutivo() + ".");
     }
     this.estado = EstadoSerial.EN_BODEGA;
     this.documentoSalida = null;

@@ -265,15 +265,17 @@ public class ServicioMovimientos {
   }
 
   /**
-   * Descuenta lo que sale con una venta (RF-102): stock, kárdex con el costo vigente y seriales
-   * vendidos con su garantía (RF-22, RF-23). Corre dentro de la transacción de la venta.
+   * Descuenta lo que sale con una venta o una instalación (RF-102, RF-109): stock, kárdex con el
+   * costo vigente y seriales vendidos o instalados con su garantía (RF-22, RF-23, RF-114). Corre
+   * dentro de la transacción del documento.
    *
+   * @param documento la venta o la instalación
    * @param vencimientoGarantia fin de la garantía de los equipos con serial
-   * @param detalleSeriales texto para el historial de los seriales (cliente y venta)
+   * @param detalleSeriales texto para el historial de los seriales (cliente y documento)
    */
   @Transactional(propagation = Propagation.MANDATORY)
-  public void registrarSalidaVenta(
-      DocumentoRef venta,
+  public void registrarSalida(
+      DocumentoRef documento,
       LocalDate fecha,
       List<LineaSalida> lineas,
       LocalDate vencimientoGarantia,
@@ -282,13 +284,14 @@ public class ServicioMovimientos {
     Map<Long, DatosProductoInventario> datos =
         consultaProductos.porId(lineas.stream().map(LineaSalida::productoId).toList());
     Map<Long, ProductoInventario> bloqueados = operaciones.bloquear(datos.keySet());
+    Salida salida = Salida.de(documento);
     Instant ahora = reloj.instant();
     for (LineaSalida linea : lineas) {
       DatosProductoInventario producto =
           OperacionesInventario.exigirProducto(datos, linea.productoId());
       if (!producto.activo()) {
         throw new ProductoInactivoException(
-            producto.nombre() + " está inactivo y no se puede vender.");
+            producto.nombre() + " está inactivo y no se puede usar.");
       }
       OperacionesInventario.exigirCantidad(linea.cantidad(), producto);
       ProductoInventario inventario = bloqueados.get(linea.productoId());
@@ -298,8 +301,8 @@ public class ServicioMovimientos {
       kardex.save(
           MovimientoInventario.salida(
               linea.productoId(),
-              TipoMovimiento.VENTA,
-              venta,
+              salida.movimiento(),
+              documento,
               fecha,
               linea.cantidad(),
               inventario.getStock(),
@@ -308,12 +311,16 @@ public class ServicioMovimientos {
               usuarioId,
               ahora));
       for (Serial serial : salen) {
-        serial.vender(venta, vencimientoGarantia);
+        if (salida == Salida.VENTA) {
+          serial.vender(documento, vencimientoGarantia);
+        } else {
+          serial.instalar(documento, vencimientoGarantia);
+        }
         movimientosSerial.save(
             MovimientoSerial.de(
                 serial.getId(),
-                TipoMovimientoSerial.VENTA,
-                venta,
+                salida.movimientoSerial(),
+                documento,
                 fecha,
                 detalleSeriales,
                 usuarioId,
@@ -323,12 +330,14 @@ public class ServicioMovimientos {
   }
 
   /**
-   * Devuelve a bodega lo que salió con una venta anulada (RF-72): entra al costo vigente sin
-   * cambiarlo (como un ajuste de entrada, RN-06) y los seriales vuelven a bodega sin garantía.
+   * Devuelve a bodega lo que salió con una venta o instalación anulada (RF-72): entra al costo
+   * vigente sin cambiarlo (como un ajuste de entrada, RN-06) y los seriales vuelven a bodega sin
+   * garantía.
    */
   @Transactional(propagation = Propagation.MANDATORY)
-  public void anularSalidaVenta(
-      DocumentoRef venta, LocalDate fecha, List<LineaAnulacion> lineas, Long usuarioId) {
+  public void anularSalida(
+      DocumentoRef documento, LocalDate fecha, List<LineaAnulacion> lineas, Long usuarioId) {
+    Salida salida = Salida.de(documento);
     Map<Long, ProductoInventario> bloqueados =
         operaciones.bloquear(lineas.stream().map(LineaAnulacion::productoId).toList());
     Instant ahora = reloj.instant();
@@ -338,8 +347,8 @@ public class ServicioMovimientos {
       kardex.save(
           MovimientoInventario.entrada(
               linea.productoId(),
-              TipoMovimiento.ANULACION_VENTA,
-              venta,
+              salida.anulacion(),
+              documento,
               fecha,
               linea.cantidad(),
               inventario.getStock(),
@@ -348,15 +357,15 @@ public class ServicioMovimientos {
               usuarioId,
               ahora));
       for (Serial serial :
-          seriales.bloquearDeSalida(linea.productoId(), venta.tipo(), venta.id())) {
-        serial.devolver(venta);
+          seriales.bloquearDeSalida(linea.productoId(), documento.tipo(), documento.id())) {
+        serial.devolver(documento);
         movimientosSerial.save(
             MovimientoSerial.de(
                 serial.getId(),
-                TipoMovimientoSerial.ANULACION_VENTA,
-                venta,
+                salida.anulacionSerial(),
+                documento,
                 fecha,
-                "Venta anulada",
+                salida.detalleAnulacion(),
                 usuarioId,
                 ahora));
       }
@@ -395,5 +404,68 @@ public class ServicioMovimientos {
         resultado.costoAnterior(),
         resultado.costoNuevo(),
         resultado.regla().name());
+  }
+
+  /** Tipos de salida que descuentan inventario con seriales y garantía. */
+  private enum Salida {
+    VENTA(
+        TipoMovimiento.VENTA,
+        TipoMovimiento.ANULACION_VENTA,
+        TipoMovimientoSerial.VENTA,
+        TipoMovimientoSerial.ANULACION_VENTA,
+        "Venta anulada"),
+    INSTALACION(
+        TipoMovimiento.INSTALACION,
+        TipoMovimiento.ANULACION_INSTALACION,
+        TipoMovimientoSerial.INSTALACION,
+        TipoMovimientoSerial.ANULACION_INSTALACION,
+        "Instalación anulada");
+
+    private final TipoMovimiento movimiento;
+    private final TipoMovimiento anulacion;
+    private final TipoMovimientoSerial movimientoSerial;
+    private final TipoMovimientoSerial anulacionSerial;
+    private final String detalleAnulacion;
+
+    Salida(
+        TipoMovimiento movimiento,
+        TipoMovimiento anulacion,
+        TipoMovimientoSerial movimientoSerial,
+        TipoMovimientoSerial anulacionSerial,
+        String detalleAnulacion) {
+      this.movimiento = movimiento;
+      this.anulacion = anulacion;
+      this.movimientoSerial = movimientoSerial;
+      this.anulacionSerial = anulacionSerial;
+      this.detalleAnulacion = detalleAnulacion;
+    }
+
+    static Salida de(DocumentoRef documento) {
+      return switch (documento.tipo()) {
+        case VENTA -> VENTA;
+        case INSTALACION -> INSTALACION;
+        default -> throw new IllegalArgumentException("No es una salida: " + documento.tipo());
+      };
+    }
+
+    TipoMovimiento movimiento() {
+      return movimiento;
+    }
+
+    TipoMovimiento anulacion() {
+      return anulacion;
+    }
+
+    TipoMovimientoSerial movimientoSerial() {
+      return movimientoSerial;
+    }
+
+    TipoMovimientoSerial anulacionSerial() {
+      return anulacionSerial;
+    }
+
+    String detalleAnulacion() {
+      return detalleAnulacion;
+    }
   }
 }

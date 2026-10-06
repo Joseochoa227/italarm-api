@@ -14,6 +14,7 @@ import co.italarm.api.shared.api.Pagina;
 import co.italarm.api.shared.aplicacion.ServicioIdempotencia;
 import co.italarm.api.shared.dominio.CalculoDocumento;
 import co.italarm.api.shared.dominio.ClaveIdempotencia;
+import co.italarm.api.shared.dominio.CopiaCliente;
 import co.italarm.api.shared.dominio.Descuento;
 import co.italarm.api.shared.dominio.Dinero;
 import co.italarm.api.shared.dominio.DocumentoRef;
@@ -30,7 +31,6 @@ import co.italarm.api.terceros.aplicacion.ClienteDocumento;
 import co.italarm.api.terceros.aplicacion.ConsultaClientes;
 import co.italarm.api.usuarios.aplicacion.ConsultaUsuarios;
 import co.italarm.api.ventas.dominio.ClienteNoExisteException;
-import co.italarm.api.ventas.dominio.DatosClienteVenta;
 import co.italarm.api.ventas.dominio.LineaVenta;
 import co.italarm.api.ventas.dominio.Venta;
 import co.italarm.api.ventas.infraestructura.EspecificacionesVentas;
@@ -285,7 +285,7 @@ public class ServicioVentas {
             venta.getTotalUsd(),
             venta.getCostoUsd(),
             venta.getUtilidadUsd());
-    DatosClienteVenta cliente = venta.getCliente();
+    CopiaCliente cliente = venta.getCliente();
     return new VentaVista(
         venta.getId(),
         venta.consecutivo(),
@@ -367,7 +367,7 @@ public class ServicioVentas {
             .bloquear(id)
             .orElseThrow(() -> new RecursoNoEncontradoException("La venta no existe."));
     if (!venta.estaAnulada()) {
-      movimientos.anularSalidaVenta(
+      movimientos.anularSalida(
           documento(venta),
           fechas.hoy(),
           venta.getLineas().stream()

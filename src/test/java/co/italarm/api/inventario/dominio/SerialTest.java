@@ -112,4 +112,17 @@ class SerialTest {
     org.assertj.core.api.Assertions.assertThat(serial.getDocumentoSalida()).isNull();
     org.assertj.core.api.Assertions.assertThat(serial.getVencimientoGarantia()).isNull();
   }
+
+  @Test
+  void instalar_dejaElSerialInstaladoYAnularLoDevuelve() {
+    DocumentoRef instalacion = new DocumentoRef(TipoDocumento.INSTALACION, 4L, "I-0001");
+    Serial serial = Serial.entrar(1L, "xyz", COMPRA, LocalDate.of(2026, 10, 1));
+
+    serial.instalar(instalacion, LocalDate.of(2027, 1, 1));
+
+    assertThat(serial.getEstado()).isEqualTo(EstadoSerial.INSTALADO);
+    assertThat(serial.getVencimientoGarantia()).isEqualTo(LocalDate.of(2027, 1, 1));
+    serial.devolver(instalacion);
+    assertThat(serial.estaDisponible()).isTrue();
+  }
 }

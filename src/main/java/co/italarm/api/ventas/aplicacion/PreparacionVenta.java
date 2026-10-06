@@ -3,12 +3,12 @@ package co.italarm.api.ventas.aplicacion;
 import co.italarm.api.catalogo.aplicacion.ProductoValorizado;
 import co.italarm.api.shared.dominio.CalculoDocumento;
 import co.italarm.api.shared.dominio.CantidadInvalidaException;
+import co.italarm.api.shared.dominio.CopiaCliente;
 import co.italarm.api.shared.dominio.Moneda;
 import co.italarm.api.shared.dominio.PrecioSugerido;
 import co.italarm.api.shared.dominio.Tasas;
 import co.italarm.api.tasas.aplicacion.TasasAplicables;
 import co.italarm.api.terceros.aplicacion.ClienteDocumento;
-import co.italarm.api.ventas.dominio.DatosClienteVenta;
 import co.italarm.api.ventas.dominio.VentaInvalidaException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -123,8 +123,8 @@ final class PreparacionVenta {
         aplicables.trm(), aplicables.fechaTrm(), aplicables.tasaVes(), aplicables.fechaTasaVes());
   }
 
-  static DatosClienteVenta cliente(ClienteDocumento cliente) {
-    return new DatosClienteVenta(
+  static CopiaCliente cliente(ClienteDocumento cliente) {
+    return new CopiaCliente(
         cliente.id(),
         cliente.tipo(),
         cliente.nombre(),

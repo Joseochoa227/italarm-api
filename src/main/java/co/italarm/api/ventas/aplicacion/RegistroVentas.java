@@ -136,7 +136,7 @@ public class RegistroVentas {
                     .toList()));
     DocumentoRef documento =
         new DocumentoRef(TipoDocumento.VENTA, venta.getId(), venta.consecutivo());
-    movimientos.registrarSalidaVenta(
+    movimientos.registrarSalida(
         documento,
         hoy,
         lineas.stream()

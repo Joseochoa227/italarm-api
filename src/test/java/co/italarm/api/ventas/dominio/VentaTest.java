@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import co.italarm.api.shared.dominio.CalculoDocumento;
+import co.italarm.api.shared.dominio.CopiaCliente;
 import co.italarm.api.shared.dominio.Descuento;
 import co.italarm.api.shared.dominio.Moneda;
 import co.italarm.api.shared.dominio.ResumenDocumento;
@@ -42,7 +43,7 @@ class VentaTest {
     return Venta.registrar(
         12,
         HOY,
-        new DatosClienteVenta(5L, "INSTALADOR", "Juan", "CC 123", "+573001234567", null, null),
+        new CopiaCliente(5L, "INSTALADOR", "Juan", "CC 123", "+573001234567", null, null),
         Moneda.USD,
         new Venta.TasasVenta(new BigDecimal("4000"), HOY, null, null),
         Descuento.de(TipoDescuento.VALOR, new BigDecimal("7")),
@@ -100,7 +101,7 @@ class VentaTest {
                 Venta.registrar(
                     1,
                     HOY,
-                    new DatosClienteVenta(1L, "CLIENTE_FINAL", "Ana", null, null, null, null),
+                    new CopiaCliente(1L, "CLIENTE_FINAL", "Ana", null, null, null, null),
                     Moneda.USD,
                     new Venta.TasasVenta(null, null, null, null),
                     Descuento.ninguno(),

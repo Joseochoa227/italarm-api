@@ -8,6 +8,7 @@ import co.italarm.api.documentos.aplicacion.FuenteComprobantes;
 import co.italarm.api.documentos.aplicacion.GeneradorPdf;
 import co.italarm.api.inventario.aplicacion.SerialSalida;
 import co.italarm.api.inventario.aplicacion.ServicioMovimientos;
+import co.italarm.api.shared.dominio.CopiaCliente;
 import co.italarm.api.shared.dominio.Dinero;
 import co.italarm.api.shared.dominio.FechaNegocio;
 import co.italarm.api.shared.dominio.FormatoDinero;
@@ -16,7 +17,6 @@ import co.italarm.api.shared.dominio.RecursoNoEncontradoException;
 import co.italarm.api.shared.dominio.Tasas;
 import co.italarm.api.shared.dominio.TipoDescuento;
 import co.italarm.api.shared.dominio.TipoDocumento;
-import co.italarm.api.ventas.dominio.DatosClienteVenta;
 import co.italarm.api.ventas.dominio.Venta;
 import co.italarm.api.ventas.infraestructura.VentaRepositorio;
 import java.math.BigDecimal;
@@ -70,7 +70,7 @@ public class ComprobantesVenta implements FuenteComprobantes {
     Map<Long, List<SerialSalida>> seriales =
         movimientos.serialesDeSalida(ServicioVentas.documento(venta));
     Moneda moneda = venta.getMoneda();
-    DatosClienteVenta cliente = venta.getCliente();
+    CopiaCliente cliente = venta.getCliente();
 
     List<DocumentoPdf.Item> items =
         venta.getLineas().stream()

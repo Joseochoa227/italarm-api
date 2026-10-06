@@ -1,5 +1,6 @@
 package co.italarm.api.ventas.dominio;
 
+import co.italarm.api.shared.dominio.CopiaCliente;
 import co.italarm.api.shared.dominio.Descuento;
 import co.italarm.api.shared.dominio.EntidadMaestra;
 import co.italarm.api.shared.dominio.Moneda;
@@ -153,7 +154,7 @@ public class Venta extends EntidadMaestra {
   public static Venta registrar(
       long numero,
       LocalDate fecha,
-      DatosClienteVenta cliente,
+      CopiaCliente cliente,
       Moneda moneda,
       TasasVenta tasas,
       Descuento descuento,
@@ -260,8 +261,8 @@ public class Venta extends EntidadMaestra {
     return clienteId;
   }
 
-  public DatosClienteVenta getCliente() {
-    return new DatosClienteVenta(
+  public CopiaCliente getCliente() {
+    return new CopiaCliente(
         clienteId,
         clienteTipo,
         clienteNombre,
