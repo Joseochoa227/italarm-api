@@ -78,7 +78,7 @@ class CotizacionTest {
       case APROBADA -> cotizacion.aprobar(AHORA);
       case CONVERTIDA -> {
         cotizacion.aprobar(AHORA);
-        cotizacion.convertir(TipoCotizacion.INSTALACION, 5L, 9L, AHORA);
+        cotizacion.convertir(TipoCotizacion.INSTALACION, 5L, 9L, "I-0009", AHORA);
       }
       case RECHAZADA -> cotizacion.rechazar(null, null, AHORA);
       case VENCIDA -> cotizacion.vencerSiCorresponde(HOY.plusDays(16));
@@ -128,9 +128,10 @@ class CotizacionTest {
     cotizacion.aprobar(AHORA);
     assertThat(cotizacion.getEstado()).isEqualTo(EstadoCotizacion.APROBADA);
 
-    cotizacion.convertir(TipoCotizacion.INSTALACION, 5L, 9L, AHORA);
+    cotizacion.convertir(TipoCotizacion.INSTALACION, 5L, 9L, "I-0009", AHORA);
     assertThat(cotizacion.getEstado()).isEqualTo(EstadoCotizacion.CONVERTIDA);
     assertThat(cotizacion.getDocumentoId()).isEqualTo(9L);
+    assertThat(cotizacion.getDocumentoNumero()).isEqualTo("I-0009");
     assertThat(cotizacion.getConvertidaEn()).isEqualTo(AHORA);
   }
 
@@ -277,7 +278,8 @@ class CotizacionTest {
   @Test
   void convertidaNoSeVuelveAConvertir() {
     Cotizacion cotizacion = en(EstadoCotizacion.CONVERTIDA);
-    assertThatThrownBy(() -> cotizacion.convertir(TipoCotizacion.INSTALACION, 5L, 10L, AHORA))
+    assertThatThrownBy(
+            () -> cotizacion.convertir(TipoCotizacion.INSTALACION, 5L, 10L, "I-0010", AHORA))
         .isInstanceOf(CotizacionNoConvertibleException.class)
         .hasMessageContaining("ya fue convertida");
     assertThat(cotizacion.getDocumentoId()).isEqualTo(9L);
@@ -293,9 +295,10 @@ class CotizacionTest {
     cotizacion.revertirConversion(9L);
     assertThat(cotizacion.getEstado()).isEqualTo(EstadoCotizacion.APROBADA);
     assertThat(cotizacion.getDocumentoId()).isNull();
+    assertThat(cotizacion.getDocumentoNumero()).isNull();
     assertThat(cotizacion.getConvertidaEn()).isNull();
 
-    cotizacion.convertir(TipoCotizacion.INSTALACION, 5L, 11L, AHORA);
+    cotizacion.convertir(TipoCotizacion.INSTALACION, 5L, 11L, "I-0011", AHORA);
     assertThat(cotizacion.getDocumentoId()).isEqualTo(11L);
   }
 

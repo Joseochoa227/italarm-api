@@ -4,6 +4,7 @@ import co.italarm.api.catalogo.aplicacion.ConsultaProductos;
 import co.italarm.api.catalogo.aplicacion.ProductoValorizado;
 import co.italarm.api.comercial.aplicacion.LineaMaterial;
 import co.italarm.api.comercial.aplicacion.MaterialPreparado;
+import co.italarm.api.comercial.aplicacion.OrigenCotizacion;
 import co.italarm.api.comercial.aplicacion.PreparacionMaterial;
 import co.italarm.api.comercial.aplicacion.TasasDocumentoVista;
 import co.italarm.api.comercial.aplicacion.VistaPreviaMaterial;
@@ -73,6 +74,7 @@ public class ServicioVentas {
   private final ConsultaUsuarios usuarios;
   private final ComprobantesVenta comprobantes;
   private final ServicioEnlacesComprobante enlaces;
+  private final OrigenCotizacion origen;
   private final FechaNegocio fechas;
 
   public ServicioVentas(
@@ -89,6 +91,7 @@ public class ServicioVentas {
       ConsultaUsuarios usuarios,
       ComprobantesVenta comprobantes,
       ServicioEnlacesComprobante enlaces,
+      OrigenCotizacion origen,
       FechaNegocio fechas) {
     this.ventas = ventas;
     this.lineas = lineas;
@@ -103,6 +106,7 @@ public class ServicioVentas {
     this.usuarios = usuarios;
     this.comprobantes = comprobantes;
     this.enlaces = enlaces;
+    this.origen = origen;
     this.fechas = fechas;
   }
 
@@ -286,6 +290,7 @@ public class ServicioVentas {
         venta.getPorcentajeUtilidad(),
         venta.getObservaciones(),
         venta.getMonedasComprobante(),
+        origen.origen(venta.getCotizacionId()).orElse(null),
         venta.getEstado().name(),
         venta.estaAnulada()
             ? new VentaVista.Anulacion(
@@ -327,6 +332,9 @@ public class ServicioVentas {
               .map(l -> new LineaAnulacion(l.getProductoId(), l.getCantidad()))
               .toList(),
           usuarioId);
+    }
+    if (!venta.estaAnulada() && venta.getCotizacionId() != null) {
+      origen.revertir(venta.getCotizacionId(), venta.getId());
     }
     venta.anular(motivo, usuarioId, fechas.ahora());
     ventas.flush();

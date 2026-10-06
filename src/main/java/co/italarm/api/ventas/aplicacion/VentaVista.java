@@ -1,6 +1,7 @@
 package co.italarm.api.ventas.aplicacion;
 
 import co.italarm.api.comercial.aplicacion.ClienteDocumentoVista;
+import co.italarm.api.comercial.aplicacion.CotizacionOrigenVista;
 import co.italarm.api.comercial.aplicacion.ResumenCobroVista;
 import co.italarm.api.comercial.aplicacion.TasasDocumentoVista;
 import co.italarm.api.shared.dominio.Dinero;
@@ -17,6 +18,7 @@ import java.util.Set;
  * @param descuentoTipo PORCENTAJE o VALOR
  * @param descuentoValor lo que se escribió (porcentaje o valor)
  * @param resumen totales en las tres monedas con las tasas guardadas en la venta
+ * @param cotizacion cotización de la que salió la venta (RF-95), o vacío
  * @param estado ACTIVA o ANULADA
  */
 public record VentaVista(
@@ -35,6 +37,7 @@ public record VentaVista(
     BigDecimal porcentajeUtilidad,
     String observaciones,
     Set<Moneda> monedasComprobante,
+    CotizacionOrigenVista cotizacion,
     String estado,
     Anulacion anulacion,
     String registradaPor,

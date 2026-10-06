@@ -17,6 +17,7 @@ import java.util.Set;
  * @param garantiaManoObraMeses 1 a 3; vacío = el de Configuración (P-39)
  * @param condicionesGarantia vacías = las de Configuración (RF-115)
  * @param monedasComprobante otras monedas en que el PDF muestra los totales (P-34)
+ * @param cotizacionId cotización aprobada de la que sale la instalación (RF-95), o vacío
  */
 public record DatosInstalacion(
     Long clienteId,
@@ -32,4 +33,5 @@ public record DatosInstalacion(
     Integer garantiaManoObraMeses,
     String condicionesGarantia,
     String observaciones,
-    Set<Moneda> monedasComprobante) {}
+    Set<Moneda> monedasComprobante,
+    Long cotizacionId) {}

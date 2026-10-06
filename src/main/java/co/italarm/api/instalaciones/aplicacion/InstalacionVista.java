@@ -1,6 +1,7 @@
 package co.italarm.api.instalaciones.aplicacion;
 
 import co.italarm.api.comercial.aplicacion.ClienteDocumentoVista;
+import co.italarm.api.comercial.aplicacion.CotizacionOrigenVista;
 import co.italarm.api.comercial.aplicacion.ResumenCobroVista;
 import co.italarm.api.comercial.aplicacion.TasasDocumentoVista;
 import co.italarm.api.shared.dominio.Dinero;
@@ -16,6 +17,7 @@ import java.util.Set;
  * Detalle de una instalación (RF-121): trabajo, técnicos, material con seriales, cobro, garantías y
  * fotos por grupo.
  *
+ * @param cotizacion cotización de la que salió la instalación (RF-95), o vacío
  * @param estado ACTIVA o ANULADA
  */
 public record InstalacionVista(
@@ -39,6 +41,7 @@ public record InstalacionVista(
     Fotos fotos,
     String observaciones,
     Set<Moneda> monedasComprobante,
+    CotizacionOrigenVista cotizacion,
     String estado,
     Anulacion anulacion,
     String registradaPor,

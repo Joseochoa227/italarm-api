@@ -28,6 +28,7 @@ import java.util.Set;
  * @param manoDeObra valor de la mano de obra en la moneda del cobro (RF-118)
  * @param garantiaManoObraMeses 1 a 3; vacío = el de Configuración (P-39)
  * @param condicionesGarantia vacías = las de Configuración (RF-115)
+ * @param cotizacionId al convertir una cotización aprobada (RF-95); la cotización queda Convertida
  */
 public record SolicitudInstalacion(
     @NotNull(message = "Elige el cliente.") Long clienteId,
@@ -56,7 +57,8 @@ public record SolicitudInstalacion(
         String condicionesGarantia,
     @Size(max = 500, message = "Las observaciones admiten máximo 500 caracteres.")
         String observaciones,
-    Set<Moneda> monedasComprobante) {
+    Set<Moneda> monedasComprobante,
+    Long cotizacionId) {
 
   DatosInstalacion aDatos() {
     return new DatosInstalacion(
@@ -73,7 +75,8 @@ public record SolicitudInstalacion(
         garantiaManoObraMeses,
         condicionesGarantia,
         observaciones,
-        monedasComprobante);
+        monedasComprobante,
+        cotizacionId);
   }
 
   /** Material usado (RF-108). */

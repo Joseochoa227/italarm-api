@@ -189,6 +189,9 @@ public class Cotizacion extends EntidadMaestra {
   @Column(name = "documento_id")
   private Long documentoId;
 
+  @Column(name = "documento_numero", length = 20)
+  private String documentoNumero;
+
   @Column(name = "convertida_en")
   private Instant convertidaEn;
 
@@ -435,12 +438,21 @@ public class Cotizacion extends EntidadMaestra {
     }
   }
 
-  /** Queda Convertida y enlazada al documento generado (RF-95). */
+  /**
+   * Queda Convertida y enlazada al documento generado (RF-95).
+   *
+   * @param documentoNumero consecutivo del documento, por ejemplo "I-0007"
+   */
   public void convertir(
-      TipoCotizacion tipoDocumento, Long clienteDocumento, Long documentoId, Instant ahora) {
+      TipoCotizacion tipoDocumento,
+      Long clienteDocumento,
+      Long documentoId,
+      String documentoNumero,
+      Instant ahora) {
     validarConversion(tipoDocumento, clienteDocumento);
     estado = EstadoCotizacion.CONVERTIDA;
     this.documentoId = documentoId;
+    this.documentoNumero = documentoNumero;
     convertidaEn = ahora;
   }
 
@@ -452,6 +464,7 @@ public class Cotizacion extends EntidadMaestra {
     if (estado == EstadoCotizacion.CONVERTIDA && Objects.equals(documentoId, documentoAnulado)) {
       estado = EstadoCotizacion.APROBADA;
       documentoId = null;
+      documentoNumero = null;
       convertidaEn = null;
     }
   }
@@ -595,6 +608,10 @@ public class Cotizacion extends EntidadMaestra {
 
   public Long getDocumentoId() {
     return documentoId;
+  }
+
+  public String getDocumentoNumero() {
+    return documentoNumero;
   }
 
   public Instant getConvertidaEn() {

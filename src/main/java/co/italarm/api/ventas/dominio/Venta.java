@@ -328,6 +328,11 @@ public class Venta extends EntidadMaestra {
     return observaciones;
   }
 
+  /** Cotización de la que sale el documento (RF-95); se asigna antes de guardarlo. */
+  public void desdeCotizacion(Long cotizacion) {
+    this.cotizacionId = cotizacion;
+  }
+
   public Long getCotizacionId() {
     return cotizacionId;
   }

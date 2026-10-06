@@ -4,6 +4,7 @@ import co.italarm.api.catalogo.aplicacion.ConsultaProductos;
 import co.italarm.api.catalogo.aplicacion.ProductoValorizado;
 import co.italarm.api.comercial.aplicacion.LineaMaterial;
 import co.italarm.api.comercial.aplicacion.MaterialPreparado;
+import co.italarm.api.comercial.aplicacion.OrigenCotizacion;
 import co.italarm.api.comercial.aplicacion.PreparacionMaterial;
 import co.italarm.api.configuracion.aplicacion.ServicioConfiguracion;
 import co.italarm.api.inventario.aplicacion.ExistenciaProducto;
@@ -53,6 +54,7 @@ public class RegistroVentas {
   private final ServicioConfiguracion configuracion;
   private final ServicioIdempotencia idempotencia;
   private final GeneradorConsecutivos consecutivos;
+  private final OrigenCotizacion origen;
   private final FechaNegocio fechas;
 
   public RegistroVentas(
@@ -64,6 +66,7 @@ public class RegistroVentas {
       ServicioConfiguracion configuracion,
       ServicioIdempotencia idempotencia,
       GeneradorConsecutivos consecutivos,
+      OrigenCotizacion origen,
       FechaNegocio fechas) {
     this.ventas = ventas;
     this.movimientos = movimientos;
@@ -73,6 +76,7 @@ public class RegistroVentas {
     this.configuracion = configuracion;
     this.idempotencia = idempotencia;
     this.consecutivos = consecutivos;
+    this.origen = origen;
     this.fechas = fechas;
   }
 
@@ -88,6 +92,9 @@ public class RegistroVentas {
     Tasas conversion = PreparacionMaterial.conversion(aplicables);
     conversion.aUsd(BigDecimal.ONE, datos.moneda());
     idempotencia.reservar(clave);
+    if (datos.cotizacionId() != null) {
+      origen.validarConversion(datos.cotizacionId(), TipoDocumento.VENTA, cliente.id());
+    }
 
     List<Long> ids = datos.lineas().stream().map(LineaMaterial::productoId).toList();
     Map<Long, ExistenciaProducto> existencias = movimientos.bloquearParaSalida(ids);
@@ -109,35 +116,36 @@ public class RegistroVentas {
             datos.moneda(),
             conversion);
 
-    Venta venta =
-        ventas.save(
-            Venta.registrar(
-                consecutivos.siguiente(TipoDocumento.VENTA),
-                hoy,
-                PreparacionMaterial.copia(cliente),
-                datos.moneda(),
-                new Venta.TasasVenta(
-                    aplicables.trm(),
-                    aplicables.fechaTrm(),
-                    aplicables.tasaVes(),
-                    aplicables.fechaTasaVes()),
-                descuento,
-                resumen,
-                datos.observaciones(),
-                datos.monedasComprobante(),
-                lineas.stream()
-                    .map(
-                        l ->
-                            new LineaVenta(
-                                l.producto().id(),
-                                l.producto().codigo(),
-                                l.producto().nombre(),
-                                l.producto().abreviatura(),
-                                l.cantidad(),
-                                l.precioUnitario(),
-                                l.precioSugerido(),
-                                l.costoUnitarioUsd()))
-                    .toList()));
+    Venta nueva =
+        Venta.registrar(
+            consecutivos.siguiente(TipoDocumento.VENTA),
+            hoy,
+            PreparacionMaterial.copia(cliente),
+            datos.moneda(),
+            new Venta.TasasVenta(
+                aplicables.trm(),
+                aplicables.fechaTrm(),
+                aplicables.tasaVes(),
+                aplicables.fechaTasaVes()),
+            descuento,
+            resumen,
+            datos.observaciones(),
+            datos.monedasComprobante(),
+            lineas.stream()
+                .map(
+                    l ->
+                        new LineaVenta(
+                            l.producto().id(),
+                            l.producto().codigo(),
+                            l.producto().nombre(),
+                            l.producto().abreviatura(),
+                            l.cantidad(),
+                            l.precioUnitario(),
+                            l.precioSugerido(),
+                            l.costoUnitarioUsd()))
+                .toList());
+    nueva.desdeCotizacion(datos.cotizacionId());
+    Venta venta = ventas.save(nueva);
     DocumentoRef documento =
         new DocumentoRef(TipoDocumento.VENTA, venta.getId(), venta.consecutivo());
     movimientos.registrarSalida(
@@ -149,6 +157,9 @@ public class RegistroVentas {
         Garantia.vencimiento(hoy, configuracion.garantiaEquiposMeses()),
         "Cliente: " + cliente.nombre() + " · " + venta.consecutivo(),
         usuarioId);
+    if (datos.cotizacionId() != null) {
+      origen.convertir(datos.cotizacionId(), documento, cliente.id());
+    }
     ventas.flush();
     idempotencia.asociar(clave, venta.getId());
     return venta.getId();

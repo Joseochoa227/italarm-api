@@ -82,6 +82,12 @@ public class ServicioConfiguracion {
     return cargar().getGarantiaEquiposMeses();
   }
 
+  /** Validez por defecto de las cotizaciones: 8, 15 o 30 días (RF-83, RF-147). */
+  @Transactional(readOnly = true)
+  public int validezCotizacionDias() {
+    return cargar().getValidezCotizacionDias();
+  }
+
   private Configuracion cargar() {
     return configuraciones
         .findById(Configuracion.ID_UNICO)

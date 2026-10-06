@@ -18,6 +18,7 @@ import java.util.Set;
  *
  * @param descuentoTipo PORCENTAJE o VALOR; vacío = sin descuento
  * @param monedasComprobante otras monedas en que el PDF muestra los totales (P-34)
+ * @param cotizacionId al convertir una cotización aprobada (RF-95); la cotización queda Convertida
  */
 public record SolicitudVenta(
     @NotNull(message = "Elige el cliente.") Long clienteId,
@@ -31,7 +32,8 @@ public record SolicitudVenta(
         BigDecimal descuentoValor,
     @Size(max = 500, message = "Las observaciones admiten máximo 500 caracteres.")
         String observaciones,
-    Set<Moneda> monedasComprobante) {
+    Set<Moneda> monedasComprobante,
+    Long cotizacionId) {
 
   DatosVenta aDatos() {
     return new DatosVenta(
@@ -41,6 +43,7 @@ public record SolicitudVenta(
         descuentoTipo,
         descuentoValor,
         observaciones,
-        monedasComprobante);
+        monedasComprobante,
+        cotizacionId);
   }
 }

@@ -4,6 +4,7 @@ import co.italarm.api.catalogo.aplicacion.ConsultaProductos;
 import co.italarm.api.catalogo.aplicacion.ProductoValorizado;
 import co.italarm.api.comercial.aplicacion.LineaMaterial;
 import co.italarm.api.comercial.aplicacion.MaterialPreparado;
+import co.italarm.api.comercial.aplicacion.OrigenCotizacion;
 import co.italarm.api.comercial.aplicacion.PreparacionMaterial;
 import co.italarm.api.configuracion.aplicacion.EmpresaDocumentos;
 import co.italarm.api.configuracion.aplicacion.ServicioConfiguracion;
@@ -59,6 +60,7 @@ public class RegistroInstalaciones {
   private final ServicioConfiguracion configuracion;
   private final ServicioIdempotencia idempotencia;
   private final GeneradorConsecutivos consecutivos;
+  private final OrigenCotizacion origen;
   private final FechaNegocio fechas;
 
   public RegistroInstalaciones(
@@ -71,6 +73,7 @@ public class RegistroInstalaciones {
       ServicioConfiguracion configuracion,
       ServicioIdempotencia idempotencia,
       GeneradorConsecutivos consecutivos,
+      OrigenCotizacion origen,
       FechaNegocio fechas) {
     this.instalaciones = instalaciones;
     this.movimientos = movimientos;
@@ -81,6 +84,7 @@ public class RegistroInstalaciones {
     this.configuracion = configuracion;
     this.idempotencia = idempotencia;
     this.consecutivos = consecutivos;
+    this.origen = origen;
     this.fechas = fechas;
   }
 
@@ -89,6 +93,10 @@ public class RegistroInstalaciones {
   public Long registrar(DatosInstalacion datos, Long usuarioId, ClaveIdempotencia clave) {
     Contexto contexto = contexto(datos);
     idempotencia.reservar(clave);
+    if (datos.cotizacionId() != null) {
+      origen.validarConversion(
+          datos.cotizacionId(), TipoDocumento.INSTALACION, contexto.cliente().id());
+    }
 
     List<Long> ids = datos.lineas().stream().map(LineaMaterial::productoId).toList();
     Map<Long, ExistenciaProducto> existencias = movimientos.bloquearParaSalida(ids);
@@ -105,35 +113,36 @@ public class RegistroInstalaciones {
             contexto.conversion());
     ResumenDocumento resumen = resumen(lineas, datos, contexto.conversion());
 
-    Instalacion instalacion =
-        instalaciones.save(
-            Instalacion.registrar(
-                consecutivos.siguiente(TipoDocumento.INSTALACION),
-                contexto.fecha(),
-                PreparacionMaterial.copia(contexto.cliente()),
-                descripcion(datos),
-                datos.moneda(),
-                new Instalacion.TasasInstalacion(
-                    contexto.tasas().trm(),
-                    contexto.tasas().fechaTrm(),
-                    contexto.tasas().tasaVes(),
-                    contexto.tasas().fechaTasaVes()),
-                Descuento.de(datos.descuentoTipo(), datos.descuentoValor()),
-                resumen,
-                contexto.garantias(),
-                lineas.stream()
-                    .map(
-                        l ->
-                            new LineaInstalacion(
-                                l.producto().id(),
-                                l.producto().codigo(),
-                                l.producto().nombre(),
-                                l.producto().abreviatura(),
-                                l.cantidad(),
-                                l.precioUnitario(),
-                                l.precioSugerido(),
-                                l.costoUnitarioUsd()))
-                    .toList()));
+    Instalacion nueva =
+        Instalacion.registrar(
+            consecutivos.siguiente(TipoDocumento.INSTALACION),
+            contexto.fecha(),
+            PreparacionMaterial.copia(contexto.cliente()),
+            descripcion(datos),
+            datos.moneda(),
+            new Instalacion.TasasInstalacion(
+                contexto.tasas().trm(),
+                contexto.tasas().fechaTrm(),
+                contexto.tasas().tasaVes(),
+                contexto.tasas().fechaTasaVes()),
+            Descuento.de(datos.descuentoTipo(), datos.descuentoValor()),
+            resumen,
+            contexto.garantias(),
+            lineas.stream()
+                .map(
+                    l ->
+                        new LineaInstalacion(
+                            l.producto().id(),
+                            l.producto().codigo(),
+                            l.producto().nombre(),
+                            l.producto().abreviatura(),
+                            l.cantidad(),
+                            l.precioUnitario(),
+                            l.precioSugerido(),
+                            l.costoUnitarioUsd()))
+                .toList());
+    nueva.desdeCotizacion(datos.cotizacionId());
+    Instalacion instalacion = instalaciones.save(nueva);
     DocumentoRef documento =
         new DocumentoRef(TipoDocumento.INSTALACION, instalacion.getId(), instalacion.consecutivo());
     if (!lineas.isEmpty()) {
@@ -146,6 +155,9 @@ public class RegistroInstalaciones {
           instalacion.getVenceEquipos(),
           "Cliente: " + contexto.cliente().nombre() + " · " + instalacion.consecutivo(),
           usuarioId);
+    }
+    if (datos.cotizacionId() != null) {
+      origen.convertir(datos.cotizacionId(), documento, contexto.cliente().id());
     }
     instalaciones.flush();
     idempotencia.asociar(clave, instalacion.getId());

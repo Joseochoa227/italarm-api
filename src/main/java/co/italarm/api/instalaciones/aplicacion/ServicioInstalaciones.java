@@ -4,6 +4,7 @@ import co.italarm.api.catalogo.aplicacion.ConsultaProductos;
 import co.italarm.api.catalogo.aplicacion.ProductoValorizado;
 import co.italarm.api.comercial.aplicacion.LineaMaterial;
 import co.italarm.api.comercial.aplicacion.MaterialPreparado;
+import co.italarm.api.comercial.aplicacion.OrigenCotizacion;
 import co.italarm.api.comercial.aplicacion.PreparacionMaterial;
 import co.italarm.api.comercial.aplicacion.TasasDocumentoVista;
 import co.italarm.api.comercial.aplicacion.VistaPreviaMaterial;
@@ -72,6 +73,7 @@ public class ServicioInstalaciones {
   private final ConsultaUsuarios usuarios;
   private final ComprobantesInstalacion comprobantes;
   private final ServicioEnlacesComprobante enlaces;
+  private final OrigenCotizacion origen;
   private final FechaNegocio fechas;
 
   public ServicioInstalaciones(
@@ -87,6 +89,7 @@ public class ServicioInstalaciones {
       ConsultaUsuarios usuarios,
       ComprobantesInstalacion comprobantes,
       ServicioEnlacesComprobante enlaces,
+      OrigenCotizacion origen,
       FechaNegocio fechas) {
     this.instalaciones = instalaciones;
     this.fotos = fotos;
@@ -100,6 +103,7 @@ public class ServicioInstalaciones {
     this.usuarios = usuarios;
     this.comprobantes = comprobantes;
     this.enlaces = enlaces;
+    this.origen = origen;
     this.fechas = fechas;
   }
 
@@ -322,6 +326,7 @@ public class ServicioInstalaciones {
             fotos(todas, GrupoFoto.DESPUES)),
         instalacion.getObservaciones(),
         instalacion.getMonedasComprobante(),
+        origen.origen(instalacion.getCotizacionId()).orElse(null),
         instalacion.getEstado().name(),
         instalacion.estaAnulada()
             ? new InstalacionVista.Anulacion(
@@ -365,6 +370,9 @@ public class ServicioInstalaciones {
               .map(l -> new LineaAnulacion(l.getProductoId(), l.getCantidad()))
               .toList(),
           usuarioId);
+    }
+    if (!instalacion.estaAnulada() && instalacion.getCotizacionId() != null) {
+      origen.revertir(instalacion.getCotizacionId(), instalacion.getId());
     }
     instalacion.anular(motivo, usuarioId, fechas.ahora());
     instalaciones.flush();

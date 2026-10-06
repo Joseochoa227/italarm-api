@@ -11,6 +11,7 @@ import java.util.Set;
  * Venta a registrar o a previsualizar (RF-97 a RF-100).
  *
  * @param monedasComprobante otras monedas en que el PDF muestra los totales (P-34)
+ * @param cotizacionId cotización aprobada de la que sale la venta (RF-95), o vacío
  */
 public record DatosVenta(
     Long clienteId,
@@ -19,4 +20,5 @@ public record DatosVenta(
     TipoDescuento descuentoTipo,
     BigDecimal descuentoValor,
     String observaciones,
-    Set<Moneda> monedasComprobante) {}
+    Set<Moneda> monedasComprobante,
+    Long cotizacionId) {}
