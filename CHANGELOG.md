@@ -2,6 +2,24 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado semántico.
 
+## [Sin publicar] — Fase 4: Instalaciones, fotos y garantías
+
+### Agregado
+- Instalaciones (migración V10):
+  - vista previa con material (precio, disponibilidad y costos con las tasas de hoy y de la última compra), mano de obra, descuento, cobro con utilidad en USD, COP y VES y vencimientos de garantía;
+  - registro con cliente, dirección, fecha (puede ser anterior a hoy), técnicos, descripción, material con seriales, garantía de mano de obra de 1 a 3 meses y condiciones; descuenta el material del inventario (CP-15) e `Idempotency-Key`;
+  - listado con filtros por cliente, técnico, fecha y estado de la garantía, y totales del período sin las anuladas;
+  - edición de dirección, descripción, técnicos, condiciones y observaciones;
+  - anulación que devuelve material y seriales al costo vigente;
+  - fotos Antes, Durante y Después (hasta 30 por grupo), agregar después de guardada y quitar.
+- Comprobante de instalación en PDF con mano de obra, seriales, vencimientos y condiciones de garantía, y enlace público para WhatsApp.
+- Garantías: consulta de la mano de obra de cada instalación y de cada equipo con serial vendido o instalado, con estado Vigente, Por vencer o Vencida (CP-20), filtros por cliente, tipo y serial; reclamos de garantía con solución posterior y marca de fuera de garantía.
+- Los técnicos son los usuarios activos (`GET /usuarios/tecnicos`); el historial del cliente suma sus instalaciones y el del serial muestra sus reclamos.
+
+### Cambiado
+- El precio sugerido, el descuento y el cálculo de totales y utilidad pasan a `shared`, y la preparación del material y la vista previa al paquete `comercial`, para que ventas, instalaciones y cotizaciones apliquen las mismas reglas. El código de error del precio negativo es ahora `PRECIO_INVALIDO`.
+- En el contrato, las vistas comunes cambian de nombre: `ClienteDocumentoVista`, `TasasDocumentoVista`, `ResumenCobroVista` (agrega `material` y `manoDeObra`) y `LineaVistaPrevia`.
+
 ## [Sin publicar] — Fase 3: Ventas, comprobantes y anulaciones
 
 ### Agregado

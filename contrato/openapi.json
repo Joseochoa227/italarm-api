@@ -12,6 +12,9 @@
     "bearerAuth" : [ ]
   } ],
   "tags" : [ {
+    "description" : "Consulta de garantías y reclamos (sección 3.14)",
+    "name" : "Garantías"
+  }, {
     "description" : "Búsqueda e historial de números de serie (RF-24)",
     "name" : "Seriales"
   }, {
@@ -32,6 +35,9 @@
   }, {
     "description" : "Compras a proveedores y su anulación (sección 3.6)",
     "name" : "Compras"
+  }, {
+    "description" : "Instalaciones, fotos y su anulación (sección 3.13)",
+    "name" : "Instalaciones"
   }, {
     "description" : "Ingreso, usuario actual y cierre de sesión",
     "name" : "Sesión"
@@ -67,7 +73,7 @@
     "/api/v1/ajustes" : {
       "get" : {
         "description" : "Orden por defecto: más recientes primero.",
-        "operationId" : "listar_6",
+        "operationId" : "listar_7",
         "parameters" : [ {
           "in" : "query",
           "name" : "productoId",
@@ -141,7 +147,7 @@
       },
       "post" : {
         "description" : "La entrada entra al costo vigente; si el producto nunca tuvo costo, exige costoUnitarioUsd. Con la misma Idempotency-Key devuelve el ajuste ya creado. Errores (400): AJUSTE_INVALIDO, COSTO_REQUERIDO, CANTIDAD_INVALIDA, SERIALES_NO_COINCIDEN, PRODUCTO_NO_EXISTE; (409) SERIAL_DUPLICADO; (422) STOCK_INSUFICIENTE, SERIAL_NO_DISPONIBLE.",
-        "operationId" : "registrar_2",
+        "operationId" : "registrar_4",
         "parameters" : [ {
           "description" : "Clave única por intento de guardar (RT-07)",
           "in" : "header",
@@ -179,7 +185,7 @@
     },
     "/api/v1/ajustes/{id}" : {
       "get" : {
-        "operationId" : "detalle_7",
+        "operationId" : "detalle_8",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -251,7 +257,7 @@
     },
     "/api/v1/carga-inicial" : {
       "get" : {
-        "operationId" : "listar_5",
+        "operationId" : "listar_6",
         "responses" : {
           "200" : {
             "content" : {
@@ -372,7 +378,7 @@
     },
     "/api/v1/categorias" : {
       "get" : {
-        "operationId" : "listar_4",
+        "operationId" : "listar_5",
         "responses" : {
           "200" : {
             "content" : {
@@ -443,7 +449,7 @@
       },
       "put" : {
         "description" : "Errores: CATEGORIA_DUPLICADA, MODIFICADO_POR_OTRO_USUARIO (409).",
-        "operationId" : "actualizar_6",
+        "operationId" : "actualizar_7",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -577,7 +583,7 @@
     },
     "/api/v1/clientes/{id}" : {
       "get" : {
-        "operationId" : "detalle_3",
+        "operationId" : "detalle_4",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -604,7 +610,7 @@
       },
       "put" : {
         "description" : "Además: MODIFICADO_POR_OTRO_USUARIO (409).",
-        "operationId" : "actualizar_5",
+        "operationId" : "actualizar_6",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -672,7 +678,7 @@
     "/api/v1/compras" : {
       "get" : {
         "description" : "Sin fechas, el mes en curso. Los totales no incluyen las anuladas. Orden por defecto: más recientes primero.",
-        "operationId" : "listar_3",
+        "operationId" : "listar_4",
         "parameters" : [ {
           "in" : "query",
           "name" : "proveedorId",
@@ -762,7 +768,7 @@
       },
       "post" : {
         "description" : "Con la misma Idempotency-Key devuelve la compra ya creada. Errores (400): SERIALES_NO_COINCIDEN, CANTIDAD_INVALIDA, COMPRA_PRODUCTO_REPETIDO, COMPRA_FECHA_FUTURA, COMPRA_COSTO_INVALIDO, PROVEEDOR_NO_EXISTE, PRODUCTO_NO_EXISTE; (409) SERIAL_DUPLICADO; (422) TASA_NO_DISPONIBLE, PRODUCTO_INACTIVO.",
-        "operationId" : "registrar_1",
+        "operationId" : "registrar_3",
         "parameters" : [ {
           "description" : "Clave única por intento de guardar (RT-07)",
           "in" : "header",
@@ -801,7 +807,7 @@
     "/api/v1/compras/vista-previa" : {
       "post" : {
         "description" : "Es el valor oficial que muestra el frontend (BF-06). Errores: TASA_NO_DISPONIBLE, COMPRA_PRODUCTO_REPETIDO, COMPRA_FECHA_FUTURA, PRODUCTO_NO_EXISTE.",
-        "operationId" : "vistaPrevia_2",
+        "operationId" : "vistaPrevia_3",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -830,7 +836,7 @@
     },
     "/api/v1/compras/{id}" : {
       "get" : {
-        "operationId" : "detalle_6",
+        "operationId" : "detalle_7",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -859,7 +865,7 @@
     "/api/v1/compras/{id}/anular" : {
       "post" : {
         "description" : "Solo si es el último movimiento de cada producto y sus seriales siguen en bodega. Errores: COMPRA_NO_ANULABLE (422), COMPRA_YA_ANULADA (409).",
-        "operationId" : "anular_1",
+        "operationId" : "anular_2",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1016,7 +1022,7 @@
       },
       "put" : {
         "description" : "Errores: CONFIGURACION_INVALIDA (400), MODIFICADO_POR_OTRO_USUARIO (409). Validez: 8, 15 o 30 días; garantías: 1 a 3 meses; límite de variación: más de 0 % y hasta 100 %.",
-        "operationId" : "actualizar_4",
+        "operationId" : "actualizar_5",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -1096,10 +1102,627 @@
         "tags" : [ "Configuración" ]
       }
     },
+    "/api/v1/garantias" : {
+      "get" : {
+        "description" : "Mano de obra de cada instalación y cada equipo con serial vendido o instalado, de documentos no anulados. Ordenadas de la que vence primero a la última.",
+        "operationId" : "consultar",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "estado",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "VIGENTE", "POR_VENCER", "VENCIDA" ]
+          }
+        }, {
+          "in" : "query",
+          "name" : "clienteId",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "INSTALACION o VENTA",
+          "in" : "query",
+          "name" : "tipo",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Parte del número de serie",
+          "in" : "query",
+          "name" : "serial",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Zero-based page index (0..N)",
+          "in" : "query",
+          "name" : "page",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "default" : 0,
+            "minimum" : 0
+          }
+        }, {
+          "description" : "The size of the page to be returned",
+          "in" : "query",
+          "name" : "size",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "default" : 20,
+            "minimum" : 1
+          }
+        }, {
+          "description" : "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+          "in" : "query",
+          "name" : "sort",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaginaGarantiaVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Consulta de garantías de ventas e instalaciones",
+        "tags" : [ "Garantías" ]
+      }
+    },
+    "/api/v1/garantias/reclamos" : {
+      "get" : {
+        "operationId" : "reclamos",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "instalacionId",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "in" : "query",
+          "name" : "serialId",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "in" : "query",
+          "name" : "clienteId",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/ReclamoVista"
+                  }
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Reclamos registrados, del más reciente al más antiguo",
+        "tags" : [ "Garantías" ]
+      },
+      "post" : {
+        "description" : "Si la garantía ya venció se registra igual, con enGarantia=false (P-45). Errores: RECLAMO_INVALIDO (400), RECURSO_NO_ENCONTRADO (404).",
+        "operationId" : "registrar_2",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudReclamo"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ReclamoVista"
+                }
+              }
+            },
+            "description" : "Created"
+          }
+        },
+        "summary" : "Registrar un reclamo sobre una instalación o un serial",
+        "tags" : [ "Garantías" ]
+      }
+    },
+    "/api/v1/garantias/reclamos/{id}" : {
+      "put" : {
+        "description" : "Error: MODIFICADO_POR_OTRO_USUARIO (409).",
+        "operationId" : "cambiarSolucion",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudSolucion"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ReclamoVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Escribir o corregir la solución de un reclamo",
+        "tags" : [ "Garantías" ]
+      }
+    },
+    "/api/v1/instalaciones" : {
+      "get" : {
+        "description" : "Sin fechas, el mes en curso. Los totales no incluyen las anuladas. Filtrar por estado de garantía excluye las anuladas. Orden por defecto: más recientes primero.",
+        "operationId" : "listar_3",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "clienteId",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tecnicoId",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "in" : "query",
+          "name" : "desde",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "in" : "query",
+          "name" : "hasta",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "description" : "Estado de la garantía de mano de obra",
+          "in" : "query",
+          "name" : "estadoGarantia",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "VIGENTE", "POR_VENCER", "VENCIDA" ]
+          }
+        }, {
+          "description" : "Incluir las anuladas en el listado (por defecto, sí)",
+          "in" : "query",
+          "name" : "incluirAnuladas",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "description" : "Zero-based page index (0..N)",
+          "in" : "query",
+          "name" : "page",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "default" : 0,
+            "minimum" : 0
+          }
+        }, {
+          "description" : "The size of the page to be returned",
+          "in" : "query",
+          "name" : "size",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "default" : 20,
+            "minimum" : 1
+          }
+        }, {
+          "description" : "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+          "in" : "query",
+          "name" : "sort",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ListadoInstalacionesVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Listado paginado de instalaciones con los totales del período",
+        "tags" : [ "Instalaciones" ]
+      },
+      "post" : {
+        "description" : "Con la misma Idempotency-Key devuelve la instalación ya creada. Errores (400): INSTALACION_FECHA_FUTURA, INSTALACION_VACIA, INSTALACION_SIN_TECNICOS, INSTALACION_GARANTIA_INVALIDA, INSTALACION_PRODUCTO_REPETIDO, TECNICO_NO_EXISTE, CLIENTE_NO_EXISTE, PRODUCTO_NO_EXISTE, CANTIDAD_INVALIDA, SERIALES_NO_COINCIDEN, DESCUENTO_INVALIDO, PRECIO_INVALIDO; (422) STOCK_INSUFICIENTE, SERIAL_NO_DISPONIBLE, PRODUCTO_INACTIVO, TASA_NO_DISPONIBLE.",
+        "operationId" : "registrar_1",
+        "parameters" : [ {
+          "description" : "Clave única por intento de guardar (RT-07)",
+          "in" : "header",
+          "name" : "Idempotency-Key",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudInstalacion"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/InstalacionVista"
+                }
+              }
+            },
+            "description" : "Created"
+          }
+        },
+        "summary" : "Registrar una instalación y descontar el material del inventario",
+        "tags" : [ "Instalaciones" ]
+      }
+    },
+    "/api/v1/instalaciones/vista-previa" : {
+      "post" : {
+        "description" : "Es el valor oficial que muestra el frontend (BF-06). Si una línea no tiene stock suficiente, trae avisoStock y puedeGuardar=false.",
+        "operationId" : "vistaPrevia_2",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudInstalacion"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/VistaPreviaInstalacionVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Vista previa: material, cobro, utilidad y garantías, sin guardar",
+        "tags" : [ "Instalaciones" ]
+      }
+    },
+    "/api/v1/instalaciones/{id}" : {
+      "get" : {
+        "operationId" : "detalle_3",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/InstalacionVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Detalle con material, seriales, fotos, garantías y cobro",
+        "tags" : [ "Instalaciones" ]
+      },
+      "put" : {
+        "description" : "Los valores, la fecha y el plazo de garantía no se editan (RF-122, P-44). Error: MODIFICADO_POR_OTRO_USUARIO (409).",
+        "operationId" : "actualizar_4",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudEdicionInstalacion"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/InstalacionVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Corregir dirección, descripción, técnicos, condiciones y observaciones",
+        "tags" : [ "Instalaciones" ]
+      }
+    },
+    "/api/v1/instalaciones/{id}/anular" : {
+      "post" : {
+        "description" : "El material vuelve al costo vigente y los seriales a bodega; las fotos se conservan. Error: INSTALACION_YA_ANULADA (409).",
+        "operationId" : "anular_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudAnulacionInstalacion"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/InstalacionVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Anular una instalación",
+        "tags" : [ "Instalaciones" ]
+      }
+    },
+    "/api/v1/instalaciones/{id}/comprobante" : {
+      "get" : {
+        "operationId" : "comprobante_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/pdf" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Descargar el comprobante de instalación en PDF (RF-133)",
+        "tags" : [ "Instalaciones" ]
+      }
+    },
+    "/api/v1/instalaciones/{id}/enlace" : {
+      "post" : {
+        "description" : "Vence a los 30 días (P-33). Trae el mensaje y el enlace wa.me del cliente.",
+        "operationId" : "enlace_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EnlaceComprobante"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Crear el enlace público del comprobante para WhatsApp",
+        "tags" : [ "Instalaciones" ]
+      }
+    },
+    "/api/v1/instalaciones/{id}/fotos" : {
+      "post" : {
+        "description" : "Máximo 30 por grupo (P-42). Errores: ARCHIVO_TIPO_NO_PERMITIDO, ARCHIVO_DEMASIADO_GRANDE (400); FOTOS_MAXIMAS (422).",
+        "operationId" : "agregarFoto",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "in" : "query",
+          "name" : "grupo",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "ANTES", "DURANTE", "DESPUES" ]
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "archivo" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                },
+                "required" : [ "archivo" ]
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/InstalacionVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Agregar una foto a un grupo (JPEG, PNG o WebP; máximo 5 MB)",
+        "tags" : [ "Instalaciones" ]
+      }
+    },
+    "/api/v1/instalaciones/{id}/fotos/{fotoId}" : {
+      "delete" : {
+        "operationId" : "quitarFoto_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "in" : "path",
+          "name" : "fotoId",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/InstalacionVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Quitar una foto",
+        "tags" : [ "Instalaciones" ]
+      }
+    },
     "/api/v1/inventario" : {
       "get" : {
         "description" : "Busca por nombre, código, marca o número de serie. Valores en USD, COP y VES con las tasas vigentes. Orden por defecto: nombre.",
-        "operationId" : "listar_7",
+        "operationId" : "listar_8",
         "parameters" : [ {
           "in" : "query",
           "name" : "categoriaId",
@@ -1174,7 +1797,7 @@
     },
     "/api/v1/inventario/productos/{id}" : {
       "get" : {
-        "operationId" : "detalle_5",
+        "operationId" : "detalle_6",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -2161,7 +2784,7 @@
     },
     "/api/v1/tasas/{id}" : {
       "get" : {
-        "operationId" : "detalle_4",
+        "operationId" : "detalle_5",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -2425,6 +3048,28 @@
           }
         },
         "summary" : "Cambiar la contraseña del usuario actual",
+        "tags" : [ "Usuarios" ]
+      }
+    },
+    "/api/v1/usuarios/tecnicos" : {
+      "get" : {
+        "operationId" : "tecnicos",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/UsuarioReferencia"
+                  }
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Usuarios activos que se pueden elegir como técnicos (P-37)",
         "tags" : [ "Usuarios" ]
       }
     },
@@ -3031,7 +3676,7 @@
           }
         }
       },
-      "ClienteVentaVista" : {
+      "ClienteDocumentoVista" : {
         "type" : "object",
         "properties" : {
           "ciudad" : {
@@ -3344,6 +3989,24 @@
           }
         }
       },
+      "EnlaceComprobante" : {
+        "type" : "object",
+        "properties" : {
+          "mensaje" : {
+            "type" : "string"
+          },
+          "url" : {
+            "type" : "string"
+          },
+          "venceEn" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "whatsappUrl" : {
+            "type" : "string"
+          }
+        }
+      },
       "EnlaceComprobanteVista" : {
         "type" : "object",
         "properties" : {
@@ -3374,6 +4037,120 @@
           },
           "mensaje" : {
             "type" : "string"
+          }
+        }
+      },
+      "Foto" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "subidaEn" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "url" : {
+            "type" : "string"
+          }
+        }
+      },
+      "Fotos" : {
+        "type" : "object",
+        "properties" : {
+          "antes" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Foto"
+            }
+          },
+          "despues" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Foto"
+            }
+          },
+          "durante" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Foto"
+            }
+          }
+        }
+      },
+      "GarantiaVista" : {
+        "type" : "object",
+        "properties" : {
+          "clase" : {
+            "type" : "string"
+          },
+          "cliente" : {
+            "type" : "string"
+          },
+          "clienteId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "diasRestantes" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "documento" : {
+            "$ref" : "#/components/schemas/DocumentoRef"
+          },
+          "estado" : {
+            "type" : "string",
+            "enum" : [ "VIGENTE", "POR_VENCER", "VENCIDA" ]
+          },
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "producto" : {
+            "type" : "string"
+          },
+          "serial" : {
+            "type" : "string"
+          },
+          "serialId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "vencimiento" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }
+      },
+      "GarantiasInstalacionVista" : {
+        "type" : "object",
+        "properties" : {
+          "condiciones" : {
+            "type" : "string"
+          },
+          "estadoEquipos" : {
+            "type" : "string",
+            "enum" : [ "VIGENTE", "POR_VENCER", "VENCIDA" ]
+          },
+          "estadoManoObra" : {
+            "type" : "string",
+            "enum" : [ "VIGENTE", "POR_VENCER", "VENCIDA" ]
+          },
+          "manoObraMeses" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "venceEquipos" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "venceManoObra" : {
+            "type" : "string",
+            "format" : "date"
           }
         }
       },
@@ -3412,8 +4189,176 @@
               "$ref" : "#/components/schemas/Movimiento"
             }
           },
+          "reclamos" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Reclamo"
+            }
+          },
           "serial" : {
             "$ref" : "#/components/schemas/SerialVista"
+          }
+        }
+      },
+      "InstalacionResumenVista" : {
+        "type" : "object",
+        "properties" : {
+          "cliente" : {
+            "type" : "string"
+          },
+          "clienteId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "consecutivo" : {
+            "type" : "string"
+          },
+          "direccion" : {
+            "type" : "string"
+          },
+          "estado" : {
+            "type" : "string"
+          },
+          "estadoGarantia" : {
+            "type" : "string",
+            "enum" : [ "VIGENTE", "POR_VENCER", "VENCIDA" ]
+          },
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "moneda" : {
+            "type" : "string",
+            "enum" : [ "USD", "COP", "VES" ]
+          },
+          "registradaEn" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "registradaPor" : {
+            "type" : "string"
+          },
+          "tecnicos" : {
+            "type" : "string"
+          },
+          "total" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "totalUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "utilidad" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "venceManoObra" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }
+      },
+      "InstalacionVista" : {
+        "type" : "object",
+        "properties" : {
+          "anulacion" : {
+            "$ref" : "#/components/schemas/Anulacion"
+          },
+          "cliente" : {
+            "$ref" : "#/components/schemas/ClienteDocumentoVista"
+          },
+          "consecutivo" : {
+            "type" : "string"
+          },
+          "descripcion" : {
+            "type" : "string"
+          },
+          "descuentoTipo" : {
+            "type" : "string"
+          },
+          "descuentoValor" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "direccion" : {
+            "type" : "string"
+          },
+          "estado" : {
+            "type" : "string"
+          },
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "fotos" : {
+            "$ref" : "#/components/schemas/Fotos"
+          },
+          "garantias" : {
+            "$ref" : "#/components/schemas/GarantiasInstalacionVista"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "lineas" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Linea"
+            }
+          },
+          "moneda" : {
+            "type" : "string",
+            "enum" : [ "USD", "COP", "VES" ]
+          },
+          "monedasComprobante" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "USD", "COP", "VES" ]
+            },
+            "uniqueItems" : true
+          },
+          "observaciones" : {
+            "type" : "string"
+          },
+          "porcentajeUtilidad" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "registradaEn" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "registradaPor" : {
+            "type" : "string"
+          },
+          "resumen" : {
+            "$ref" : "#/components/schemas/ResumenCobroVista"
+          },
+          "tasas" : {
+            "$ref" : "#/components/schemas/TasasDocumentoVista"
+          },
+          "tecnicos" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/UsuarioReferencia"
+            }
+          },
+          "total" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "utilidad" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         }
       },
@@ -3480,6 +4425,63 @@
           }
         }
       },
+      "LineaVistaPrevia" : {
+        "type" : "object",
+        "properties" : {
+          "abreviatura" : {
+            "type" : "string"
+          },
+          "avisoPrecio" : {
+            "type" : "string"
+          },
+          "avisoStock" : {
+            "type" : "string"
+          },
+          "cantidad" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "codigo" : {
+            "type" : "string"
+          },
+          "controlaSerial" : {
+            "type" : "boolean"
+          },
+          "costoUnitarioHoy" : {
+            "$ref" : "#/components/schemas/MontoEnMonedas"
+          },
+          "costoUnitarioUltimaCompra" : {
+            "$ref" : "#/components/schemas/MontoEnMonedas"
+          },
+          "disponible" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "nombre" : {
+            "type" : "string"
+          },
+          "precioSugerido" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "precioUnitario" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "productoId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "subtotal" : {
+            "$ref" : "#/components/schemas/MontoEnMonedas"
+          },
+          "ultimaCompra" : {
+            "$ref" : "#/components/schemas/UltimaCompra"
+          }
+        }
+      },
       "ListadoComprasVista" : {
         "type" : "object",
         "properties" : {
@@ -3502,6 +4504,34 @@
             "items" : {
               "$ref" : "#/components/schemas/TotalMoneda"
             }
+          }
+        }
+      },
+      "ListadoInstalacionesVista" : {
+        "type" : "object",
+        "properties" : {
+          "desde" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "hasta" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "instalaciones" : {
+            "$ref" : "#/components/schemas/PaginaInstalacionResumenVista"
+          },
+          "totalUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "totalesPorMoneda" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TotalMoneda"
+            }
+          },
+          "utilidadUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
           }
         }
       },
@@ -3686,6 +4716,60 @@
             "type" : "array",
             "items" : {
               "$ref" : "#/components/schemas/CompraResumenVista"
+            }
+          },
+          "pagina" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "tamano" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElementos" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPaginas" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "PaginaGarantiaVista" : {
+        "type" : "object",
+        "properties" : {
+          "contenido" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/GarantiaVista"
+            }
+          },
+          "pagina" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "tamano" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElementos" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPaginas" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "PaginaInstalacionResumenVista" : {
+        "type" : "object",
+        "properties" : {
+          "contenido" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/InstalacionResumenVista"
             }
           },
           "pagina" : {
@@ -4135,6 +5219,89 @@
           }
         }
       },
+      "Reclamo" : {
+        "type" : "object",
+        "properties" : {
+          "enGarantia" : {
+            "type" : "boolean"
+          },
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "problema" : {
+            "type" : "string"
+          },
+          "solucion" : {
+            "type" : "string"
+          }
+        }
+      },
+      "ReclamoVista" : {
+        "type" : "object",
+        "properties" : {
+          "cliente" : {
+            "type" : "string"
+          },
+          "clienteId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "documento" : {
+            "type" : "string"
+          },
+          "enGarantia" : {
+            "type" : "boolean"
+          },
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "instalacionId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "problema" : {
+            "type" : "string"
+          },
+          "registradoEn" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "registradoPor" : {
+            "type" : "string"
+          },
+          "serial" : {
+            "type" : "string"
+          },
+          "serialId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "solucion" : {
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "vencimiento" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
       "Referencia" : {
         "type" : "object",
         "properties" : {
@@ -4222,13 +5389,19 @@
           }
         }
       },
-      "ResumenVentaVista" : {
+      "ResumenCobroVista" : {
         "type" : "object",
         "properties" : {
           "costo" : {
             "$ref" : "#/components/schemas/MontoEnMonedas"
           },
           "descuento" : {
+            "$ref" : "#/components/schemas/MontoEnMonedas"
+          },
+          "manoDeObra" : {
+            "$ref" : "#/components/schemas/MontoEnMonedas"
+          },
+          "material" : {
             "$ref" : "#/components/schemas/MontoEnMonedas"
           },
           "porcentajeUtilidad" : {
@@ -4363,6 +5536,17 @@
         "required" : [ "cantidad", "motivo", "productoId" ]
       },
       "SolicitudAnulacion" : {
+        "type" : "object",
+        "properties" : {
+          "motivo" : {
+            "type" : "string",
+            "maxLength" : 300,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "motivo" ]
+      },
+      "SolicitudAnulacionInstalacion" : {
         "type" : "object",
         "properties" : {
           "motivo" : {
@@ -4596,6 +5780,53 @@
         },
         "required" : [ "confirmacion", "valor" ]
       },
+      "SolicitudEdicionInstalacion" : {
+        "type" : "object",
+        "properties" : {
+          "condicionesGarantia" : {
+            "type" : "string",
+            "maxLength" : 2000,
+            "minLength" : 0
+          },
+          "descripcion" : {
+            "type" : "string",
+            "maxLength" : 2000,
+            "minLength" : 0
+          },
+          "direccion" : {
+            "type" : "string",
+            "maxLength" : 200,
+            "minLength" : 0
+          },
+          "monedasComprobante" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "USD", "COP", "VES" ]
+            },
+            "uniqueItems" : true
+          },
+          "observaciones" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          },
+          "tecnicos" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            },
+            "maxItems" : 10,
+            "minItems" : 0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "tecnicos", "version" ]
+      },
       "SolicitudEdicionVenta" : {
         "type" : "object",
         "properties" : {
@@ -4636,6 +5867,91 @@
         },
         "required" : [ "contrasena", "correo" ]
       },
+      "SolicitudInstalacion" : {
+        "type" : "object",
+        "properties" : {
+          "clienteId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "condicionesGarantia" : {
+            "type" : "string",
+            "maxLength" : 2000,
+            "minLength" : 0
+          },
+          "descripcion" : {
+            "type" : "string",
+            "maxLength" : 2000,
+            "minLength" : 0
+          },
+          "descuentoTipo" : {
+            "type" : "string",
+            "enum" : [ "PORCENTAJE", "VALOR" ]
+          },
+          "descuentoValor" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "direccion" : {
+            "type" : "string",
+            "maxLength" : 200,
+            "minLength" : 0
+          },
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "garantiaManoObraMeses" : {
+            "type" : "integer",
+            "format" : "int32",
+            "maximum" : 3,
+            "minimum" : 1
+          },
+          "lineas" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SolicitudLineaMaterial"
+            },
+            "maxItems" : 200,
+            "minItems" : 0
+          },
+          "manoDeObra" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "moneda" : {
+            "type" : "string",
+            "enum" : [ "USD", "COP", "VES" ]
+          },
+          "monedasComprobante" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "USD", "COP", "VES" ]
+            },
+            "uniqueItems" : true
+          },
+          "observaciones" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          },
+          "tecnicos" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            },
+            "maxItems" : 10,
+            "minItems" : 0
+          }
+        },
+        "required" : [ "clienteId", "descripcion", "moneda", "tecnicos" ]
+      },
       "SolicitudLineaCompra" : {
         "type" : "object",
         "properties" : {
@@ -4667,6 +5983,38 @@
           }
         },
         "required" : [ "cantidad", "costoUnitario", "productoId" ]
+      },
+      "SolicitudLineaMaterial" : {
+        "type" : "object",
+        "properties" : {
+          "cantidad" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "precioUnitario" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "productoId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "seriales" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "maxLength" : 80,
+              "minLength" : 0
+            },
+            "maxItems" : 1000,
+            "minItems" : 0
+          }
+        },
+        "required" : [ "productoId" ]
       },
       "SolicitudLineaVenta" : {
         "type" : "object",
@@ -4837,6 +6185,34 @@
         },
         "required" : [ "monedaHabitual", "nombre", "version" ]
       },
+      "SolicitudReclamo" : {
+        "type" : "object",
+        "properties" : {
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "instalacionId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "problema" : {
+            "type" : "string",
+            "maxLength" : 2000,
+            "minLength" : 0
+          },
+          "serialId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "solucion" : {
+            "type" : "string",
+            "maxLength" : 2000,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "problema" ]
+      },
       "SolicitudRestablecerContrasena" : {
         "type" : "object",
         "properties" : {
@@ -4852,6 +6228,21 @@
           }
         },
         "required" : [ "confirmacion", "contrasenaNueva" ]
+      },
+      "SolicitudSolucion" : {
+        "type" : "object",
+        "properties" : {
+          "solucion" : {
+            "type" : "string",
+            "maxLength" : 2000,
+            "minLength" : 0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "version" ]
       },
       "SolicitudTasaManual" : {
         "type" : "object",
@@ -5089,7 +6480,7 @@
           }
         }
       },
-      "TasasVentaVista" : {
+      "TasasDocumentoVista" : {
         "type" : "object",
         "properties" : {
           "fechaTasaVes" : {
@@ -5150,6 +6541,30 @@
           }
         }
       },
+      "UltimaCompra" : {
+        "type" : "object",
+        "properties" : {
+          "consecutivo" : {
+            "type" : "string"
+          },
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "tasaVes" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "trm" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          }
+        }
+      },
       "UnidadMedidaVista" : {
         "type" : "object",
         "properties" : {
@@ -5178,6 +6593,18 @@
           "correo" : {
             "type" : "string"
           },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "nombre" : {
+            "type" : "string"
+          }
+        }
+      },
+      "UsuarioReferencia" : {
+        "type" : "object",
+        "properties" : {
           "id" : {
             "type" : "integer",
             "format" : "int64"
@@ -5297,7 +6724,7 @@
             "$ref" : "#/components/schemas/Anulacion"
           },
           "cliente" : {
-            "$ref" : "#/components/schemas/ClienteVentaVista"
+            "$ref" : "#/components/schemas/ClienteDocumentoVista"
           },
           "consecutivo" : {
             "type" : "string"
@@ -5357,10 +6784,10 @@
             "type" : "string"
           },
           "resumen" : {
-            "$ref" : "#/components/schemas/ResumenVentaVista"
+            "$ref" : "#/components/schemas/ResumenCobroVista"
           },
           "tasas" : {
-            "$ref" : "#/components/schemas/TasasVentaVista"
+            "$ref" : "#/components/schemas/TasasDocumentoVista"
           },
           "total" : {
             "$ref" : "#/components/schemas/Dinero"
@@ -5405,7 +6832,7 @@
           }
         }
       },
-      "VistaPreviaVentaVista" : {
+      "VistaPreviaInstalacionVista" : {
         "type" : "object",
         "properties" : {
           "avisos" : {
@@ -5415,16 +6842,22 @@
             }
           },
           "cliente" : {
-            "$ref" : "#/components/schemas/ClienteVentaVista"
+            "$ref" : "#/components/schemas/ClienteDocumentoVista"
+          },
+          "direccion" : {
+            "type" : "string"
           },
           "fecha" : {
             "type" : "string",
             "format" : "date"
           },
+          "garantias" : {
+            "$ref" : "#/components/schemas/GarantiasInstalacionVista"
+          },
           "lineas" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/Linea"
+              "$ref" : "#/components/schemas/LineaVistaPrevia"
             }
           },
           "moneda" : {
@@ -5435,10 +6868,47 @@
             "type" : "boolean"
           },
           "resumen" : {
-            "$ref" : "#/components/schemas/ResumenVentaVista"
+            "$ref" : "#/components/schemas/ResumenCobroVista"
           },
           "tasas" : {
-            "$ref" : "#/components/schemas/TasasVentaVista"
+            "$ref" : "#/components/schemas/TasasDocumentoVista"
+          }
+        }
+      },
+      "VistaPreviaVentaVista" : {
+        "type" : "object",
+        "properties" : {
+          "avisos" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "cliente" : {
+            "$ref" : "#/components/schemas/ClienteDocumentoVista"
+          },
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "lineas" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/LineaVistaPrevia"
+            }
+          },
+          "moneda" : {
+            "type" : "string",
+            "enum" : [ "USD", "COP", "VES" ]
+          },
+          "puedeGuardar" : {
+            "type" : "boolean"
+          },
+          "resumen" : {
+            "$ref" : "#/components/schemas/ResumenCobroVista"
+          },
+          "tasas" : {
+            "$ref" : "#/components/schemas/TasasDocumentoVista"
           }
         }
       }
