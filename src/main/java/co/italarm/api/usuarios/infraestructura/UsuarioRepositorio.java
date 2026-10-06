@@ -13,5 +13,7 @@ public interface UsuarioRepositorio extends JpaRepository<Usuario, Long> {
 
   List<Usuario> findAllByOrderByNombreAsc();
 
+  List<Usuario> findByActivoTrueOrderByNombreAsc();
+
   boolean existsByCorreo(String correo);
 }

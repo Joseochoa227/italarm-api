@@ -3,6 +3,7 @@ package co.italarm.api.usuarios.aplicacion;
 import co.italarm.api.usuarios.dominio.Usuario;
 import co.italarm.api.usuarios.infraestructura.UsuarioRepositorio;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,14 @@ public class ConsultaUsuarios {
 
   public ConsultaUsuarios(UsuarioRepositorio usuarios) {
     this.usuarios = usuarios;
+  }
+
+  /** Usuarios activos, por nombre: los técnicos que se pueden elegir (P-37). */
+  @Transactional(readOnly = true)
+  public List<UsuarioReferencia> activos() {
+    return usuarios.findByActivoTrueOrderByNombreAsc().stream()
+        .map(u -> new UsuarioReferencia(u.getId(), u.getNombre()))
+        .toList();
   }
 
   @Transactional(readOnly = true)

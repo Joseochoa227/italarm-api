@@ -34,7 +34,7 @@ public class MovimientoSerial {
   private Instant registradoEn;
 
   @Enumerated(EnumType.STRING)
-  @Column(name = "tipo", nullable = false, updatable = false, length = 20)
+  @Column(name = "tipo", nullable = false, updatable = false, length = 25)
   private TipoMovimientoSerial tipo;
 
   @Embedded

@@ -1,8 +1,10 @@
 package co.italarm.api.usuarios.api;
 
 import co.italarm.api.shared.seguridad.UsuarioAutenticado;
+import co.italarm.api.usuarios.aplicacion.ConsultaUsuarios;
 import co.italarm.api.usuarios.aplicacion.ServicioContrasenas;
 import co.italarm.api.usuarios.aplicacion.ServicioUsuarios;
+import co.italarm.api.usuarios.aplicacion.UsuarioReferencia;
 import co.italarm.api.usuarios.aplicacion.UsuarioVista;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -30,16 +32,25 @@ public class UsuarioControlador {
 
   private final ServicioContrasenas contrasenas;
   private final ServicioUsuarios usuarios;
+  private final ConsultaUsuarios consulta;
 
-  public UsuarioControlador(ServicioContrasenas contrasenas, ServicioUsuarios usuarios) {
+  public UsuarioControlador(
+      ServicioContrasenas contrasenas, ServicioUsuarios usuarios, ConsultaUsuarios consulta) {
     this.contrasenas = contrasenas;
     this.usuarios = usuarios;
+    this.consulta = consulta;
   }
 
   @GetMapping
   @Operation(summary = "Todos los usuarios")
   public List<UsuarioVista> listar() {
     return usuarios.listar();
+  }
+
+  @GetMapping("/tecnicos")
+  @Operation(summary = "Usuarios activos que se pueden elegir como técnicos (P-37)")
+  public List<UsuarioReferencia> tecnicos() {
+    return consulta.activos();
   }
 
   @PostMapping
