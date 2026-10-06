@@ -1,6 +1,6 @@
 # Plan de la Fase 4 — Instalaciones, fotos y garantías (italarm-api)
 
-> Estado: **borrador para aprobación de ITALARM**. No se implementa nada hasta que ITALARM apruebe este plan y responda las preguntas P-37 a P-45 (`docs/preguntas.md`).
+> Estado: **aprobado por ITALARM el 06/10/2026**, en implementación. Preguntas P-37 a P-45 respondidas: de acuerdo con las propuestas (ver `docs/preguntas.md`).
 > Base: `docs/requerimientos.md`, secciones 3.4, 3.8, 3.9, 3.13 a 3.15, 4, 9.4 y 12.6, más las decisiones de `docs/preguntas.md`.
 > Alcance: solo el backend (**italarm-api**). Las pantallas se hacen en italarm-web a partir del contrato OpenAPI que deja esta fase.
 
