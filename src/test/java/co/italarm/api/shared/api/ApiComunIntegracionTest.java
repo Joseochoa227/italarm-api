@@ -174,6 +174,42 @@ class ApiComunIntegracionTest extends PruebaIntegracion {
   }
 
   /**
+   * Cada registro anidado tiene su propio esquema, con el nombre de su contenedor (D-05): sin esto,
+   * springdoc publica una sola versión de los registros que se llaman igual (por ejemplo las {@code
+   * Linea} de compras, ventas y cotizaciones) y los tipos del frontend quedan mal.
+   */
+  @Test
+  void losRegistrosAnidadosTienenEsquemasConNombreUnico() throws Exception {
+    var esquemas =
+        json.readTree(
+                mvc.perform(get("/v3/api-docs"))
+                    .andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString(java.nio.charset.StandardCharsets.UTF_8))
+            .path("components")
+            .path("schemas");
+    org.assertj.core.api.Assertions.assertThat(esquemas.fieldNames())
+        .toIterable()
+        .contains(
+            "CompraVistaLinea",
+            "VentaVistaLinea",
+            "InstalacionVistaLinea",
+            "CotizacionVistaLinea",
+            "VistaPreviaCompraVistaLinea",
+            "MovimientosClienteMovimiento",
+            "HistorialSerialVistaMovimiento",
+            "ListadoComprasVistaTotalMoneda",
+            "ListadoVentasVistaTotalMoneda",
+            "ListadoInstalacionesVistaTotalMoneda")
+        .doesNotContain("Linea", "Movimiento", "TotalMoneda");
+    org.assertj.core.api.Assertions.assertThat(
+            esquemas.path("MovimientosClienteMovimiento").path("properties").fieldNames())
+        .toIterable()
+        .contains("consecutivo", "descripcion", "total", "estado");
+  }
+
+  /**
    * El contrato versionado en {@code contrato/openapi.json} debe coincidir con el código (RT-08).
    * Si cambia un endpoint, se actualiza con {@code ./mvnw test -Dtest=ApiComunIntegracionTest
    * -Dcontrato.actualizar=true} y el archivo se sube junto con el cambio. También queda una copia

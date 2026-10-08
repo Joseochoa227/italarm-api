@@ -4035,36 +4035,6 @@
           }
         }
       },
-      "Anulacion" : {
-        "type" : "object",
-        "properties" : {
-          "fecha" : {
-            "type" : "string",
-            "format" : "date-time"
-          },
-          "motivo" : {
-            "type" : "string"
-          },
-          "usuario" : {
-            "type" : "string"
-          }
-        }
-      },
-      "Aviso" : {
-        "type" : "object",
-        "properties" : {
-          "mensaje" : {
-            "type" : "string"
-          },
-          "productoId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "tipo" : {
-            "type" : "string"
-          }
-        }
-      },
       "CambioCostoVista" : {
         "type" : "object",
         "properties" : {
@@ -4289,7 +4259,7 @@
             "type" : "string"
           },
           "proveedor" : {
-            "$ref" : "#/components/schemas/Referencia"
+            "$ref" : "#/components/schemas/CompraVistaReferencia"
           },
           "registradaEn" : {
             "type" : "string",
@@ -4316,7 +4286,7 @@
             "type" : "boolean"
           },
           "anulacion" : {
-            "$ref" : "#/components/schemas/Anulacion"
+            "$ref" : "#/components/schemas/CompraVistaAnulacion"
           },
           "consecutivo" : {
             "type" : "string"
@@ -4338,7 +4308,7 @@
           "lineas" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/Linea"
+              "$ref" : "#/components/schemas/CompraVistaLinea"
             }
           },
           "moneda" : {
@@ -4352,7 +4322,7 @@
             "type" : "string"
           },
           "proveedor" : {
-            "$ref" : "#/components/schemas/Referencia"
+            "$ref" : "#/components/schemas/CompraVistaReferencia"
           },
           "registradaEn" : {
             "type" : "string",
@@ -4369,6 +4339,81 @@
           },
           "totalUsd" : {
             "$ref" : "#/components/schemas/Dinero"
+          }
+        }
+      },
+      "CompraVistaAnulacion" : {
+        "type" : "object",
+        "properties" : {
+          "fecha" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "motivo" : {
+            "type" : "string"
+          },
+          "usuario" : {
+            "type" : "string"
+          }
+        }
+      },
+      "CompraVistaLinea" : {
+        "type" : "object",
+        "properties" : {
+          "abreviatura" : {
+            "type" : "string"
+          },
+          "cantidad" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "codigo" : {
+            "type" : "string"
+          },
+          "costoAnteriorUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "costoNuevoUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "costoUnitario" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "costoUnitarioUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "nombre" : {
+            "type" : "string"
+          },
+          "productoId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "regla" : {
+            "type" : "string"
+          },
+          "seriales" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "subtotal" : {
+            "$ref" : "#/components/schemas/Dinero"
+          }
+        }
+      },
+      "CompraVistaReferencia" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "nombre" : {
+            "type" : "string"
           }
         }
       },
@@ -4432,7 +4477,7 @@
           "avisos" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/Aviso"
+              "$ref" : "#/components/schemas/ConversionCotizacionVistaAviso"
             }
           },
           "cliente" : {
@@ -4468,7 +4513,7 @@
           "lineas" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/Linea"
+              "$ref" : "#/components/schemas/ConversionCotizacionVistaLinea"
             }
           },
           "manoDeObra" : {
@@ -4500,33 +4545,57 @@
           }
         }
       },
-      "CorreccionVista" : {
+      "ConversionCotizacionVistaAviso" : {
         "type" : "object",
         "properties" : {
-          "automatica" : {
+          "mensaje" : {
+            "type" : "string"
+          },
+          "productoId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "tipo" : {
+            "type" : "string"
+          }
+        }
+      },
+      "ConversionCotizacionVistaLinea" : {
+        "type" : "object",
+        "properties" : {
+          "abreviatura" : {
+            "type" : "string"
+          },
+          "cantidad" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "codigo" : {
+            "type" : "string"
+          },
+          "controlaSerial" : {
             "type" : "boolean"
           },
-          "corregidaEn" : {
-            "type" : "string",
-            "format" : "date-time"
-          },
-          "corregidaPor" : {
-            "type" : "string"
-          },
-          "motivo" : {
-            "type" : "string"
-          },
-          "valorAnterior" : {
+          "disponible" : {
             "type" : "string",
             "format" : "decimal",
             "example" : "19.5000",
             "pattern" : "^-?\\d+(\\.\\d+)?$"
           },
-          "valorNuevo" : {
+          "nombre" : {
+            "type" : "string"
+          },
+          "precioUnitario" : {
             "type" : "string",
             "format" : "decimal",
             "example" : "19.5000",
             "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "productoId" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         }
       },
@@ -4632,7 +4701,7 @@
             "format" : "int64"
           },
           "documentoGenerado" : {
-            "$ref" : "#/components/schemas/DocumentoGenerado"
+            "$ref" : "#/components/schemas/CotizacionVistaDocumentoGenerado"
           },
           "enviadaEn" : {
             "type" : "string",
@@ -4652,7 +4721,7 @@
           "lineas" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/Linea"
+              "$ref" : "#/components/schemas/CotizacionVistaLinea"
             }
           },
           "moneda" : {
@@ -4684,7 +4753,7 @@
             "pattern" : "^-?\\d+(\\.\\d+)?$"
           },
           "rechazo" : {
-            "$ref" : "#/components/schemas/Rechazo"
+            "$ref" : "#/components/schemas/CotizacionVistaRechazo"
           },
           "registradaEn" : {
             "type" : "string",
@@ -4727,27 +4796,12 @@
           "versionesAnteriores" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/VersionAnterior"
+              "$ref" : "#/components/schemas/CotizacionVistaVersionAnterior"
             }
           }
         }
       },
-      "Dinero" : {
-        "type" : "object",
-        "properties" : {
-          "moneda" : {
-            "type" : "string",
-            "enum" : [ "USD", "COP", "VES" ]
-          },
-          "monto" : {
-            "type" : "string",
-            "format" : "decimal",
-            "example" : "19.5000",
-            "pattern" : "^-?\\d+(\\.\\d+)?$"
-          }
-        }
-      },
-      "DocumentoGenerado" : {
+      "CotizacionVistaDocumentoGenerado" : {
         "type" : "object",
         "properties" : {
           "consecutivo" : {
@@ -4763,6 +4817,144 @@
           },
           "tipo" : {
             "type" : "string"
+          }
+        }
+      },
+      "CotizacionVistaLinea" : {
+        "type" : "object",
+        "properties" : {
+          "cantidad" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "codigo" : {
+            "type" : "string"
+          },
+          "costoUnitarioUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "descripcion" : {
+            "type" : "string"
+          },
+          "precioSugerido" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "precioUnitario" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "productoId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "subtotal" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "unidad" : {
+            "type" : "string"
+          }
+        }
+      },
+      "CotizacionVistaLineaAnterior" : {
+        "type" : "object",
+        "properties" : {
+          "cantidad" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "codigo" : {
+            "type" : "string"
+          },
+          "descripcion" : {
+            "type" : "string"
+          },
+          "precioUnitario" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "productoId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "subtotal" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "unidad" : {
+            "type" : "string"
+          }
+        }
+      },
+      "CotizacionVistaRechazo" : {
+        "type" : "object",
+        "properties" : {
+          "detalle" : {
+            "type" : "string"
+          },
+          "fecha" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "motivo" : {
+            "type" : "string"
+          }
+        }
+      },
+      "CotizacionVistaVersionAnterior" : {
+        "type" : "object",
+        "properties" : {
+          "descripcion" : {
+            "type" : "string"
+          },
+          "descuento" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "lineas" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CotizacionVistaLineaAnterior"
+            }
+          },
+          "manoDeObra" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "numeroVersion" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "reemplazadaEn" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "reemplazadaPor" : {
+            "type" : "string"
+          },
+          "total" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "vence" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }
+      },
+      "Dinero" : {
+        "type" : "object",
+        "properties" : {
+          "moneda" : {
+            "type" : "string",
+            "enum" : [ "USD", "COP", "VES" ]
+          },
+          "monto" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
           }
         }
       },
@@ -4851,45 +5043,6 @@
           },
           "mensaje" : {
             "type" : "string"
-          }
-        }
-      },
-      "Foto" : {
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "subidaEn" : {
-            "type" : "string",
-            "format" : "date-time"
-          },
-          "url" : {
-            "type" : "string"
-          }
-        }
-      },
-      "Fotos" : {
-        "type" : "object",
-        "properties" : {
-          "antes" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/Foto"
-            }
-          },
-          "despues" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/Foto"
-            }
-          },
-          "durante" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/Foto"
-            }
           }
         }
       },
@@ -4986,7 +5139,7 @@
           "movimientos" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/Movimiento"
+              "$ref" : "#/components/schemas/MovimientosClienteMovimiento"
             }
           },
           "nombre" : {
@@ -5000,17 +5153,42 @@
           "movimientos" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/Movimiento"
+              "$ref" : "#/components/schemas/HistorialSerialVistaMovimiento"
             }
           },
           "reclamos" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/Reclamo"
+              "$ref" : "#/components/schemas/ReclamosSerialReclamo"
             }
           },
           "serial" : {
             "$ref" : "#/components/schemas/SerialVista"
+          }
+        }
+      },
+      "HistorialSerialVistaMovimiento" : {
+        "type" : "object",
+        "properties" : {
+          "detalle" : {
+            "type" : "string"
+          },
+          "documento" : {
+            "$ref" : "#/components/schemas/DocumentoRef"
+          },
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "registradoEn" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "usuario" : {
+            "type" : "string"
           }
         }
       },
@@ -5078,7 +5256,7 @@
         "type" : "object",
         "properties" : {
           "anulacion" : {
-            "$ref" : "#/components/schemas/Anulacion"
+            "$ref" : "#/components/schemas/InstalacionVistaAnulacion"
           },
           "cliente" : {
             "$ref" : "#/components/schemas/ClienteDocumentoVista"
@@ -5112,7 +5290,7 @@
             "format" : "date"
           },
           "fotos" : {
-            "$ref" : "#/components/schemas/Fotos"
+            "$ref" : "#/components/schemas/InstalacionVistaFotos"
           },
           "garantias" : {
             "$ref" : "#/components/schemas/GarantiasInstalacionVista"
@@ -5124,7 +5302,7 @@
           "lineas" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/Linea"
+              "$ref" : "#/components/schemas/InstalacionVistaLinea"
             }
           },
           "moneda" : {
@@ -5179,28 +5357,61 @@
           }
         }
       },
-      "InventarioVista" : {
+      "InstalacionVistaAnulacion" : {
         "type" : "object",
         "properties" : {
-          "avisos" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
+          "fecha" : {
+            "type" : "string",
+            "format" : "date-time"
           },
-          "productos" : {
-            "$ref" : "#/components/schemas/PaginaProducto"
+          "motivo" : {
+            "type" : "string"
           },
-          "totalProductos" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "valorTotal" : {
-            "$ref" : "#/components/schemas/MontoEnMonedas"
+          "usuario" : {
+            "type" : "string"
           }
         }
       },
-      "Linea" : {
+      "InstalacionVistaFoto" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "subidaEn" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "url" : {
+            "type" : "string"
+          }
+        }
+      },
+      "InstalacionVistaFotos" : {
+        "type" : "object",
+        "properties" : {
+          "antes" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/InstalacionVistaFoto"
+            }
+          },
+          "despues" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/InstalacionVistaFoto"
+            }
+          },
+          "durante" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/InstalacionVistaFoto"
+            }
+          }
+        }
+      },
+      "InstalacionVistaLinea" : {
         "type" : "object",
         "properties" : {
           "cantidad" : {
@@ -5231,7 +5442,7 @@
           "seriales" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/SerialVendido"
+              "$ref" : "#/components/schemas/InstalacionVistaSerialInstalado"
             }
           },
           "subtotal" : {
@@ -5242,33 +5453,94 @@
           }
         }
       },
-      "LineaAnterior" : {
+      "InstalacionVistaSerialInstalado" : {
         "type" : "object",
         "properties" : {
-          "cantidad" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "numero" : {
+            "type" : "string"
+          },
+          "vencimientoGarantia" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }
+      },
+      "InventarioVista" : {
+        "type" : "object",
+        "properties" : {
+          "avisos" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "productos" : {
+            "$ref" : "#/components/schemas/PaginaInventarioVistaProducto"
+          },
+          "totalProductos" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "valorTotal" : {
+            "$ref" : "#/components/schemas/MontoEnMonedas"
+          }
+        }
+      },
+      "InventarioVistaProducto" : {
+        "type" : "object",
+        "properties" : {
+          "abreviatura" : {
+            "type" : "string"
+          },
+          "activo" : {
+            "type" : "boolean"
+          },
+          "bajoMinimo" : {
+            "type" : "boolean"
+          },
+          "categoria" : {
+            "type" : "string"
+          },
+          "codigo" : {
+            "type" : "string"
+          },
+          "controlaSerial" : {
+            "type" : "boolean"
+          },
+          "costoActualUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "fotoUrl" : {
+            "type" : "string"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "marca" : {
+            "type" : "string"
+          },
+          "nombre" : {
+            "type" : "string"
+          },
+          "stock" : {
             "type" : "string",
             "format" : "decimal",
             "example" : "19.5000",
             "pattern" : "^-?\\d+(\\.\\d+)?$"
           },
-          "codigo" : {
-            "type" : "string"
+          "stockMinimo" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
           },
-          "descripcion" : {
-            "type" : "string"
-          },
-          "precioUnitario" : {
-            "$ref" : "#/components/schemas/Dinero"
-          },
-          "productoId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "subtotal" : {
-            "$ref" : "#/components/schemas/Dinero"
-          },
-          "unidad" : {
-            "type" : "string"
+          "valorEnBodega" : {
+            "$ref" : "#/components/schemas/MontoEnMonedas"
           }
         }
       },
@@ -5325,7 +5597,31 @@
             "$ref" : "#/components/schemas/MontoEnMonedas"
           },
           "ultimaCompra" : {
-            "$ref" : "#/components/schemas/UltimaCompra"
+            "$ref" : "#/components/schemas/LineaVistaPreviaUltimaCompra"
+          }
+        }
+      },
+      "LineaVistaPreviaUltimaCompra" : {
+        "type" : "object",
+        "properties" : {
+          "consecutivo" : {
+            "type" : "string"
+          },
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "tasaVes" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "trm" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
           }
         }
       },
@@ -5349,8 +5645,23 @@
           "totalesPorMoneda" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/TotalMoneda"
+              "$ref" : "#/components/schemas/ListadoComprasVistaTotalMoneda"
             }
+          }
+        }
+      },
+      "ListadoComprasVistaTotalMoneda" : {
+        "type" : "object",
+        "properties" : {
+          "compras" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "total" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "totalUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
           }
         }
       },
@@ -5374,10 +5685,34 @@
           "totalesPorMoneda" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/TotalMoneda"
+              "$ref" : "#/components/schemas/ListadoInstalacionesVistaTotalMoneda"
             }
           },
           "utilidadUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
+          }
+        }
+      },
+      "ListadoInstalacionesVistaTotalMoneda" : {
+        "type" : "object",
+        "properties" : {
+          "costo" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "instalaciones" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "manoDeObra" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "material" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "total" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "utilidad" : {
             "$ref" : "#/components/schemas/Dinero"
           }
         }
@@ -5399,7 +5734,7 @@
           "totalesPorMoneda" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/TotalMoneda"
+              "$ref" : "#/components/schemas/ListadoVentasVistaTotalMoneda"
             }
           },
           "utilidadUsd" : {
@@ -5407,6 +5742,24 @@
           },
           "ventas" : {
             "$ref" : "#/components/schemas/PaginaVentaResumenVista"
+          }
+        }
+      },
+      "ListadoVentasVistaTotalMoneda" : {
+        "type" : "object",
+        "properties" : {
+          "costo" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "total" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "utilidad" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "ventas" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         }
       },
@@ -5421,31 +5774,6 @@
           },
           "ves" : {
             "$ref" : "#/components/schemas/Dinero"
-          }
-        }
-      },
-      "Movimiento" : {
-        "type" : "object",
-        "properties" : {
-          "detalle" : {
-            "type" : "string"
-          },
-          "documento" : {
-            "$ref" : "#/components/schemas/DocumentoRef"
-          },
-          "fecha" : {
-            "type" : "string",
-            "format" : "date"
-          },
-          "registradoEn" : {
-            "type" : "string",
-            "format" : "date-time"
-          },
-          "tipo" : {
-            "type" : "string"
-          },
-          "usuario" : {
-            "type" : "string"
           }
         }
       },
@@ -5499,6 +5827,34 @@
           },
           "usuario" : {
             "type" : "string"
+          }
+        }
+      },
+      "MovimientosClienteMovimiento" : {
+        "type" : "object",
+        "properties" : {
+          "consecutivo" : {
+            "type" : "string"
+          },
+          "descripcion" : {
+            "type" : "string"
+          },
+          "estado" : {
+            "type" : "string"
+          },
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "total" : {
+            "$ref" : "#/components/schemas/Dinero"
           }
         }
       },
@@ -5664,13 +6020,13 @@
           }
         }
       },
-      "PaginaMovimientoKardexVista" : {
+      "PaginaInventarioVistaProducto" : {
         "type" : "object",
         "properties" : {
           "contenido" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/MovimientoKardexVista"
+              "$ref" : "#/components/schemas/InventarioVistaProducto"
             }
           },
           "pagina" : {
@@ -5691,13 +6047,13 @@
           }
         }
       },
-      "PaginaProducto" : {
+      "PaginaMovimientoKardexVista" : {
         "type" : "object",
         "properties" : {
           "contenido" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/Producto"
+              "$ref" : "#/components/schemas/MovimientoKardexVista"
             }
           },
           "pagina" : {
@@ -5853,60 +6209,6 @@
           }
         }
       },
-      "Producto" : {
-        "type" : "object",
-        "properties" : {
-          "abreviatura" : {
-            "type" : "string"
-          },
-          "activo" : {
-            "type" : "boolean"
-          },
-          "bajoMinimo" : {
-            "type" : "boolean"
-          },
-          "categoria" : {
-            "type" : "string"
-          },
-          "codigo" : {
-            "type" : "string"
-          },
-          "controlaSerial" : {
-            "type" : "boolean"
-          },
-          "costoActualUsd" : {
-            "$ref" : "#/components/schemas/Dinero"
-          },
-          "fotoUrl" : {
-            "type" : "string"
-          },
-          "id" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "marca" : {
-            "type" : "string"
-          },
-          "nombre" : {
-            "type" : "string"
-          },
-          "stock" : {
-            "type" : "string",
-            "format" : "decimal",
-            "example" : "19.5000",
-            "pattern" : "^-?\\d+(\\.\\d+)?$"
-          },
-          "stockMinimo" : {
-            "type" : "string",
-            "format" : "decimal",
-            "example" : "19.5000",
-            "pattern" : "^-?\\d+(\\.\\d+)?$"
-          },
-          "valorEnBodega" : {
-            "$ref" : "#/components/schemas/MontoEnMonedas"
-          }
-        }
-      },
       "ProductoInventarioVista" : {
         "type" : "object",
         "properties" : {
@@ -5960,7 +6262,7 @@
             "$ref" : "#/components/schemas/MontoEnMonedas"
           },
           "seriales" : {
-            "$ref" : "#/components/schemas/SerialesPorEstado"
+            "$ref" : "#/components/schemas/ProductoInventarioVistaSerialesPorEstado"
           },
           "stock" : {
             "type" : "string",
@@ -5976,6 +6278,31 @@
           },
           "valorEnBodega" : {
             "$ref" : "#/components/schemas/MontoEnMonedas"
+          }
+        }
+      },
+      "ProductoInventarioVistaSerialesPorEstado" : {
+        "type" : "object",
+        "properties" : {
+          "anulados" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "dadosDeBaja" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "enBodega" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "instalados" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "vendidos" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         }
       },
@@ -6004,7 +6331,7 @@
             "type" : "boolean"
           },
           "categoria" : {
-            "$ref" : "#/components/schemas/Referencia"
+            "$ref" : "#/components/schemas/ProductoVistaReferencia"
           },
           "codigo" : {
             "type" : "string"
@@ -6061,6 +6388,18 @@
           }
         }
       },
+      "ProductoVistaReferencia" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "nombre" : {
+            "type" : "string"
+          }
+        }
+      },
       "ProveedorVista" : {
         "type" : "object",
         "properties" : {
@@ -6090,43 +6429,6 @@
           "version" : {
             "type" : "integer",
             "format" : "int64"
-          }
-        }
-      },
-      "Rechazo" : {
-        "type" : "object",
-        "properties" : {
-          "detalle" : {
-            "type" : "string"
-          },
-          "fecha" : {
-            "type" : "string",
-            "format" : "date-time"
-          },
-          "motivo" : {
-            "type" : "string"
-          }
-        }
-      },
-      "Reclamo" : {
-        "type" : "object",
-        "properties" : {
-          "enGarantia" : {
-            "type" : "boolean"
-          },
-          "fecha" : {
-            "type" : "string",
-            "format" : "date"
-          },
-          "id" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "problema" : {
-            "type" : "string"
-          },
-          "solucion" : {
-            "type" : "string"
           }
         }
       },
@@ -6191,14 +6493,24 @@
           }
         }
       },
-      "Referencia" : {
+      "ReclamosSerialReclamo" : {
         "type" : "object",
         "properties" : {
+          "enGarantia" : {
+            "type" : "boolean"
+          },
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
           "id" : {
             "type" : "integer",
             "format" : "int64"
           },
-          "nombre" : {
+          "problema" : {
+            "type" : "string"
+          },
+          "solucion" : {
             "type" : "string"
           }
         }
@@ -6225,10 +6537,34 @@
             }
           },
           "resumen" : {
-            "$ref" : "#/components/schemas/Resumen"
+            "$ref" : "#/components/schemas/ResultadoCargaVistaResumen"
           },
           "valido" : {
             "type" : "boolean"
+          }
+        }
+      },
+      "ResultadoCargaVistaResumen" : {
+        "type" : "object",
+        "properties" : {
+          "clientes" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "productos" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "productosConStock" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "proveedores" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "valorUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
           }
         }
       },
@@ -6251,30 +6587,6 @@
             "format" : "decimal",
             "example" : "19.5000",
             "pattern" : "^-?\\d+(\\.\\d+)?$"
-          }
-        }
-      },
-      "Resumen" : {
-        "type" : "object",
-        "properties" : {
-          "clientes" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "productos" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "productosConStock" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "proveedores" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "valorUsd" : {
-            "$ref" : "#/components/schemas/Dinero"
           }
         }
       },
@@ -6321,22 +6633,6 @@
           }
         }
       },
-      "SerialVendido" : {
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "numero" : {
-            "type" : "string"
-          },
-          "vencimientoGarantia" : {
-            "type" : "string",
-            "format" : "date"
-          }
-        }
-      },
       "SerialVista" : {
         "type" : "object",
         "properties" : {
@@ -6366,31 +6662,6 @@
           "vencimientoGarantia" : {
             "type" : "string",
             "format" : "date"
-          }
-        }
-      },
-      "SerialesPorEstado" : {
-        "type" : "object",
-        "properties" : {
-          "anulados" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "dadosDeBaja" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "enBodega" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "instalados" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "vendidos" : {
-            "type" : "integer",
-            "format" : "int64"
           }
         }
       },
@@ -6705,7 +6976,7 @@
           "lineas" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/SolicitudLineaCotizacion"
+              "$ref" : "#/components/schemas/SolicitudCotizacionSolicitudLineaCotizacion"
             },
             "maxItems" : 200,
             "minItems" : 0
@@ -6747,6 +7018,28 @@
           }
         },
         "required" : [ "clienteId", "moneda", "tipo", "version" ]
+      },
+      "SolicitudCotizacionSolicitudLineaCotizacion" : {
+        "type" : "object",
+        "properties" : {
+          "cantidad" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "precioUnitario" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "productoId" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "cantidad", "productoId" ]
       },
       "SolicitudEdicionInstalacion" : {
         "type" : "object",
@@ -6884,7 +7177,7 @@
           "lineas" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/SolicitudLineaMaterial"
+              "$ref" : "#/components/schemas/SolicitudInstalacionSolicitudLineaMaterial"
             },
             "maxItems" : 200,
             "minItems" : 0
@@ -6924,6 +7217,38 @@
         },
         "required" : [ "clienteId", "descripcion", "moneda", "tecnicos" ]
       },
+      "SolicitudInstalacionSolicitudLineaMaterial" : {
+        "type" : "object",
+        "properties" : {
+          "cantidad" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "precioUnitario" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "productoId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "seriales" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "maxLength" : 80,
+              "minLength" : 0
+            },
+            "maxItems" : 1000,
+            "minItems" : 0
+          }
+        },
+        "required" : [ "productoId" ]
+      },
       "SolicitudLineaCompra" : {
         "type" : "object",
         "properties" : {
@@ -6955,60 +7280,6 @@
           }
         },
         "required" : [ "cantidad", "costoUnitario", "productoId" ]
-      },
-      "SolicitudLineaCotizacion" : {
-        "type" : "object",
-        "properties" : {
-          "cantidad" : {
-            "type" : "string",
-            "format" : "decimal",
-            "example" : "19.5000",
-            "pattern" : "^-?\\d+(\\.\\d+)?$"
-          },
-          "precioUnitario" : {
-            "type" : "string",
-            "format" : "decimal",
-            "example" : "19.5000",
-            "pattern" : "^-?\\d+(\\.\\d+)?$"
-          },
-          "productoId" : {
-            "type" : "integer",
-            "format" : "int64"
-          }
-        },
-        "required" : [ "cantidad", "productoId" ]
-      },
-      "SolicitudLineaMaterial" : {
-        "type" : "object",
-        "properties" : {
-          "cantidad" : {
-            "type" : "string",
-            "format" : "decimal",
-            "example" : "19.5000",
-            "pattern" : "^-?\\d+(\\.\\d+)?$"
-          },
-          "precioUnitario" : {
-            "type" : "string",
-            "format" : "decimal",
-            "example" : "19.5000",
-            "pattern" : "^-?\\d+(\\.\\d+)?$"
-          },
-          "productoId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "seriales" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string",
-              "maxLength" : 80,
-              "minLength" : 0
-            },
-            "maxItems" : 1000,
-            "minItems" : 0
-          }
-        },
-        "required" : [ "productoId" ]
       },
       "SolicitudLineaVenta" : {
         "type" : "object",
@@ -7433,7 +7704,7 @@
           "correcciones" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/CorreccionVista"
+              "$ref" : "#/components/schemas/TasaVistaCorreccionVista"
             }
           },
           "fecha" : {
@@ -7460,6 +7731,36 @@
             "type" : "string"
           },
           "valor" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          }
+        }
+      },
+      "TasaVistaCorreccionVista" : {
+        "type" : "object",
+        "properties" : {
+          "automatica" : {
+            "type" : "boolean"
+          },
+          "corregidaEn" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "corregidaPor" : {
+            "type" : "string"
+          },
+          "motivo" : {
+            "type" : "string"
+          },
+          "valorAnterior" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "valorNuevo" : {
             "type" : "string",
             "format" : "decimal",
             "example" : "19.5000",
@@ -7532,48 +7833,6 @@
           },
           "trmAutomaticaFallo" : {
             "type" : "boolean"
-          }
-        }
-      },
-      "TotalMoneda" : {
-        "type" : "object",
-        "properties" : {
-          "costo" : {
-            "$ref" : "#/components/schemas/Dinero"
-          },
-          "total" : {
-            "$ref" : "#/components/schemas/Dinero"
-          },
-          "utilidad" : {
-            "$ref" : "#/components/schemas/Dinero"
-          },
-          "ventas" : {
-            "type" : "integer",
-            "format" : "int64"
-          }
-        }
-      },
-      "UltimaCompra" : {
-        "type" : "object",
-        "properties" : {
-          "consecutivo" : {
-            "type" : "string"
-          },
-          "fecha" : {
-            "type" : "string",
-            "format" : "date"
-          },
-          "tasaVes" : {
-            "type" : "string",
-            "format" : "decimal",
-            "example" : "19.5000",
-            "pattern" : "^-?\\d+(\\.\\d+)?$"
-          },
-          "trm" : {
-            "type" : "string",
-            "format" : "decimal",
-            "example" : "19.5000",
-            "pattern" : "^-?\\d+(\\.\\d+)?$"
           }
         }
       },
@@ -7733,7 +7992,7 @@
         "type" : "object",
         "properties" : {
           "anulacion" : {
-            "$ref" : "#/components/schemas/Anulacion"
+            "$ref" : "#/components/schemas/VentaVistaAnulacion"
           },
           "cliente" : {
             "$ref" : "#/components/schemas/ClienteDocumentoVista"
@@ -7767,7 +8026,7 @@
           "lineas" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/Linea"
+              "$ref" : "#/components/schemas/VentaVistaLinea"
             }
           },
           "moneda" : {
@@ -7816,43 +8075,74 @@
           }
         }
       },
-      "VersionAnterior" : {
+      "VentaVistaAnulacion" : {
         "type" : "object",
         "properties" : {
-          "descripcion" : {
-            "type" : "string"
-          },
-          "descuento" : {
-            "$ref" : "#/components/schemas/Dinero"
-          },
           "fecha" : {
-            "type" : "string",
-            "format" : "date"
-          },
-          "lineas" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/LineaAnterior"
-            }
-          },
-          "manoDeObra" : {
-            "$ref" : "#/components/schemas/Dinero"
-          },
-          "numeroVersion" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "reemplazadaEn" : {
             "type" : "string",
             "format" : "date-time"
           },
-          "reemplazadaPor" : {
+          "motivo" : {
             "type" : "string"
           },
-          "total" : {
+          "usuario" : {
+            "type" : "string"
+          }
+        }
+      },
+      "VentaVistaLinea" : {
+        "type" : "object",
+        "properties" : {
+          "cantidad" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "codigo" : {
+            "type" : "string"
+          },
+          "costoUnitarioUsd" : {
             "$ref" : "#/components/schemas/Dinero"
           },
-          "vence" : {
+          "descripcion" : {
+            "type" : "string"
+          },
+          "precioSugerido" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "precioUnitario" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "productoId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "seriales" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/VentaVistaSerialVendido"
+            }
+          },
+          "subtotal" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "unidad" : {
+            "type" : "string"
+          }
+        }
+      },
+      "VentaVistaSerialVendido" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "numero" : {
+            "type" : "string"
+          },
+          "vencimientoGarantia" : {
             "type" : "string",
             "format" : "date"
           }
@@ -7874,7 +8164,7 @@
           "lineas" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/Linea"
+              "$ref" : "#/components/schemas/VistaPreviaCompraVistaLinea"
             }
           },
           "moneda" : {
@@ -7885,6 +8175,54 @@
             "$ref" : "#/components/schemas/TasasCompraVista"
           },
           "total" : {
+            "$ref" : "#/components/schemas/MontoEnMonedas"
+          }
+        }
+      },
+      "VistaPreviaCompraVistaLinea" : {
+        "type" : "object",
+        "properties" : {
+          "abreviatura" : {
+            "type" : "string"
+          },
+          "cantidad" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "codigo" : {
+            "type" : "string"
+          },
+          "costoActualUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "costoNuevoUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "costoUnitario" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "costoUnitarioUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "nombre" : {
+            "type" : "string"
+          },
+          "productoId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "regla" : {
+            "type" : "string"
+          },
+          "stockActual" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "subtotal" : {
             "$ref" : "#/components/schemas/MontoEnMonedas"
           }
         }

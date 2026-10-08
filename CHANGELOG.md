@@ -2,6 +2,11 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado semántico.
 
+## [Sin publicar] — Contrato OpenAPI con nombres únicos
+
+### Corregido
+- Los registros anidados con el mismo nombre en distintos módulos (`Linea`, `Movimiento`, `TotalMoneda`) se publicaban como un solo esquema, y los tipos del frontend quedaban mal (D-05 de italarm-web). Ahora cada registro anidado toma el nombre de su contenedor: `CompraVista.Linea` → `CompraVistaLinea`, `MovimientosCliente.Movimiento` → `MovimientosClienteMovimiento`. Los endpoints no cambian.
+
 ## [Sin publicar] — Fase 5: Cotizaciones
 
 ### Agregado

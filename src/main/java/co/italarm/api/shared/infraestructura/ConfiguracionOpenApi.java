@@ -1,5 +1,6 @@
 package co.italarm.api.shared.infraestructura;
 
+import io.swagger.v3.core.jackson.ModelResolver;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
@@ -9,6 +10,7 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import java.math.BigDecimal;
 import java.util.List;
+import org.springdoc.core.providers.ObjectMapperProvider;
 import org.springdoc.core.utils.SpringDocUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,6 +27,13 @@ public class ConfiguracionOpenApi {
         .replaceWithSchema(
             BigDecimal.class,
             new StringSchema().format("decimal").pattern("^-?\\d+(\\.\\d+)?$").example("19.5000"));
+  }
+
+  /** Registros anidados con nombre propio en el contrato (ver {@link NombresDeEsquema}). */
+  @Bean
+  public ModelResolver resolvedorDeModelos(ObjectMapperProvider proveedor) {
+    // El contrato es OpenAPI 3.1, como el resto de springdoc.
+    return new ModelResolver(proveedor.jsonMapper(), new NombresDeEsquema()).openapi31(true);
   }
 
   @Bean

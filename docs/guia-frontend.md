@@ -259,3 +259,5 @@ Cuando el backend cambia un endpoint:
 1. Se actualiza `contrato/openapi.json` con `./mvnw test -Dtest=ApiComunIntegracionTest -Dcontrato.actualizar=true` y se sube junto con el cambio.
 2. En italarm-web se regenera el cliente (orval u openapi-typescript) desde ese archivo; con los dos repositorios en la misma sesión, se lee directamente.
 3. TypeScript señala lo que cambió.
+
+Los esquemas de registros anidados llevan el nombre de su contenedor: por ejemplo, las líneas de una compra son `CompraVistaLinea` y las de una venta, `VentaVistaLinea`.
