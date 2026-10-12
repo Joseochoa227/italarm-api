@@ -1,6 +1,8 @@
 package co.italarm.api.inventario.api;
 
+import co.italarm.api.documentos.api.Descargas;
 import co.italarm.api.inventario.aplicacion.CambioCostoVista;
+import co.italarm.api.inventario.aplicacion.ExportacionInventario;
 import co.italarm.api.inventario.aplicacion.InventarioVista;
 import co.italarm.api.inventario.aplicacion.MovimientoKardexVista;
 import co.italarm.api.inventario.aplicacion.ProductoInventarioVista;
@@ -16,6 +18,7 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,9 +31,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class InventarioControlador {
 
   private final ServicioInventario servicio;
+  private final ExportacionInventario exportacion;
 
-  public InventarioControlador(ServicioInventario servicio) {
+  public InventarioControlador(ServicioInventario servicio, ExportacionInventario exportacion) {
     this.servicio = servicio;
+    this.exportacion = exportacion;
   }
 
   @GetMapping
@@ -48,6 +53,23 @@ public class InventarioControlador {
       @ParameterObject @PageableDefault(sort = "nombre", direction = Sort.Direction.ASC)
           Pageable pagina) {
     return servicio.listar(categoriaId, activo, buscar, pagina);
+  }
+
+  @GetMapping(path = "/excel", produces = Descargas.EXCEL)
+  @Operation(
+      summary = "Inventario valorizado en Excel",
+      description = "Mismos filtros del listado, sin paginar. Error: EXPORTACION_MUY_GRANDE (422).")
+  public ResponseEntity<byte[]> excel(
+      @RequestParam(required = false) Long categoriaId,
+      @RequestParam(required = false) Boolean activo,
+      @RequestParam(required = false) String buscar) {
+    return Descargas.adjunto(exportacion.inventario(categoriaId, activo, buscar));
+  }
+
+  @GetMapping(path = "/productos/{id}/kardex/excel", produces = Descargas.EXCEL)
+  @Operation(summary = "Kárdex del producto en Excel, del movimiento más antiguo al más reciente")
+  public ResponseEntity<byte[]> kardexExcel(@PathVariable Long id) {
+    return Descargas.adjunto(exportacion.kardex(id));
   }
 
   @GetMapping("/productos/{id}")

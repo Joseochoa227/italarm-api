@@ -1,9 +1,11 @@
 package co.italarm.api.ventas.api;
 
+import co.italarm.api.documentos.api.Descargas;
 import co.italarm.api.documentos.aplicacion.ArchivoGenerado;
 import co.italarm.api.shared.dominio.ClaveIdempotencia;
 import co.italarm.api.shared.seguridad.UsuarioAutenticado;
 import co.italarm.api.ventas.aplicacion.EnlaceComprobanteVista;
+import co.italarm.api.ventas.aplicacion.ExportacionVentas;
 import co.italarm.api.ventas.aplicacion.ListadoVentasVista;
 import co.italarm.api.ventas.aplicacion.ServicioVentas;
 import co.italarm.api.ventas.aplicacion.VentaVista;
@@ -43,9 +45,11 @@ public class VentaControlador {
   static final String OPERACION = "VENTA";
 
   private final ServicioVentas servicio;
+  private final ExportacionVentas exportacion;
 
-  public VentaControlador(ServicioVentas servicio) {
+  public VentaControlador(ServicioVentas servicio, ExportacionVentas exportacion) {
     this.servicio = servicio;
+    this.exportacion = exportacion;
   }
 
   @PostMapping("/vista-previa")
@@ -104,6 +108,20 @@ public class VentaControlador {
           })
           Pageable pagina) {
     return servicio.listar(clienteId, productoId, desde, hasta, incluirAnuladas, pagina);
+  }
+
+  @GetMapping(path = "/excel", produces = Descargas.EXCEL)
+  @Operation(
+      summary = "Listado de ventas en Excel",
+      description = "Mismos filtros del listado, sin paginar. Error: EXPORTACION_MUY_GRANDE (422).")
+  public ResponseEntity<byte[]> excel(
+      @RequestParam(required = false) Long clienteId,
+      @RequestParam(required = false) Long productoId,
+      @RequestParam(required = false) LocalDate desde,
+      @RequestParam(required = false) LocalDate hasta,
+      @RequestParam(required = false) Boolean incluirAnuladas) {
+    return Descargas.adjunto(
+        exportacion.excel(clienteId, productoId, desde, hasta, incluirAnuladas));
   }
 
   @GetMapping("/{id}")

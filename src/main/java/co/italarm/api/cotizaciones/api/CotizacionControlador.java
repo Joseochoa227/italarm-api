@@ -4,11 +4,13 @@ import co.italarm.api.cotizaciones.aplicacion.ConversionCotizacionVista;
 import co.italarm.api.cotizaciones.aplicacion.CotizacionResumenVista;
 import co.italarm.api.cotizaciones.aplicacion.CotizacionVista;
 import co.italarm.api.cotizaciones.aplicacion.EnlaceCotizacionVista;
+import co.italarm.api.cotizaciones.aplicacion.ExportacionCotizaciones;
 import co.italarm.api.cotizaciones.aplicacion.SeguimientoCotizacionVista;
 import co.italarm.api.cotizaciones.aplicacion.ServicioCotizaciones;
 import co.italarm.api.cotizaciones.aplicacion.VistaPreviaCotizacionVista;
 import co.italarm.api.cotizaciones.dominio.EstadoCotizacion;
 import co.italarm.api.cotizaciones.dominio.TipoCotizacion;
+import co.italarm.api.documentos.api.Descargas;
 import co.italarm.api.documentos.aplicacion.ArchivoGenerado;
 import co.italarm.api.shared.api.Edicion;
 import co.italarm.api.shared.api.Pagina;
@@ -52,9 +54,11 @@ public class CotizacionControlador {
   static final String OPERACION = "COTIZACION";
 
   private final ServicioCotizaciones servicio;
+  private final ExportacionCotizaciones exportacion;
 
-  public CotizacionControlador(ServicioCotizaciones servicio) {
+  public CotizacionControlador(ServicioCotizaciones servicio, ExportacionCotizaciones exportacion) {
     this.servicio = servicio;
+    this.exportacion = exportacion;
   }
 
   @PostMapping("/vista-previa")
@@ -115,6 +119,20 @@ public class CotizacionControlador {
           })
           Pageable pagina) {
     return servicio.listar(estado, clienteId, tipo, desde, hasta, porVencer, pagina);
+  }
+
+  @GetMapping(path = "/excel", produces = Descargas.EXCEL)
+  @Operation(
+      summary = "Listado de cotizaciones en Excel",
+      description = "Mismos filtros del listado, sin paginar. Error: EXPORTACION_MUY_GRANDE (422).")
+  public ResponseEntity<byte[]> excel(
+      @RequestParam(required = false) EstadoCotizacion estado,
+      @RequestParam(required = false) Long clienteId,
+      @RequestParam(required = false) TipoCotizacion tipo,
+      @RequestParam(required = false) LocalDate desde,
+      @RequestParam(required = false) LocalDate hasta,
+      @RequestParam(required = false) Boolean porVencer) {
+    return Descargas.adjunto(exportacion.excel(estado, clienteId, tipo, desde, hasta, porVencer));
   }
 
   @GetMapping("/{id}")

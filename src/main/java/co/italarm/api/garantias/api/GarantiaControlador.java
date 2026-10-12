@@ -1,5 +1,7 @@
 package co.italarm.api.garantias.api;
 
+import co.italarm.api.documentos.api.Descargas;
+import co.italarm.api.garantias.aplicacion.ExportacionGarantias;
 import co.italarm.api.garantias.aplicacion.GarantiaVista;
 import co.italarm.api.garantias.aplicacion.ReclamoVista;
 import co.italarm.api.garantias.aplicacion.ServicioGarantias;
@@ -13,6 +15,7 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,9 +33,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class GarantiaControlador {
 
   private final ServicioGarantias servicio;
+  private final ExportacionGarantias exportacion;
 
-  public GarantiaControlador(ServicioGarantias servicio) {
+  public GarantiaControlador(ServicioGarantias servicio, ExportacionGarantias exportacion) {
     this.servicio = servicio;
+    this.exportacion = exportacion;
   }
 
   @GetMapping
@@ -49,6 +54,18 @@ public class GarantiaControlador {
           String serial,
       @ParameterObject @PageableDefault(size = 20) Pageable pagina) {
     return Pagina.de(servicio.consultar(estado, clienteId, tipo, serial, pagina), g -> g);
+  }
+
+  @GetMapping(path = "/excel", produces = Descargas.EXCEL)
+  @Operation(
+      summary = "Consulta de garantías en Excel",
+      description = "Mismos filtros de la consulta. Error: EXPORTACION_MUY_GRANDE (422).")
+  public ResponseEntity<byte[]> excel(
+      @RequestParam(required = false) EstadoGarantia estado,
+      @RequestParam(required = false) Long clienteId,
+      @Parameter(description = "INSTALACION o VENTA") @RequestParam(required = false) String tipo,
+      @RequestParam(required = false) String serial) {
+    return Descargas.adjunto(exportacion.excel(estado, clienteId, tipo, serial));
   }
 
   @PostMapping("/reclamos")

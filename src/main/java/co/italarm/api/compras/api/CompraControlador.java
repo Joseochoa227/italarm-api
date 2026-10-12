@@ -1,9 +1,11 @@
 package co.italarm.api.compras.api;
 
 import co.italarm.api.compras.aplicacion.CompraVista;
+import co.italarm.api.compras.aplicacion.ExportacionCompras;
 import co.italarm.api.compras.aplicacion.ListadoComprasVista;
 import co.italarm.api.compras.aplicacion.ServicioCompras;
 import co.italarm.api.compras.aplicacion.VistaPreviaCompraVista;
+import co.italarm.api.documentos.api.Descargas;
 import co.italarm.api.shared.dominio.ClaveIdempotencia;
 import co.italarm.api.shared.seguridad.UsuarioAutenticado;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,6 +20,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -42,9 +45,11 @@ public class CompraControlador {
   static final String OPERACION = "COMPRA";
 
   private final ServicioCompras servicio;
+  private final ExportacionCompras exportacion;
 
-  public CompraControlador(ServicioCompras servicio) {
+  public CompraControlador(ServicioCompras servicio, ExportacionCompras exportacion) {
     this.servicio = servicio;
+    this.exportacion = exportacion;
   }
 
   @PostMapping("/vista-previa")
@@ -104,6 +109,20 @@ public class CompraControlador {
           })
           Pageable pagina) {
     return servicio.listar(proveedorId, productoId, desde, hasta, incluirAnuladas, pagina);
+  }
+
+  @GetMapping(path = "/excel", produces = Descargas.EXCEL)
+  @Operation(
+      summary = "Listado de compras en Excel",
+      description = "Mismos filtros del listado, sin paginar. Error: EXPORTACION_MUY_GRANDE (422).")
+  public ResponseEntity<byte[]> excel(
+      @RequestParam(required = false) Long proveedorId,
+      @RequestParam(required = false) Long productoId,
+      @RequestParam(required = false) LocalDate desde,
+      @RequestParam(required = false) LocalDate hasta,
+      @RequestParam(required = false) Boolean incluirAnuladas) {
+    return Descargas.adjunto(
+        exportacion.excel(proveedorId, productoId, desde, hasta, incluirAnuladas));
   }
 
   @GetMapping("/{id}")

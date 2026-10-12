@@ -4,6 +4,8 @@ import co.italarm.api.shared.dominio.Moneda;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -44,6 +46,18 @@ public record LibroExcel(String nombre, List<Hoja> hojas) {
 
   /** Fecha y hora mostradas en hora de Colombia. */
   public record FechaHora(Instant valor) implements Celda {}
+
+  private static final DateTimeFormatter FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+  /** Fila con celdas que pueden ser vacías. */
+  public static List<Celda> fila(Celda... celdas) {
+    return Arrays.asList(celdas);
+  }
+
+  /** "Período: 01/10/2026 al 31/10/2026". */
+  public static String periodo(LocalDate desde, LocalDate hasta) {
+    return "Período: " + FECHA.format(desde) + " al " + FECHA.format(hasta);
+  }
 
   public static Celda texto(String valor) {
     return valor == null ? null : new Texto(valor);

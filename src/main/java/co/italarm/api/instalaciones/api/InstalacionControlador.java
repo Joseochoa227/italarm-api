@@ -1,7 +1,9 @@
 package co.italarm.api.instalaciones.api;
 
+import co.italarm.api.documentos.api.Descargas;
 import co.italarm.api.documentos.aplicacion.ArchivoGenerado;
 import co.italarm.api.instalaciones.aplicacion.EnlaceComprobante;
+import co.italarm.api.instalaciones.aplicacion.ExportacionInstalaciones;
 import co.italarm.api.instalaciones.aplicacion.InstalacionVista;
 import co.italarm.api.instalaciones.aplicacion.ListadoInstalacionesVista;
 import co.italarm.api.instalaciones.aplicacion.ServicioInstalaciones;
@@ -49,9 +51,12 @@ public class InstalacionControlador {
   static final String OPERACION = "INSTALACION";
 
   private final ServicioInstalaciones servicio;
+  private final ExportacionInstalaciones exportacion;
 
-  public InstalacionControlador(ServicioInstalaciones servicio) {
+  public InstalacionControlador(
+      ServicioInstalaciones servicio, ExportacionInstalaciones exportacion) {
     this.servicio = servicio;
+    this.exportacion = exportacion;
   }
 
   @PostMapping("/vista-previa")
@@ -116,6 +121,21 @@ public class InstalacionControlador {
           Pageable pagina) {
     return servicio.listar(
         clienteId, tecnicoId, desde, hasta, estadoGarantia, incluirAnuladas, pagina);
+  }
+
+  @GetMapping(path = "/excel", produces = Descargas.EXCEL)
+  @Operation(
+      summary = "Listado de instalaciones en Excel",
+      description = "Mismos filtros del listado, sin paginar. Error: EXPORTACION_MUY_GRANDE (422).")
+  public ResponseEntity<byte[]> excel(
+      @RequestParam(required = false) Long clienteId,
+      @RequestParam(required = false) Long tecnicoId,
+      @RequestParam(required = false) LocalDate desde,
+      @RequestParam(required = false) LocalDate hasta,
+      @RequestParam(required = false) EstadoGarantia estadoGarantia,
+      @RequestParam(required = false) Boolean incluirAnuladas) {
+    return Descargas.adjunto(
+        exportacion.excel(clienteId, tecnicoId, desde, hasta, estadoGarantia, incluirAnuladas));
   }
 
   @GetMapping("/{id}")
