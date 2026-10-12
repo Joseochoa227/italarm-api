@@ -66,8 +66,14 @@
     "description" : "Unidad, Metro, Par… (RF-148, P-09)",
     "name" : "Unidades de medida"
   }, {
+    "description" : "Pantalla de inicio (sección 3.2)",
+    "name" : "Inicio"
+  }, {
     "description" : "Proveedores y su moneda habitual (sección 3.6)",
     "name" : "Proveedores"
+  }, {
+    "description" : "Reportes por período y exportación a Excel (sección 3.16)",
+    "name" : "Reportes"
   }, {
     "description" : "Ventas de material y su anulación (sección 3.12)",
     "name" : "Ventas"
@@ -807,6 +813,67 @@
         "tags" : [ "Compras" ]
       }
     },
+    "/api/v1/compras/excel" : {
+      "get" : {
+        "description" : "Mismos filtros del listado, sin paginar. Error: EXPORTACION_MUY_GRANDE (422).",
+        "operationId" : "excel_5",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "proveedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "in" : "query",
+          "name" : "productoId",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "in" : "query",
+          "name" : "desde",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "in" : "query",
+          "name" : "hasta",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "in" : "query",
+          "name" : "incluirAnuladas",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Listado de compras en Excel",
+        "tags" : [ "Compras" ]
+      }
+    },
     "/api/v1/compras/vista-previa" : {
       "post" : {
         "description" : "Es el valor oficial que muestra el frontend (BF-06). Errores: TASA_NO_DISPONIBLE, COMPRA_PRODUCTO_REPETIDO, COMPRA_FECHA_FUTURA, PRODUCTO_NO_EXISTE.",
@@ -1241,6 +1308,75 @@
         "tags" : [ "Cotizaciones" ]
       }
     },
+    "/api/v1/cotizaciones/excel" : {
+      "get" : {
+        "description" : "Mismos filtros del listado, sin paginar. Error: EXPORTACION_MUY_GRANDE (422).",
+        "operationId" : "excel_4",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "estado",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "BORRADOR", "EN_EVALUACION", "APROBADA", "CONVERTIDA", "RECHAZADA", "VENCIDA" ]
+          }
+        }, {
+          "in" : "query",
+          "name" : "clienteId",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tipo",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "VENTA", "INSTALACION" ]
+          }
+        }, {
+          "in" : "query",
+          "name" : "desde",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "in" : "query",
+          "name" : "hasta",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "in" : "query",
+          "name" : "porVencer",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Listado de cotizaciones en Excel",
+        "tags" : [ "Cotizaciones" ]
+      }
+    },
     "/api/v1/cotizaciones/vista-previa" : {
       "post" : {
         "description" : "No guarda nada. Es el valor oficial que muestra el frontend y con el que dibuja la vista previa del PDF (RF-85). El stock es solo informativo (RF-86). Errores: TASA_NO_DISPONIBLE, PRODUCTO_INACTIVO (422); DESCUENTO_INVALIDO, COTIZACION_* , CLIENTE_NO_EXISTE (400).",
@@ -1669,6 +1805,59 @@
         "tags" : [ "Garantías" ]
       }
     },
+    "/api/v1/garantias/excel" : {
+      "get" : {
+        "description" : "Mismos filtros de la consulta. Error: EXPORTACION_MUY_GRANDE (422).",
+        "operationId" : "excel_3",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "estado",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "VIGENTE", "POR_VENCER", "VENCIDA" ]
+          }
+        }, {
+          "in" : "query",
+          "name" : "clienteId",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "INSTALACION o VENTA",
+          "in" : "query",
+          "name" : "tipo",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "serial",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Consulta de garantías en Excel",
+        "tags" : [ "Garantías" ]
+      }
+    },
     "/api/v1/garantias/reclamos" : {
       "get" : {
         "operationId" : "reclamos",
@@ -1781,6 +1970,26 @@
         },
         "summary" : "Escribir o corregir la solución de un reclamo",
         "tags" : [ "Garantías" ]
+      }
+    },
+    "/api/v1/inicio" : {
+      "get" : {
+        "description" : "Saludo, avisos de tasas, indicadores del mes en USD con sus equivalentes, stock bajo, garantías y cotizaciones por vencer y últimos movimientos. Cada bloque trae máximo 10 filas y su total.",
+        "operationId" : "inicio",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/InicioVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Todo lo de la pantalla de Inicio en una petición",
+        "tags" : [ "Inicio" ]
       }
     },
     "/api/v1/instalaciones" : {
@@ -1918,6 +2127,75 @@
           }
         },
         "summary" : "Registrar una instalación y descontar el material del inventario",
+        "tags" : [ "Instalaciones" ]
+      }
+    },
+    "/api/v1/instalaciones/excel" : {
+      "get" : {
+        "description" : "Mismos filtros del listado, sin paginar. Error: EXPORTACION_MUY_GRANDE (422).",
+        "operationId" : "excel_2",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "clienteId",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tecnicoId",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "in" : "query",
+          "name" : "desde",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "in" : "query",
+          "name" : "hasta",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "in" : "query",
+          "name" : "estadoGarantia",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "VIGENTE", "POR_VENCER", "VENCIDA" ]
+          }
+        }, {
+          "in" : "query",
+          "name" : "incluirAnuladas",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Listado de instalaciones en Excel",
         "tags" : [ "Instalaciones" ]
       }
     },
@@ -2278,6 +2556,50 @@
         "tags" : [ "Inventario" ]
       }
     },
+    "/api/v1/inventario/excel" : {
+      "get" : {
+        "description" : "Mismos filtros del listado, sin paginar. Error: EXPORTACION_MUY_GRANDE (422).",
+        "operationId" : "excel_1",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "categoriaId",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "in" : "query",
+          "name" : "activo",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "in" : "query",
+          "name" : "buscar",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Inventario valorizado en Excel",
+        "tags" : [ "Inventario" ]
+      }
+    },
     "/api/v1/inventario/productos/{id}" : {
       "get" : {
         "operationId" : "detalle_7",
@@ -2398,9 +2720,38 @@
         "tags" : [ "Inventario" ]
       }
     },
+    "/api/v1/inventario/productos/{id}/kardex/excel" : {
+      "get" : {
+        "operationId" : "kardexExcel",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Kárdex del producto en Excel, del movimiento más antiguo al más reciente",
+        "tags" : [ "Inventario" ]
+      }
+    },
     "/api/v1/inventario/productos/{id}/seriales" : {
       "get" : {
-        "operationId" : "seriales",
+        "operationId" : "seriales_1",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -2904,6 +3255,385 @@
         },
         "summary" : "Editar un proveedor",
         "tags" : [ "Proveedores" ]
+      }
+    },
+    "/api/v1/reportes/periodo" : {
+      "get" : {
+        "description" : "tipo SEMANA (lunes a domingo), MES o ANIO alrededor de fecha (hoy si falta), o tipo=RANGO con desde y hasta. Sin parámetros, el mes en curso. Error: PERIODO_INVALIDO (400).",
+        "operationId" : "periodo",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "tipo",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "SEMANA", "MES", "ANIO", "RANGO" ]
+          }
+        }, {
+          "in" : "query",
+          "name" : "fecha",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "in" : "query",
+          "name" : "desde",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "in" : "query",
+          "name" : "hasta",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ReportePeriodoVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Reporte del período",
+        "tags" : [ "Reportes" ]
+      }
+    },
+    "/api/v1/reportes/periodo/excel" : {
+      "get" : {
+        "operationId" : "periodoExcel",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "tipo",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "SEMANA", "MES", "ANIO", "RANGO" ]
+          }
+        }, {
+          "in" : "query",
+          "name" : "fecha",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "in" : "query",
+          "name" : "desde",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "in" : "query",
+          "name" : "hasta",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Reporte del período en Excel, una hoja por bloque",
+        "tags" : [ "Reportes" ]
+      }
+    },
+    "/api/v1/reportes/seriales" : {
+      "get" : {
+        "description" : "Conteo por estado y listado paginado, del más reciente al más antiguo.",
+        "operationId" : "seriales",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "estado",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "EN_BODEGA", "VENDIDO", "INSTALADO", "DADO_DE_BAJA", "ANULADO" ]
+          }
+        }, {
+          "in" : "query",
+          "name" : "productoId",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "Zero-based page index (0..N)",
+          "in" : "query",
+          "name" : "page",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "default" : 0,
+            "minimum" : 0
+          }
+        }, {
+          "description" : "The size of the page to be returned",
+          "in" : "query",
+          "name" : "size",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "default" : 20,
+            "minimum" : 1
+          }
+        }, {
+          "description" : "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+          "in" : "query",
+          "name" : "sort",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ReporteSerialesVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Seriales en bodega, vendidos e instalados",
+        "tags" : [ "Reportes" ]
+      }
+    },
+    "/api/v1/reportes/seriales/excel" : {
+      "get" : {
+        "operationId" : "serialesExcel",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "estado",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "EN_BODEGA", "VENDIDO", "INSTALADO", "DADO_DE_BAJA", "ANULADO" ]
+          }
+        }, {
+          "in" : "query",
+          "name" : "productoId",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Seriales en Excel",
+        "tags" : [ "Reportes" ]
+      }
+    },
+    "/api/v1/reportes/utilidad" : {
+      "get" : {
+        "description" : "Mismo período que /periodo. tipo: VENTA o INSTALACION (vacío, ambas). Orden por fecha, o por utilidad con ordenarPorUtilidad=true.",
+        "operationId" : "utilidad",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "periodo",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "SEMANA", "MES", "ANIO", "RANGO" ]
+          }
+        }, {
+          "in" : "query",
+          "name" : "fecha",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "in" : "query",
+          "name" : "desde",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "in" : "query",
+          "name" : "hasta",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "description" : "VENTA o INSTALACION",
+          "in" : "query",
+          "name" : "tipo",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "VENTA", "INSTALACION" ]
+          }
+        }, {
+          "in" : "query",
+          "name" : "ordenarPorUtilidad",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "description" : "Zero-based page index (0..N)",
+          "in" : "query",
+          "name" : "page",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "default" : 0,
+            "minimum" : 0
+          }
+        }, {
+          "description" : "The size of the page to be returned",
+          "in" : "query",
+          "name" : "size",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "default" : 20,
+            "minimum" : 1
+          }
+        }, {
+          "description" : "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+          "in" : "query",
+          "name" : "sort",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ReporteUtilidadVista"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Utilidad por venta e instalación",
+        "tags" : [ "Reportes" ]
+      }
+    },
+    "/api/v1/reportes/utilidad/excel" : {
+      "get" : {
+        "operationId" : "utilidadExcel",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "periodo",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "SEMANA", "MES", "ANIO", "RANGO" ]
+          }
+        }, {
+          "in" : "query",
+          "name" : "fecha",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "in" : "query",
+          "name" : "desde",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "in" : "query",
+          "name" : "hasta",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tipo",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "VENTA", "INSTALACION" ]
+          }
+        }, {
+          "in" : "query",
+          "name" : "ordenarPorUtilidad",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Utilidad por documento en Excel",
+        "tags" : [ "Reportes" ]
       }
     },
     "/api/v1/seriales" : {
@@ -3778,6 +4508,67 @@
           }
         },
         "summary" : "Registrar una venta y descontarla del inventario",
+        "tags" : [ "Ventas" ]
+      }
+    },
+    "/api/v1/ventas/excel" : {
+      "get" : {
+        "description" : "Mismos filtros del listado, sin paginar. Error: EXPORTACION_MUY_GRANDE (422).",
+        "operationId" : "excel",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "clienteId",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "in" : "query",
+          "name" : "productoId",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "in" : "query",
+          "name" : "desde",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "in" : "query",
+          "name" : "hasta",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "in" : "query",
+          "name" : "incluirAnuladas",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Listado de ventas en Excel",
         "tags" : [ "Ventas" ]
       }
     },
@@ -5192,6 +5983,142 @@
           }
         }
       },
+      "IndicadoresVista" : {
+        "type" : "object",
+        "properties" : {
+          "instalaciones" : {
+            "$ref" : "#/components/schemas/IndicadoresVistaDocumentos"
+          },
+          "inventario" : {
+            "$ref" : "#/components/schemas/IndicadoresVistaInventarioValorizado"
+          },
+          "utilidad" : {
+            "$ref" : "#/components/schemas/IndicadoresVistaUtilidad"
+          },
+          "ventas" : {
+            "$ref" : "#/components/schemas/IndicadoresVistaDocumentos"
+          }
+        }
+      },
+      "IndicadoresVistaDocumentos" : {
+        "type" : "object",
+        "properties" : {
+          "cantidad" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "porMoneda" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Dinero"
+            }
+          },
+          "total" : {
+            "$ref" : "#/components/schemas/MontoEnMonedas"
+          }
+        }
+      },
+      "IndicadoresVistaInventarioValorizado" : {
+        "type" : "object",
+        "properties" : {
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "productos" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "valor" : {
+            "$ref" : "#/components/schemas/MontoEnMonedas"
+          }
+        }
+      },
+      "IndicadoresVistaUtilidad" : {
+        "type" : "object",
+        "properties" : {
+          "porcentaje" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "total" : {
+            "$ref" : "#/components/schemas/MontoEnMonedas"
+          }
+        }
+      },
+      "InicioVista" : {
+        "type" : "object",
+        "properties" : {
+          "avisosTasas" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/InicioVistaAvisoTasa"
+            }
+          },
+          "cotizacionesEnEvaluacion" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CotizacionResumenVista"
+            }
+          },
+          "garantiasPorVencer" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/GarantiaVista"
+            }
+          },
+          "hoy" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "indicadores" : {
+            "$ref" : "#/components/schemas/IndicadoresVista"
+          },
+          "stockBajo" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StockBajoVista"
+            }
+          },
+          "tasas" : {
+            "$ref" : "#/components/schemas/TasasVigentesVista"
+          },
+          "totalCotizacionesEnEvaluacion" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalGarantiasPorVencer" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalStockBajo" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "ultimosMovimientos" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/MovimientoRecienteVista"
+            }
+          },
+          "usuario" : {
+            "type" : "string"
+          }
+        }
+      },
+      "InicioVistaAvisoTasa" : {
+        "type" : "object",
+        "properties" : {
+          "mensaje" : {
+            "type" : "string"
+          },
+          "par" : {
+            "type" : "string"
+          }
+        }
+      },
       "InstalacionResumenVista" : {
         "type" : "object",
         "properties" : {
@@ -5830,6 +6757,37 @@
           }
         }
       },
+      "MovimientoRecienteVista" : {
+        "type" : "object",
+        "properties" : {
+          "anulado" : {
+            "type" : "boolean"
+          },
+          "consecutivo" : {
+            "type" : "string"
+          },
+          "detalle" : {
+            "type" : "string"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "registradoEn" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "usuario" : {
+            "type" : "string"
+          },
+          "valor" : {
+            "$ref" : "#/components/schemas/Dinero"
+          }
+        }
+      },
       "MovimientosClienteMovimiento" : {
         "type" : "object",
         "properties" : {
@@ -6128,6 +7086,33 @@
           }
         }
       },
+      "PaginaReporteSerialesVistaSerial" : {
+        "type" : "object",
+        "properties" : {
+          "contenido" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ReporteSerialesVistaSerial"
+            }
+          },
+          "pagina" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "tamano" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElementos" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPaginas" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
       "PaginaTasaVista" : {
         "type" : "object",
         "properties" : {
@@ -6135,6 +7120,33 @@
             "type" : "array",
             "items" : {
               "$ref" : "#/components/schemas/TasaVista"
+            }
+          },
+          "pagina" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "tamano" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElementos" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPaginas" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "PaginaUtilidadDocumentoVista" : {
+        "type" : "object",
+        "properties" : {
+          "contenido" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/UtilidadDocumentoVista"
             }
           },
           "pagina" : {
@@ -6512,6 +7524,295 @@
           },
           "solucion" : {
             "type" : "string"
+          }
+        }
+      },
+      "ReportePeriodoVista" : {
+        "type" : "object",
+        "properties" : {
+          "agrupacion" : {
+            "type" : "string"
+          },
+          "anterior" : {
+            "$ref" : "#/components/schemas/ReportePeriodoVistaPeriodoVista"
+          },
+          "comprasPorProveedor" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ReportePeriodoVistaCompraProveedor"
+            }
+          },
+          "cotizaciones" : {
+            "$ref" : "#/components/schemas/ReportePeriodoVistaCotizaciones"
+          },
+          "desde" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "hasta" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "indicadores" : {
+            "$ref" : "#/components/schemas/IndicadoresVista"
+          },
+          "masInstalados" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ReportePeriodoVistaProductoTop"
+            }
+          },
+          "masVendidos" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ReportePeriodoVistaProductoTop"
+            }
+          },
+          "serie" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ReportePeriodoVistaBarra"
+            }
+          },
+          "siguiente" : {
+            "$ref" : "#/components/schemas/ReportePeriodoVistaPeriodoVista"
+          },
+          "stockBajo" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StockBajoVista"
+            }
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "totalCompras" : {
+            "$ref" : "#/components/schemas/Dinero"
+          }
+        }
+      },
+      "ReportePeriodoVistaBarra" : {
+        "type" : "object",
+        "properties" : {
+          "desde" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "etiqueta" : {
+            "type" : "string"
+          },
+          "hasta" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "instalaciones" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalInstalaciones" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "totalVentas" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "ventas" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "ReportePeriodoVistaCompraProveedor" : {
+        "type" : "object",
+        "properties" : {
+          "compras" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "proveedor" : {
+            "type" : "string"
+          },
+          "proveedorId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "total" : {
+            "$ref" : "#/components/schemas/Dinero"
+          }
+        }
+      },
+      "ReportePeriodoVistaCotizaciones" : {
+        "type" : "object",
+        "properties" : {
+          "porEstado" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ReportePeriodoVistaPorEstado"
+            }
+          },
+          "porcentajeAprobadas" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "total" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "ReportePeriodoVistaPeriodoVista" : {
+        "type" : "object",
+        "properties" : {
+          "desde" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "hasta" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }
+      },
+      "ReportePeriodoVistaPorEstado" : {
+        "type" : "object",
+        "properties" : {
+          "cantidad" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "estado" : {
+            "type" : "string"
+          }
+        }
+      },
+      "ReportePeriodoVistaProductoTop" : {
+        "type" : "object",
+        "properties" : {
+          "cantidad" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "codigo" : {
+            "type" : "string"
+          },
+          "nombre" : {
+            "type" : "string"
+          },
+          "productoId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "unidad" : {
+            "type" : "string"
+          },
+          "valor" : {
+            "$ref" : "#/components/schemas/Dinero"
+          }
+        }
+      },
+      "ReporteSerialesVista" : {
+        "type" : "object",
+        "properties" : {
+          "porEstado" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ReporteSerialesVistaPorEstado"
+            }
+          },
+          "seriales" : {
+            "$ref" : "#/components/schemas/PaginaReporteSerialesVistaSerial"
+          }
+        }
+      },
+      "ReporteSerialesVistaPorEstado" : {
+        "type" : "object",
+        "properties" : {
+          "cantidad" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "estado" : {
+            "type" : "string"
+          }
+        }
+      },
+      "ReporteSerialesVistaSerial" : {
+        "type" : "object",
+        "properties" : {
+          "codigoProducto" : {
+            "type" : "string"
+          },
+          "entrada" : {
+            "type" : "string"
+          },
+          "estado" : {
+            "type" : "string"
+          },
+          "fechaEntrada" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "numero" : {
+            "type" : "string"
+          },
+          "producto" : {
+            "type" : "string"
+          },
+          "productoId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "salida" : {
+            "type" : "string"
+          },
+          "salidaId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "salidaTipo" : {
+            "type" : "string"
+          },
+          "vencimientoGarantia" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }
+      },
+      "ReporteUtilidadVista" : {
+        "type" : "object",
+        "properties" : {
+          "costoUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "desde" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "documentos" : {
+            "$ref" : "#/components/schemas/PaginaUtilidadDocumentoVista"
+          },
+          "hasta" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "porcentajeUtilidad" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "totalUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "utilidadUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
           }
         }
       },
@@ -7658,6 +8959,42 @@
         },
         "required" : [ "lineas", "moneda" ]
       },
+      "StockBajoVista" : {
+        "type" : "object",
+        "properties" : {
+          "codigo" : {
+            "type" : "string"
+          },
+          "minimo" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "nivel" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "nombre" : {
+            "type" : "string"
+          },
+          "productoId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "stock" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "unidad" : {
+            "type" : "string"
+          }
+        }
+      },
       "TasaVigenteVista" : {
         "type" : "object",
         "properties" : {
@@ -7904,6 +9241,56 @@
           "version" : {
             "type" : "integer",
             "format" : "int64"
+          }
+        }
+      },
+      "UtilidadDocumentoVista" : {
+        "type" : "object",
+        "properties" : {
+          "cliente" : {
+            "type" : "string"
+          },
+          "clienteId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "consecutivo" : {
+            "type" : "string"
+          },
+          "costo" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "costoUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "fecha" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "porcentajeUtilidad" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "19.5000",
+            "pattern" : "^-?\\d+(\\.\\d+)?$"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "total" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "totalUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "utilidad" : {
+            "$ref" : "#/components/schemas/Dinero"
+          },
+          "utilidadUsd" : {
+            "$ref" : "#/components/schemas/Dinero"
           }
         }
       },

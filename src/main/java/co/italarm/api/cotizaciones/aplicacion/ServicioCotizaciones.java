@@ -50,7 +50,9 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -209,6 +211,19 @@ public class ServicioCotizaciones {
                 c.getDocumentoNumero(),
                 nombres.get(c.getCreatedBy()),
                 c.getCreatedAt()));
+  }
+
+  /** Bloque de Inicio (RF-12, RF-91): las en evaluación, primero las que vencen antes. */
+  @Transactional(readOnly = true)
+  public Pagina<CotizacionResumenVista> enEvaluacion(int filas) {
+    return listar(
+        EstadoCotizacion.EN_EVALUACION,
+        null,
+        null,
+        null,
+        null,
+        null,
+        PageRequest.of(0, filas, Sort.by("vence", "numero")));
   }
 
   @Transactional(readOnly = true)

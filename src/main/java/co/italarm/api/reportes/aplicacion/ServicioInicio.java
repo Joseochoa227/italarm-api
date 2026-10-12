@@ -2,7 +2,6 @@ package co.italarm.api.reportes.aplicacion;
 
 import co.italarm.api.cotizaciones.aplicacion.CotizacionResumenVista;
 import co.italarm.api.cotizaciones.aplicacion.ServicioCotizaciones;
-import co.italarm.api.cotizaciones.dominio.EstadoCotizacion;
 import co.italarm.api.garantias.aplicacion.GarantiaVista;
 import co.italarm.api.garantias.aplicacion.ServicioGarantias;
 import co.italarm.api.reportes.dominio.Periodo;
@@ -23,7 +22,6 @@ import java.util.List;
 import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,15 +64,7 @@ public class ServicioInicio {
     TasasVigentesVista vigentes = tasas.vigentes();
     Page<GarantiaVista> porVencer =
         garantias.consultar(EstadoGarantia.POR_VENCER, null, null, null, PageRequest.of(0, FILAS));
-    Pagina<CotizacionResumenVista> enEvaluacion =
-        cotizaciones.listar(
-            EstadoCotizacion.EN_EVALUACION,
-            null,
-            null,
-            null,
-            null,
-            null,
-            PageRequest.of(0, FILAS, Sort.by("vence", "numero")));
+    Pagina<CotizacionResumenVista> enEvaluacion = cotizaciones.enEvaluacion(FILAS);
     return new InicioVista(
         usuarios.nombres(Set.of(usuarioId)).get(usuarioId),
         hoy,

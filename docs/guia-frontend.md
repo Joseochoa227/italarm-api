@@ -252,7 +252,49 @@ Formulario en 4 pasos con el panel de Cobro (el backend calcula todo en la vista
   3. Guarda con `POST /ventas` o `POST /instalaciones` agregando `cotizacionId`. La cotización queda `CONVERTIDA` con `documentoGenerado` (tipo, id y consecutivo), y el detalle de la venta o instalación trae `cotizacion` para volver a ella (RF-95). Errores: `COTIZACION_NO_CONVERTIBLE` (no está aprobada, ya fue convertida, es de otro tipo o de otro cliente) y `STOCK_INSUFICIENTE`.
   4. Si se anula esa venta o instalación, la cotización vuelve a `APROBADA` (RF-74).
 
-## 18. Cómo mantener el contrato al día
+## 18. Inicio (sección 3.2)
+
+`GET /inicio` trae toda la pantalla en una petición:
+- `usuario` y `hoy` para el saludo (RF-06).
+- `avisosTasas`: si trae algo, muéstralo antes que cualquier otro bloque, con el botón Registrar tasa (RF-07). `tasas` es lo mismo que `GET /tasas/vigentes`.
+- `indicadores` del mes en curso (RF-08):
+  - `ventas` e `instalaciones`: `cantidad`, `total` en USD con sus equivalentes en COP y VES (con las tasas de hoy, P-57), y `porMoneda` (lo cobrado en cada moneda);
+  - `utilidad.total` y `utilidad.porcentaje` (sobre lo cobrado);
+  - `inventario.productos` (con stock) y `inventario.valor`.
+- `stockBajo` con `nivel` (0 a 100) para la barra (RF-10), `garantiasPorVencer` (RF-11) y `cotizacionesEnEvaluacion` (RF-12; resalta las que traen `porVencer: true`). Cada bloque trae máximo 10 filas y su `total*`, para el enlace "Ver todo".
+- `ultimosMovimientos` (RF-13): `tipo` (`VENTA`, `INSTALACION`, `COMPRA`, `AJUSTE`, `INVENTARIO_INICIAL`) e `id` para abrir el detalle; `anulado` para la marca.
+
+## 19. Reportes (sección 3.16)
+
+- **Período (RF-135):** `GET /reportes/periodo?tipo=SEMANA|MES|ANIO&fecha=` (sin parámetros, el mes en curso) o `?tipo=RANGO&desde=&hasta=`. La semana va de lunes a domingo (P-60). Las flechas usan `anterior` y `siguiente` (vacíos en un rango libre).
+- **Contenido:**
+  - `indicadores`: igual que en Inicio. El inventario es siempre el de hoy (P-58), con su `fecha`.
+  - `serie`: las barras del gráfico (RF-137), por semana o por mes según `agrupacion`. Cada barra trae la cantidad y el total en USD de ventas y de instalaciones.
+  - `masVendidos` y `masInstalados`: los 10 primeros por valor en USD, con cantidad y unidad (RF-138, P-59).
+  - `comprasPorProveedor` y `totalCompras` (RF-139).
+  - `stockBajo` completo (RF-140).
+  - `cotizaciones`: `porEstado`, `total` y `porcentajeAprobadas` (RF-142).
+- **Utilidad por documento (RF-143):** `GET /reportes/utilidad` con los mismos parámetros de período (el tipo de período va en `periodo`), `tipo=VENTA|INSTALACION` y `ordenarPorUtilidad=true`. Paginado, con los totales del filtro en USD.
+- **Seriales (RF-141):** `GET /reportes/seriales?estado=&productoId=`: conteo `porEstado` y listado paginado.
+- Todo usa los valores en USD guardados en cada documento: un reporte no cambia aunque cambien las tasas después. Los anulados no cuentan.
+
+## 20. Exportar a Excel (RF-144, RNF-06)
+
+Cada listado tiene su botón Excel, que llama a la misma ruta con `/excel` y los mismos filtros (sin paginar):
+
+| Pantalla | Ruta |
+|---|---|
+| Inventario | `GET /inventario/excel` |
+| Kárdex | `GET /inventario/productos/{id}/kardex/excel` |
+| Compras, ventas, instalaciones, cotizaciones | `GET /compras/excel`, `/ventas/excel`, `/instalaciones/excel`, `/cotizaciones/excel` |
+| Garantías | `GET /garantias/excel` |
+| Reportes | `GET /reportes/periodo/excel` (una hoja por bloque), `/reportes/utilidad/excel`, `/reportes/seriales/excel` |
+
+- La respuesta es el archivo (`.xlsx`) con `Content-Disposition: attachment` y el nombre listo (por ejemplo `ventas-2026-10-12.xlsx`). Descárgalo con `fetch` y el token, como los PDF.
+- Los montos vienen como números con formato de su moneda, para que se puedan sumar en Excel.
+- Máximo 20.000 filas (P-62): si se pasa, 422 `EXPORTACION_MUY_GRANDE`; muestra el mensaje para que el usuario acote las fechas.
+
+## 21. Cómo mantener el contrato al día
 
 Cuando el backend cambia un endpoint:
 

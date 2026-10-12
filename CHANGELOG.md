@@ -7,6 +7,29 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 ### Corregido
 - Los registros anidados con el mismo nombre en distintos módulos (`Linea`, `Movimiento`, `TotalMoneda`) se publicaban como un solo esquema, y los tipos del frontend quedaban mal (D-05 de italarm-web). Ahora cada registro anidado toma el nombre de su contenedor: `CompraVista.Linea` → `CompraVistaLinea`, `MovimientosCliente.Movimiento` → `MovimientosClienteMovimiento`. Los endpoints no cambian.
 
+## [Sin publicar] — Fase 6: Inicio, reportes y Excel (validación en local)
+
+### Agregado
+- Pantalla de Inicio en una sola petición (`GET /inicio`):
+  - saludo y avisos de tasas;
+  - indicadores del mes en USD con sus equivalentes (P-57);
+  - stock bajo con nivel, garantías y cotizaciones por vencer;
+  - últimos movimientos.
+- Reportes por semana, mes, año o rango libre:
+  - indicadores y serie para el gráfico;
+  - más vendidos e instalados por valor (P-59);
+  - compras por proveedor y stock bajo;
+  - cotizaciones por estado con el porcentaje de aprobadas;
+  - utilidad por documento y seriales por estado.
+- Exportación a Excel (Apache POI en modo de flujo, con los montos como números) de inventario, kárdex, compras, ventas, instalaciones, cotizaciones, garantías y reportes. Máximo 20.000 filas (`EXPORTACION_MUY_GRANDE`, P-62).
+- Perfil `volumen` con datos parecidos a 3 años de operación para medir el rendimiento en local.
+- Guía de copia y restauración en Windows (`docs/copias-locales.md`).
+- Prueba de que todos los endpoints del contrato exigen sesión, salvo los públicos.
+
+### Cambiado
+- AWS SDK 2.55.14.
+- `PRODUCTO_INACTIVO` ya estaba en `shared`; ahora también `EXPORTACION_MUY_GRANDE`.
+
 ## [Sin publicar] — Fase 5: Cotizaciones
 
 ### Agregado

@@ -3,7 +3,7 @@
 API del sistema de inventario, ventas, cotizaciones e instalaciones de ITALARM.
 
 - Requerimientos: [`docs/requerimientos.md`](docs/requerimientos.md)
-- Planes por fase: [`docs/plan-fase-0.md`](docs/plan-fase-0.md), [`docs/plan-fase-1.md`](docs/plan-fase-1.md), [`docs/plan-fase-2.md`](docs/plan-fase-2.md), [`docs/plan-fase-3.md`](docs/plan-fase-3.md), [`docs/plan-fase-4.md`](docs/plan-fase-4.md), [`docs/plan-fase-5.md`](docs/plan-fase-5.md)
+- Planes por fase: [`docs/plan-fase-0.md`](docs/plan-fase-0.md), [`docs/plan-fase-1.md`](docs/plan-fase-1.md), [`docs/plan-fase-2.md`](docs/plan-fase-2.md), [`docs/plan-fase-3.md`](docs/plan-fase-3.md), [`docs/plan-fase-4.md`](docs/plan-fase-4.md), [`docs/plan-fase-5.md`](docs/plan-fase-5.md), [`docs/plan-fase-6.md`](docs/plan-fase-6.md)
 - Contrato de la API: [`contrato/openapi.json`](contrato/openapi.json) y [`docs/guia-frontend.md`](docs/guia-frontend.md)
 - Preguntas y decisiones de ITALARM: [`docs/preguntas.md`](docs/preguntas.md)
 - Cambios por versión: [`CHANGELOG.md`](CHANGELOG.md)
@@ -85,8 +85,15 @@ La respuesta trae un `token`. Se envía en cada petición con la cabecera `Autho
 | `test` | Pruebas automáticas (Testcontainers). |
 | `staging` | Ambiente de pruebas. |
 | `prod` | Producción. Es el perfil de la imagen Docker. |
+| `volumen` | Solo en local, junto con `local`: llena una base **vacía** con datos parecidos a 3 años de operación para medir el rendimiento. El stock de esos datos no cuadra con el kárdex: úsalo en una base aparte (por ejemplo `italarm_volumen`) y bórrala después. |
 
 En `staging` y `prod`, todas las variables se configuran en el proveedor de hosting.
+
+Para probar con volumen: crea la base vacía, apunta `ITALARM_DB_URL` a ella y arranca con `.\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=local,volumen"`.
+
+## Copias de seguridad en local
+
+Ver [`docs/copias-locales.md`](docs/copias-locales.md): copia de la base con `pg_dump` y de la carpeta de archivos, y cómo restaurarlas.
 
 ## Imagen Docker
 
