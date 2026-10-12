@@ -119,7 +119,8 @@ class ExportacionesIntegracionTest extends PruebaInventario {
     assertThat(kardex.getRow(ENCABEZADO + 2).getCell(6).getNumericCellValue()).isEqualTo(90);
 
     Sheet garantias = hoja("/api/v1/garantias/excel", "garantias");
-    // Sin filtros: encabezado en la fila 4, y la mano de obra de la instalación y el serial vendido.
+    // Sin filtros: encabezado en la fila 4, y la mano de obra de la instalación y el serial
+    // vendido.
     assertThat(garantias.getLastRowNum()).isEqualTo(ENCABEZADO - 1 + 2);
   }
 

@@ -28,7 +28,7 @@
     <checkstyle.version>14.3.0</checkstyle.version>
     <jacoco.version>0.8.15</jacoco.version>
     <cobertura.minima>0.80</cobertura.minima>
-    <awssdk.version>2.55.7</awssdk.version>
+    <awssdk.version>2.55.14</awssdk.version>
     <poi.version>5.5.1</poi.version>
     <openpdf.version>3.0.5</openpdf.version>
   </properties>

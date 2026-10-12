@@ -58,7 +58,6 @@ public class GeneradorExcelPoi implements GeneradorExcel {
       String empresa,
       Instant generadoEn) {
     SXSSFSheet hojaExcel = excel.createSheet(WorkbookUtil.createSafeSheetName(hoja.nombre()));
-    hojaExcel.trackAllColumnsForAutoSizing();
     int fila = 0;
     texto(hojaExcel.createRow(fila++), 0, empresa, estilos.titulo);
     texto(hojaExcel.createRow(fila++), 0, hoja.titulo(), estilos.titulo);
@@ -73,20 +72,24 @@ public class GeneradorExcelPoi implements GeneradorExcel {
     fila++;
     Row encabezado = hojaExcel.createRow(fila++);
     List<String> columnas = hoja.columnas();
+    int[] anchos = new int[columnas.size()];
     for (int c = 0; c < columnas.size(); c++) {
       texto(encabezado, c, columnas.get(c), estilos.encabezado);
+      anchos[c] = columnas.get(c).length();
     }
     for (List<LibroExcel.Celda> datos : hoja.filas()) {
       Row row = hojaExcel.createRow(fila++);
       for (int c = 0; c < datos.size(); c++) {
         celda(row, c, datos.get(c), estilos);
+        if (c < anchos.length) {
+          anchos[c] = Math.max(anchos[c], caracteres(datos.get(c)));
+        }
       }
     }
+    // Ancho por la cantidad de caracteres: autoSizeColumn mide cada celda y es muy lento con miles
+    // de filas.
     for (int c = 0; c < columnas.size(); c++) {
-      hojaExcel.autoSizeColumn(c);
-      if (hojaExcel.getColumnWidth(c) > ANCHO_MAXIMO) {
-        hojaExcel.setColumnWidth(c, ANCHO_MAXIMO);
-      }
+      hojaExcel.setColumnWidth(c, Math.min((anchos[c] + 2) * 256, ANCHO_MAXIMO));
     }
   }
 
@@ -114,6 +117,18 @@ public class GeneradorExcelPoi implements GeneradorExcel {
         celda.setCellStyle(estilos.fechaHora);
       }
     }
+  }
+
+  /** Caracteres aproximados que ocupa la celda en pantalla. */
+  private static int caracteres(LibroExcel.Celda valor) {
+    return switch (valor) {
+      case null -> 0;
+      case LibroExcel.Texto t -> t.valor().length();
+      case LibroExcel.Numero n -> n.valor().toPlainString().length() + 2;
+      case LibroExcel.Monto m -> m.valor().toBigInteger().toString().length() + 8;
+      case LibroExcel.Fecha f -> 10;
+      case LibroExcel.FechaHora h -> 16;
+    };
   }
 
   private static void texto(Row fila, int columna, String valor, CellStyle estilo) {
