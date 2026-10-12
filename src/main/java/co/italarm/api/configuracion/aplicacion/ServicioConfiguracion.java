@@ -3,6 +3,7 @@ package co.italarm.api.configuracion.aplicacion;
 import co.italarm.api.configuracion.dominio.Configuracion;
 import co.italarm.api.configuracion.dominio.DatosConfiguracion;
 import co.italarm.api.configuracion.infraestructura.ConfiguracionRepositorio;
+import co.italarm.api.documentos.aplicacion.NombreEmpresa;
 import co.italarm.api.documentos.aplicacion.ServicioArchivos;
 import java.math.BigDecimal;
 import org.springframework.stereotype.Service;
@@ -10,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /** Datos de la empresa y valores por defecto (sección 3.17). */
 @Service
-public class ServicioConfiguracion {
+public class ServicioConfiguracion implements NombreEmpresa {
 
   private final ConfiguracionRepositorio configuraciones;
   private final ServicioArchivos archivos;
@@ -80,6 +81,13 @@ public class ServicioConfiguracion {
   @Transactional(readOnly = true)
   public int garantiaEquiposMeses() {
     return cargar().getGarantiaEquiposMeses();
+  }
+
+  /** Nombre de la empresa para el encabezado de los Excel (RF-145). */
+  @Override
+  @Transactional(readOnly = true)
+  public String nombre() {
+    return cargar().getEmpresaNombre();
   }
 
   /** Validez por defecto de las cotizaciones: 8, 15 o 30 días (RF-83, RF-147). */

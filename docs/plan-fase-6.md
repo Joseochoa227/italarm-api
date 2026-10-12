@@ -1,6 +1,6 @@
 # Plan de la Fase 6 — Inicio, reportes y Excel, validados en local (italarm-api)
 
-> Estado: **borrador, pendiente de la aprobación de ITALARM**. Antes de implementar hay que responder las preguntas P-57 a P-63 de `docs/preguntas.md`.
+> Estado: **aprobado por ITALARM el 12/10/2026**, en implementación. Preguntas P-57 a P-63 respondidas: de acuerdo con las propuestas (ver `docs/preguntas.md`).
 > Base: `docs/requerimientos.md`, secciones 3.2, 3.16, 5 (RNF-04, RNF-06, RNF-08) y 12.8, más las decisiones de `docs/preguntas.md`.
 > Alcance: solo el backend (**italarm-api**). Las pantallas se hacen en italarm-web a partir del contrato OpenAPI que deja esta fase.
 
