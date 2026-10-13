@@ -1,7 +1,7 @@
 # Plan de la Fase 7 — Salida a producción en planes gratuitos (italarm-api)
 
-> Estado: **borrador, pendiente de la aprobación de ITALARM**. Antes de implementar hay que responder las preguntas P-64 a P-71 de `docs/preguntas.md`.
-> Se ejecuta **después** de que ITALARM valide la Fase 6 en local (plan de la Fase 6, sección 9).
+> Estado: **aprobado por ITALARM el 13/10/2026**. Preguntas P-64 a P-71 respondidas: de acuerdo con las propuestas (ver `docs/preguntas.md`).
+> La preparación en el repositorio (T1 a T3 y T8) se hace ya. El despliegue (T5 a T7) se hace **después** de que ITALARM valide la Fase 6 en local (plan de la Fase 6, sección 9).
 > Base: `docs/requerimientos.md`, secciones 5 (RNF-02, RNF-05, RNF-08, RNF-10), 9 y 12.8, más P-04 y P-56.
 > AG-12: nada se publica en producción sin la aprobación de ITALARM en el paso T5.
 

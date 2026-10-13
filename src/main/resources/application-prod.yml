@@ -1,3 +1,19 @@
-# Producción: detrás del proxy HTTPS del proveedor de hosting.
+# Producción (P-04): Render plan gratis (512 MB) detrás de su proxy HTTPS, base de datos en Neon.
 server:
   forward-headers-strategy: framework
+  tomcat:
+    # Dos usuarios: pocos hilos ahorran memoria.
+    threads:
+      max: 20
+      min-spare: 2
+
+spring:
+  datasource:
+    hikari:
+      # Pocas conexiones y ninguna fija: cuando nadie usa la app, el pool se vacía y Neon puede
+      # apagar la base para no gastar sus horas gratis.
+      maximum-pool-size: 3
+      minimum-idle: 0
+      idle-timeout: 60000
+      max-lifetime: 300000
+      connection-timeout: 20000

@@ -1,0 +1,26 @@
+# Avisos y actualizaciones de dependencias (Fase 7, revisión de seguridad de la Fase 6).
+version: 2
+updates:
+  - package-ecosystem: maven
+    directory: /
+    target-branch: dev
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "build"
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: dev
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "ci"
+  - package-ecosystem: docker
+    directory: /
+    target-branch: dev
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "build"
