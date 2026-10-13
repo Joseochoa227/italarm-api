@@ -7,6 +7,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 ### Corregido
 - Los registros anidados con el mismo nombre en distintos módulos (`Linea`, `Movimiento`, `TotalMoneda`) se publicaban como un solo esquema, y los tipos del frontend quedaban mal (D-05 de italarm-web). Ahora cada registro anidado toma el nombre de su contenedor: `CompraVista.Linea` → `CompraVistaLinea`, `MovimientosCliente.Movimiento` → `MovimientosClienteMovimiento`. Los endpoints no cambian.
 
+## [Sin publicar] — Fase 7: preparación para producción en planes gratuitos
+
+### Agregado
+- Perfil `prod` para Render gratis y Neon:
+  - pool de 3 conexiones que se vacía sin uso;
+  - Tomcat con 20 hilos;
+  - imagen Docker ajustada a 512 MB (máximo medido: 410 MB con los datos de volumen).
+- El chequeo de la imagen y de Render usa `/actuator/health/liveness`, que no consulta la base, con su prueba.
+- Copias automáticas a Cloudflare R2: la base cada noche (30 días más una por mes durante un año) y los archivos cada semana. Se activan con la variable `COPIAS_ACTIVAS`.
+- La CI también corre en `dev`; Dependabot para Maven, GitHub Actions y Docker.
+- Guías: `docs/despliegue.md`, `docs/copias-produccion.md` y `docs/manual-de-uso.md`.
+
 ## [Sin publicar] — Fase 6: Inicio, reportes y Excel (validación en local)
 
 ### Agregado

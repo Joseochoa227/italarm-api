@@ -91,6 +91,10 @@ En `staging` y `prod`, todas las variables se configuran en el proveedor de host
 
 Para probar con volumen: crea la base vacía, apunta `ITALARM_DB_URL` a ella y arranca con `.\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=local,volumen"`.
 
+## Producción
+
+Se publica en planes gratuitos (P-04) siguiendo [`docs/despliegue.md`](docs/despliegue.md). Las copias automáticas están en [`docs/copias-produccion.md`](docs/copias-produccion.md) y el manual para los usuarios en [`docs/manual-de-uso.md`](docs/manual-de-uso.md).
+
 ## Copias de seguridad en local
 
 Ver [`docs/copias-locales.md`](docs/copias-locales.md): copia de la base con `pg_dump` y de la carpeta de archivos, y cómo restaurarlas.

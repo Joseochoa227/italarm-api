@@ -49,29 +49,29 @@ Entregable (12.8):
 
 ### T1. Ajustes del backend para el plan gratis — `build:` / `ci:`
 
-- [ ] **Perfil `prod`:**
+- [x] **Perfil `prod`:**
   - pool de conexiones pequeño: 3 conexiones como máximo, ninguna fija, se cierran tras 1 minuto sin uso, para que Neon pueda apagarse;
   - conexión a Neon con `sslmode=require`;
   - Tomcat con pocos hilos.
-- [ ] **Imagen Docker** con memoria limitada para 512 MB: `MaxRAMPercentage` más bajo, recolector Serial y pila de hilos más pequeña.
+- [x] **Imagen Docker** con memoria limitada para 512 MB: `MaxRAMPercentage` más bajo, recolector Serial y pila de hilos más pequeña.
   - Se prueba en local con `docker run --memory=512m` y los datos de volumen de la Fase 6: Inicio, reportes y un Excel grande sin quedarse sin memoria.
-- [ ] **Chequeo de vida:** `/actuator/health/liveness` responde sin consultar la base. Se agrega una prueba de esto.
+- [x] **Chequeo de vida:** `/actuator/health/liveness` responde sin consultar la base. Se agrega una prueba de esto.
   - El chequeo de la imagen y el de Render usan esa misma ruta.
-- [ ] **CI:** también en cada push a `dev`, no solo a `main`. Dependabot semanal para Maven y GitHub Actions (avisos de seguridad).
-- [ ] **Variables de producción** documentadas en `.env.example` y en la guía de despliegue. Los secretos solo van en Render y GitHub (AG-09).
+- [x] **CI:** también en cada push a `dev`, no solo a `main`. Dependabot semanal para Maven y GitHub Actions (avisos de seguridad).
+- [x] **Variables de producción** documentadas en `.env.example` y en la guía de despliegue. Los secretos solo van en Render y GitHub (AG-09).
 
 ### T2. Copias de seguridad automáticas (RNF-05) — `ci:`
 
-- [ ] **Flujo `copia-base.yml`:** todas las noches (P-67) saca un `pg_dump` comprimido de Neon y lo sube a `italarm-copias/base/` en R2.
+- [x] **Flujo `copia-base.yml`:** todas las noches (P-67) saca un `pg_dump` comprimido de Neon y lo sube a `italarm-copias/base/` en R2.
   - Guarda las 30 copias diarias más recientes y una por mes durante 12 meses.
   - También se puede correr a mano desde GitHub.
-- [ ] **Flujo `copia-archivos.yml`:** una vez por semana copia `italarm-archivos` a `italarm-copias/archivos/` (fotos, logo y facturas).
-- [ ] Si una copia falla, GitHub envía un correo al dueño del repositorio.
-- [ ] **Guía `docs/copias-produccion.md`:** cómo ver las copias, descargar una y restaurarla en Neon o en local.
+- [x] **Flujo `copia-archivos.yml`:** una vez por semana copia `italarm-archivos` a `italarm-copias/archivos/` (fotos, logo y facturas).
+- [x] Si una copia falla, GitHub envía un correo al dueño del repositorio.
+- [x] **Guía `docs/copias-produccion.md`:** cómo ver las copias, descargar una y restaurarla en Neon o en local.
 
-### T3. Guía de despliegue paso a paso — `docs:`
+### T3. Guía de despliegue paso a paso — `docs:` ✅
 
-`docs/despliegue.md`, para que ITALARM cree las cuentas a su nombre (RNF-10). Para cada paso dice qué botón tocar, qué copiar y dónde pegarlo:
+`docs/despliegue.md` (hecha), para que ITALARM cree las cuentas a su nombre (RNF-10). Para cada paso dice qué botón tocar, qué copiar y dónde pegarlo:
 
 1. **Cloudflare:** crear la cuenta, los buckets `italarm-archivos` e `italarm-copias`, y una clave de API de R2 con acceso solo a esos buckets.
 2. **Neon:** crear el proyecto `italarm` en EE. UU. Este y copiar la URL de conexión.
@@ -117,7 +117,7 @@ No se hacen en este repositorio. Se piden en la sesión del frontend, con esta l
 
 ### T8. Manual corto de uso (RNF-10) — `docs:`
 
-- [ ] `docs/manual-de-uso.md` (P-71), por pantalla, con lo que se hace en el día a día:
+- [x] `docs/manual-de-uso.md` (P-71), por pantalla, con lo que se hace en el día a día:
   - ingresar, registrar la tasa del bolívar, comprar, vender, instalar con fotos, cotizar y convertir;
   - anular, consultar garantías y reclamos;
   - reportes y Excel;
@@ -133,7 +133,6 @@ No se hacen en este repositorio. Se piden en la sesión del frontend, con esta l
 | `ITALARM_ALMACENAMIENTO=s3`, `ITALARM_S3_ENDPOINT`, `ITALARM_S3_REGION=auto`, `ITALARM_S3_BUCKET=italarm-archivos`, `ITALARM_S3_ACCESS_KEY`, `ITALARM_S3_SECRET_KEY` | Cloudflare R2 |
 | `ITALARM_URL_PUBLICA` | La dirección de Render (para los enlaces de los comprobantes) |
 | `ITALARM_CORS_ORIGENES` | La dirección de Cloudflare Pages |
-| `ITALARM_ENLACES_CLAVE` | Se genera al azar una sola vez (la guía dice cómo) |
 | `ITALARM_CLAVE_INICIAL` | La elige ITALARM; solo sirve hasta que cada uno cambie su contraseña |
 
 ## 6. Pruebas
@@ -161,3 +160,33 @@ No se hacen en este repositorio. Se piden en la sesión del frontend, con esta l
 - **Memoria de 512 MB:** si no alcanza, el primer paso es bajar el límite de filas de los Excel. El segundo, un plan de pago de Render (unos US$ 7 al mes).
 - **Render despertando:** si UptimeRobot falla, la primera petición tarda 30–60 segundos. Las tareas de la TRM y de vencimiento de cotizaciones corren también al arrancar, así que no se pierden.
 - **Neon apagado de madrugada:** la primera consulta tarda menos de un segundo más; no afecta el uso.
+
+## 9. Resultados de la preparación (13/10/2026)
+
+### Memoria con 512 MB (T1)
+
+**Cómo se midió:**
+- La API corrió con `-XX:MaxRAM=512m` y las opciones de la imagen Docker, sobre los datos de volumen de la Fase 6. No se pudo usar el contenedor con `--memory=512m` porque Docker Hub limitó la descarga de la imagen de Java.
+- Se pidieron Inicio, reportes y los Excel más grandes, tres veces cada uno.
+
+| Opciones de la JVM | Memoria real máxima | Excel más grande |
+|---|---|---|
+| Montón al 60 %, C2 | 472 MB (poco margen) | 0,5 s |
+| **Montón al 50 %, Serial, solo C1** (las de la imagen) | **410 MB** | 0,9 s |
+
+Ningún error de memoria. Inicio y reportes siguen por debajo de 100 ms.
+
+### Copias (T2)
+
+`scripts/copias/copia-base.sh` y `copia-archivos.sh` se probaron contra un S3 simulado (moto) y PostgreSQL 16:
+- la copia sube a `base/AAAA-MM-DD.dump`;
+- la retención borra lo que tiene más de 30 días y conserva el día 1 de cada mes durante un año;
+- la copia de archivos sincroniza el bucket;
+- el `.dump` se restauró completo en una base nueva.
+
+Los flujos de GitHub solo corren cuando la variable `COPIAS_ACTIVAS` vale `true`; se activa en el paso 4 de `docs/despliegue.md`.
+
+### Pendiente (después de la validación en local)
+
+- T4: pedir los cambios del frontend en su sesión.
+- T5 a T7: seguir `docs/despliegue.md` con ITALARM, prueba de humo, datos reales y restauración en producción.
